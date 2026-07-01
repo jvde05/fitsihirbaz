@@ -9,6 +9,7 @@ import { ClientsModule } from "./clients/clients.module";
 import { DietPlansModule } from "./diet-plans/diet-plans.module";
 import { PackagesModule } from "./packages/packages.module";
 import { ProgressModule } from "./progress/progress.module";
+import { AppointmentsModule } from "./appointments/appointments.module";
 import { validateEnv } from "./config/env.validation";
 
 @Module({
@@ -26,6 +27,7 @@ import { validateEnv } from "./config/env.validation";
     DietPlansModule,
     PackagesModule,
     ProgressModule,
+    AppointmentsModule,
   ],
 })
 export class AppModule {}

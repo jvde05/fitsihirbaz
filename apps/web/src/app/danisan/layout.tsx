@@ -14,6 +14,9 @@ export default function DanisanLayout({ children }: { children: React.ReactNode 
           <Link href="/danisan/ilerleme" className="font-medium text-brand-700 hover:underline">
             İlerleme
           </Link>
+          <Link href="/danisan/randevular" className="font-medium text-brand-700 hover:underline">
+            Randevularım
+          </Link>
         </nav>
         {children}
       </div>

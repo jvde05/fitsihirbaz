@@ -37,7 +37,7 @@ describe("ClientsService", () => {
     clientProfile: { findUnique: jest.Mock; update: jest.Mock };
     dietitianProfile: { findUnique: jest.Mock };
     user: { findUnique: jest.Mock };
-    clientDietitianLink: { findFirst: jest.Mock; create: jest.Mock };
+    clientDietitianLink: { findFirst: jest.Mock; create: jest.Mock; findMany: jest.Mock };
   };
   let service: ClientsService;
 
@@ -46,7 +46,7 @@ describe("ClientsService", () => {
       clientProfile: { findUnique: jest.fn(), update: jest.fn() },
       dietitianProfile: { findUnique: jest.fn() },
       user: { findUnique: jest.fn() },
-      clientDietitianLink: { findFirst: jest.fn(), create: jest.fn() },
+      clientDietitianLink: { findFirst: jest.fn(), create: jest.fn(), findMany: jest.fn() },
     };
     service = new ClientsService(prisma as unknown as PrismaService);
   });
@@ -62,6 +62,31 @@ describe("ClientsService", () => {
       const result = await service.getMyProfile("user-1");
       expect(result.heightCm).toBe(165.5);
       expect(result.email).toBe("client@example.com");
+    });
+  });
+
+  describe("getMyDietitians", () => {
+    it("aktif bağlı diyetisyenleri döner", async () => {
+      prisma.clientProfile.findUnique.mockResolvedValue({ id: "client-1" });
+      prisma.clientDietitianLink.findMany.mockResolvedValue([
+        {
+          dietitian: {
+            id: "dietitian-1",
+            userId: "dyt-user-1",
+            title: "Uzm. Dyt.",
+            bio: null,
+            specialties: [],
+            yearsOfExperience: null,
+            averageRating: null,
+            verificationStatus: "PENDING",
+            user: { firstName: "Ayşe", lastName: "Yılmaz", avatarUrl: null },
+          },
+        },
+      ]);
+
+      const result = await service.getMyDietitians("user-1");
+      expect(result).toHaveLength(1);
+      expect(result[0].firstName).toBe("Ayşe");
     });
   });
 

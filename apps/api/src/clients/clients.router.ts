@@ -2,6 +2,7 @@ import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import {
   ClientProfileSchema,
+  DietitianPublicSummarySchema,
   LinkToDietitianInputSchema,
   UpdateClientProfileInputSchema,
 } from "@fit-sihirbaz/shared";
@@ -40,6 +41,17 @@ export function createClientsRouter(service: ClientsService) {
           throw error;
         }
       }),
+
+    getMyDietitians: clientProcedure.output(z.array(DietitianPublicSummarySchema)).query(async ({ ctx }) => {
+      try {
+        return await service.getMyDietitians(ctx.user.id);
+      } catch (error) {
+        if (error instanceof ClientProfileNotFoundError) {
+          throw new TRPCError({ code: "NOT_FOUND", message: "Danışan profili bulunamadı" });
+        }
+        throw error;
+      }
+    }),
 
     linkToDietitian: dietitianProcedure
       .input(LinkToDietitianInputSchema)

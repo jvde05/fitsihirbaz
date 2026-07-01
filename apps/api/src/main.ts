@@ -12,6 +12,7 @@ import { ClientsService } from "./clients/clients.service";
 import { DietPlansService } from "./diet-plans/diet-plans.service";
 import { PackagesService } from "./packages/packages.service";
 import { ProgressService } from "./progress/progress.service";
+import { AppointmentsService } from "./appointments/appointments.service";
 import { createAppRouter } from "./trpc/app.router";
 import { createContextFactory } from "./trpc/context";
 import type { Env } from "./config/env.validation";
@@ -32,6 +33,7 @@ async function bootstrap() {
     dietPlansService: app.get(DietPlansService),
     packagesService: app.get(PackagesService),
     progressService: app.get(ProgressService),
+    appointmentsService: app.get(AppointmentsService),
   });
   app.use(
     "/trpc",

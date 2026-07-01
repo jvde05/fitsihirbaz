@@ -1,6 +1,7 @@
 import { Injectable } from "@nestjs/common";
-import type { ClientProfile, UpdateClientProfileInput } from "@fit-sihirbaz/shared";
+import type { ClientProfile, DietitianPublicSummary, UpdateClientProfileInput } from "@fit-sihirbaz/shared";
 import { PrismaService } from "../prisma/prisma.service";
+import { toDietitianPublicSummary } from "../dietitians/dietitians.mapper";
 import {
   AlreadyLinkedError,
   ClientProfileNotFoundError,
@@ -38,6 +39,21 @@ export class ClientsService {
       include: { user: true },
     });
     return toClientProfile(row);
+  }
+
+  async getMyDietitians(clientUserId: string): Promise<DietitianPublicSummary[]> {
+    const clientProfile = await this.prisma.clientProfile.findUnique({ where: { userId: clientUserId } });
+    if (!clientProfile) {
+      throw new ClientProfileNotFoundError();
+    }
+
+    const links = await this.prisma.clientDietitianLink.findMany({
+      where: { clientId: clientProfile.id, status: "ACTIVE" },
+      include: { dietitian: { include: { user: true } } },
+      orderBy: { startedAt: "desc" },
+    });
+
+    return links.map((link) => toDietitianPublicSummary(link.dietitian));
   }
 
   async linkToDietitian(dietitianUserId: string, clientEmail: string): Promise<{ success: true }> {
