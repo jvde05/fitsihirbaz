@@ -11,6 +11,7 @@ import {
   DietPlanMealViewSchema,
   DietPlanSummarySchema,
   DuplicateForNewCalorieTargetInputSchema,
+  ListDietPlansInputSchema,
 } from "@fit-sihirbaz/shared";
 import { dietitianProcedure, protectedProcedure, router } from "../trpc/trpc";
 import type { DietPlansService } from "./diet-plans.service";
@@ -23,6 +24,7 @@ import {
   DietPlanNotFoundError,
   DietitianProfileNotFoundError,
   EmptyDietPlanError,
+  MissingClientIdError,
 } from "./diet-plans.errors";
 
 function mapDietPlanError(error: unknown): never {
@@ -49,6 +51,9 @@ function mapDietPlanError(error: unknown): never {
   }
   if (error instanceof EmptyDietPlanError) {
     throw new TRPCError({ code: "BAD_REQUEST", message: "Boş bir plan farklı kaloriye ayarlanamaz" });
+  }
+  if (error instanceof MissingClientIdError) {
+    throw new TRPCError({ code: "BAD_REQUEST", message: "clientId zorunlu" });
   }
   throw error;
 }
@@ -94,6 +99,17 @@ export function createDietPlansRouter(service: DietPlansService) {
       .mutation(async ({ ctx, input }) => {
         try {
           return await service.addMealItem(ctx.user.id, input);
+        } catch (error) {
+          mapDietPlanError(error);
+        }
+      }),
+
+    list: protectedProcedure
+      .input(ListDietPlansInputSchema)
+      .output(z.array(DietPlanSummarySchema))
+      .query(async ({ ctx, input }) => {
+        try {
+          return await service.list(ctx.user.id, ctx.user.role, input.clientId);
         } catch (error) {
           mapDietPlanError(error);
         }

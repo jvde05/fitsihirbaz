@@ -23,6 +23,7 @@ import {
   DietPlanNotFoundError,
   DietitianProfileNotFoundError,
   EmptyDietPlanError,
+  MissingClientIdError,
 } from "./diet-plans.errors";
 import { type DietPlanWithHierarchy, toDietPlanDetail, toDietPlanSummary } from "./diet-plans.mapper";
 
@@ -155,6 +156,34 @@ export class DietPlansService {
     }
     await this.assertCanViewPlan(userId, role, plan);
     return toDietPlanDetail(plan);
+  }
+
+  async list(userId: string, role: Role, clientId?: string): Promise<DietPlanSummary[]> {
+    if (role === "CLIENT") {
+      const profile = await this.prisma.clientProfile.findUnique({ where: { userId } });
+      if (!profile) {
+        throw new DietPlanAccessDeniedError();
+      }
+      const plans = await this.prisma.dietPlan.findMany({
+        where: { clientId: profile.id },
+        orderBy: { createdAt: "desc" },
+      });
+      return plans.map(toDietPlanSummary);
+    }
+
+    if (role === "DIETITIAN") {
+      if (!clientId) {
+        throw new MissingClientIdError();
+      }
+      const profile = await this.getOwnDietitianProfile(userId);
+      const plans = await this.prisma.dietPlan.findMany({
+        where: { clientId, dietitianId: profile.id },
+        orderBy: { createdAt: "desc" },
+      });
+      return plans.map(toDietPlanSummary);
+    }
+
+    throw new DietPlanAccessDeniedError();
   }
 
   async duplicateForNewCalorieTarget(

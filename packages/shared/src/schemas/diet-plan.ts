@@ -108,3 +108,10 @@ export const DuplicateForNewCalorieTargetInputSchema = z.object({
   newTitle: z.string().min(1).max(200).optional(),
 });
 export type DuplicateForNewCalorieTargetInput = z.infer<typeof DuplicateForNewCalorieTargetInputSchema>;
+
+// CLIENT kendi planlarını listeler (clientId yok sayılır); DIETITIAN kendi oluşturduğu
+// planları belirli bir danışan için listeler (clientId zorunlu).
+export const ListDietPlansInputSchema = z.object({
+  clientId: z.string().uuid().optional(),
+});
+export type ListDietPlansInput = z.infer<typeof ListDietPlansInputSchema>;

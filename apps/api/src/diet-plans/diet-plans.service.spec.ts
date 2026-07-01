@@ -62,7 +62,7 @@ describe("DietPlansService", () => {
     dietitianProfile: { findUnique: jest.Mock };
     clientProfile: { findUnique: jest.Mock };
     clientDietitianLink: { findFirst: jest.Mock };
-    dietPlan: { create: jest.Mock; findUnique: jest.Mock };
+    dietPlan: { create: jest.Mock; findUnique: jest.Mock; findMany: jest.Mock };
     dietPlanDay: { create: jest.Mock; findUnique: jest.Mock };
     dietPlanMeal: { create: jest.Mock; findUnique: jest.Mock };
     dietPlanMealItem: { create: jest.Mock };
@@ -76,7 +76,7 @@ describe("DietPlansService", () => {
       dietitianProfile: { findUnique: jest.fn() },
       clientProfile: { findUnique: jest.fn() },
       clientDietitianLink: { findFirst: jest.fn() },
-      dietPlan: { create: jest.fn(), findUnique: jest.fn() },
+      dietPlan: { create: jest.fn(), findUnique: jest.fn(), findMany: jest.fn() },
       dietPlanDay: { create: jest.fn(), findUnique: jest.fn() },
       dietPlanMeal: { create: jest.fn(), findUnique: jest.fn() },
       dietPlanMealItem: { create: jest.fn() },
@@ -203,6 +203,34 @@ describe("DietPlansService", () => {
       expect(result.days).toHaveLength(1);
       expect(result.days[0].meals[0].items[0]).toMatchObject({ foodName: "Elma", calories: 52 });
       expect(result.totals.calories).toBe(52);
+    });
+  });
+
+  describe("list", () => {
+    it("CLIENT rolünde kendi planlarını döner", async () => {
+      prisma.clientProfile.findUnique.mockResolvedValue({ id: "client-1" });
+      prisma.dietPlan.findMany.mockResolvedValue([buildPlanHierarchy()]);
+
+      const result = await service.list("client-user-1", "CLIENT");
+      expect(result).toHaveLength(1);
+      expect(prisma.dietPlan.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({ where: { clientId: "client-1" } }),
+      );
+    });
+
+    it("DIETITIAN rolünde clientId verilmezse MissingClientIdError fırlatır", async () => {
+      await expect(service.list("dyt-user-1", "DIETITIAN")).rejects.toThrow();
+    });
+
+    it("DIETITIAN rolünde yalnızca kendi oluşturduğu planları döner", async () => {
+      prisma.dietitianProfile.findUnique.mockResolvedValue({ id: "dietitian-1" });
+      prisma.dietPlan.findMany.mockResolvedValue([buildPlanHierarchy()]);
+
+      const result = await service.list("dyt-user-1", "DIETITIAN", "client-1");
+      expect(result).toHaveLength(1);
+      expect(prisma.dietPlan.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({ where: { clientId: "client-1", dietitianId: "dietitian-1" } }),
+      );
     });
   });
 
