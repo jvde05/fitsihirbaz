@@ -11,6 +11,7 @@ import { PackagesModule } from "./packages/packages.module";
 import { ProgressModule } from "./progress/progress.module";
 import { AppointmentsModule } from "./appointments/appointments.module";
 import { MessagesModule } from "./messages/messages.module";
+import { ArticlesModule } from "./articles/articles.module";
 import { validateEnv } from "./config/env.validation";
 
 @Module({
@@ -30,6 +31,7 @@ import { validateEnv } from "./config/env.validation";
     ProgressModule,
     AppointmentsModule,
     MessagesModule,
+    ArticlesModule,
   ],
 })
 export class AppModule {}

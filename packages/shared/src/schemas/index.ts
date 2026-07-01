@@ -9,3 +9,4 @@ export * from "./package";
 export * from "./progress";
 export * from "./appointment";
 export * from "./message";
+export * from "./article";
