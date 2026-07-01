@@ -6,6 +6,7 @@ import { createExpressMiddleware } from "@trpc/server/adapters/express";
 import { AppModule } from "./app.module";
 import { AuthService } from "./auth/auth.service";
 import { TokenService } from "./auth/token.service";
+import { FoodsService } from "./foods/foods.service";
 import { createAppRouter } from "./trpc/app.router";
 import { createContextFactory } from "./trpc/context";
 import type { Env } from "./config/env.validation";
@@ -18,7 +19,10 @@ async function bootstrap() {
   // TODO: Faz 1'de NEXT_PUBLIC_API_URL'nin karşılığı olan web origin'i env'den okuyup whitelist'e alınmalı.
   app.enableCors({ origin: true, credentials: true });
 
-  const appRouter = createAppRouter({ authService: app.get(AuthService) });
+  const appRouter = createAppRouter({
+    authService: app.get(AuthService),
+    foodsService: app.get(FoodsService),
+  });
   app.use(
     "/trpc",
     createExpressMiddleware({
