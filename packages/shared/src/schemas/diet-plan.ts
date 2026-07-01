@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { optionalCoerced } from "./common";
 
 export const DietPlanStatusSchema = z.enum(["DRAFT", "ACTIVE", "COMPLETED", "ARCHIVED"]);
 export type DietPlanStatus = z.infer<typeof DietPlanStatusSchema>;
@@ -21,11 +22,11 @@ export const CreateDietPlanInputSchema = z.object({
   clientId: z.string().uuid(),
   title: z.string().min(1, "Başlık zorunlu").max(200),
   startDate: z.string().date("YYYY-MM-DD formatında olmalı"),
-  endDate: z.string().date("YYYY-MM-DD formatında olmalı").optional(),
-  targetCalories: z.coerce.number().int().positive().optional(),
-  targetProteinG: z.coerce.number().nonnegative().optional(),
-  targetCarbsG: z.coerce.number().nonnegative().optional(),
-  targetFatG: z.coerce.number().nonnegative().optional(),
+  endDate: optionalCoerced(z.string().date("YYYY-MM-DD formatında olmalı")),
+  targetCalories: optionalCoerced(z.coerce.number().int().positive()),
+  targetProteinG: optionalCoerced(z.coerce.number().nonnegative()),
+  targetCarbsG: optionalCoerced(z.coerce.number().nonnegative()),
+  targetFatG: optionalCoerced(z.coerce.number().nonnegative()),
 });
 export type CreateDietPlanInput = z.infer<typeof CreateDietPlanInputSchema>;
 

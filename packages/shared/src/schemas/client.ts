@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { optionalCoerced } from "./common";
 
 export const GenderSchema = z.enum(["MALE", "FEMALE", "OTHER"]);
 export type Gender = z.infer<typeof GenderSchema>;
@@ -27,9 +28,9 @@ export const ClientProfileSchema = z.object({
 export type ClientProfile = z.infer<typeof ClientProfileSchema>;
 
 export const UpdateClientProfileInputSchema = z.object({
-  birthDate: z.string().date("YYYY-MM-DD formatında olmalı").optional(),
+  birthDate: optionalCoerced(z.string().date("YYYY-MM-DD formatında olmalı")),
   gender: GenderSchema.optional(),
-  heightCm: z.coerce.number().positive().max(300).optional(),
+  heightCm: optionalCoerced(z.coerce.number().positive().max(300)),
   goal: GoalSchema.optional(),
   activityLevel: ActivityLevelSchema.optional(),
   medicalNotes: z.string().max(5000).optional(),

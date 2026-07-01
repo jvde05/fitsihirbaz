@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { optionalCoerced } from "./common";
 
 export const FoodSearchInputSchema = z.object({
   query: z.string().trim().min(1, "Arama terimi girin").max(100),
@@ -49,13 +50,13 @@ export const FoodCreateInputSchema = z.object({
   nameEn: z.string().min(1).max(200).optional(),
   category: z.string().min(1, "Kategori zorunlu").max(100),
   servingDescription: z.string().min(1).max(100).optional(),
-  servingGramWeight: z.coerce.number().positive().optional(),
+  servingGramWeight: optionalCoerced(z.coerce.number().positive()),
   calories: z.coerce.number().nonnegative(),
   protein: z.coerce.number().nonnegative(),
   carbs: z.coerce.number().nonnegative(),
   fat: z.coerce.number().nonnegative(),
-  fiber: z.coerce.number().nonnegative().optional(),
-  sugar: z.coerce.number().nonnegative().optional(),
+  fiber: optionalCoerced(z.coerce.number().nonnegative()),
+  sugar: optionalCoerced(z.coerce.number().nonnegative()),
 });
 export type FoodCreateInput = z.infer<typeof FoodCreateInputSchema>;
 

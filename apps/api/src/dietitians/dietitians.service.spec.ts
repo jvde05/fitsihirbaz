@@ -78,6 +78,22 @@ describe("DietitiansService", () => {
     });
   });
 
+  describe("getPublicProfile", () => {
+    it("profil yoksa DietitianProfileNotFoundError fırlatır", async () => {
+      prisma.dietitianProfile.findUnique.mockResolvedValue(null);
+      await expect(service.getPublicProfile("dietitian-1")).rejects.toBeInstanceOf(
+        DietitianProfileNotFoundError,
+      );
+    });
+
+    it("hassas alanlar olmadan public profili döner", async () => {
+      prisma.dietitianProfile.findUnique.mockResolvedValue(buildDietitianRow());
+      const result = await service.getPublicProfile("dietitian-1");
+      expect(result).not.toHaveProperty("email");
+      expect(result.title).toBe("Uzm. Dyt.");
+    });
+  });
+
   describe("getMyClients", () => {
     it("diyetisyen profili yoksa hata fırlatır", async () => {
       prisma.dietitianProfile.findUnique.mockResolvedValue(null);

@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { optionalCoerced } from "./common";
 
 export const PackageSchema = z.object({
   id: z.string().uuid(),
@@ -25,7 +26,7 @@ export const CreatePackageInputSchema = z.object({
   title: z.string().min(1, "Başlık zorunlu").max(200),
   description: z.string().max(2000).optional(),
   durationDays: z.coerce.number().int().positive(),
-  sessionCount: z.coerce.number().int().positive().optional(),
+  sessionCount: optionalCoerced(z.coerce.number().int().positive()),
   price: z.coerce.number().positive(),
   currency: z.string().min(3).max(3).default("TRY"),
 });
@@ -35,9 +36,9 @@ export const UpdatePackageInputSchema = z.object({
   id: z.string().uuid(),
   title: z.string().min(1).max(200).optional(),
   description: z.string().max(2000).optional(),
-  durationDays: z.coerce.number().int().positive().optional(),
-  sessionCount: z.coerce.number().int().positive().optional(),
-  price: z.coerce.number().positive().optional(),
+  durationDays: optionalCoerced(z.coerce.number().int().positive()),
+  sessionCount: optionalCoerced(z.coerce.number().int().positive()),
+  price: optionalCoerced(z.coerce.number().positive()),
   isActive: z.boolean().optional(),
 });
 export type UpdatePackageInput = z.infer<typeof UpdatePackageInputSchema>;

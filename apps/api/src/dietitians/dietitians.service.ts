@@ -3,6 +3,7 @@ import type { Prisma } from "@fit-sihirbaz/db";
 import type {
   ClientSummary,
   DietitianProfile,
+  DietitianPublicSummary,
   DietitianSearchInput,
   DietitianSearchResult,
   UpdateDietitianProfileInput,
@@ -66,6 +67,17 @@ export class DietitiansService {
     ]);
 
     return { items: rows.map(toDietitianPublicSummary), total };
+  }
+
+  async getPublicProfile(dietitianProfileId: string): Promise<DietitianPublicSummary> {
+    const row = await this.prisma.dietitianProfile.findUnique({
+      where: { id: dietitianProfileId },
+      include: { user: true },
+    });
+    if (!row) {
+      throw new DietitianProfileNotFoundError();
+    }
+    return toDietitianPublicSummary(row);
   }
 
   async getMyClients(dietitianUserId: string): Promise<ClientSummary[]> {

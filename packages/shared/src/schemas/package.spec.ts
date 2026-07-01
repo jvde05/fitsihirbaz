@@ -22,6 +22,14 @@ describe("CreatePackageInputSchema", () => {
   it("sıfır günlük süreyi reddeder", () => {
     expect(CreatePackageInputSchema.safeParse({ ...validInput, durationDays: 0 }).success).toBe(false);
   });
+
+  it("boş string sessionCount değerini (doldurulmamış form alanı) kabul eder", () => {
+    const result = CreatePackageInputSchema.safeParse({ ...validInput, sessionCount: "" });
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.sessionCount).toBeUndefined();
+    }
+  });
 });
 
 describe("UpdatePackageInputSchema", () => {

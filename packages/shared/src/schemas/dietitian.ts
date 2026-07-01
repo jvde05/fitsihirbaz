@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { optionalCoerced } from "./common";
 
 export const VerificationStatusSchema = z.enum(["PENDING", "VERIFIED", "REJECTED"]);
 export type VerificationStatus = z.infer<typeof VerificationStatusSchema>;
@@ -46,7 +47,7 @@ export const UpdateDietitianProfileInputSchema = z.object({
   title: z.string().min(1).max(100).optional(),
   bio: z.string().min(1).max(2000).optional(),
   specialties: z.array(z.string().min(1).max(50)).max(20).optional(),
-  yearsOfExperience: z.coerce.number().int().min(0).max(70).optional(),
+  yearsOfExperience: optionalCoerced(z.coerce.number().int().min(0).max(70)),
   licenseNumber: z.string().min(1).max(50).optional(),
 });
 export type UpdateDietitianProfileInput = z.infer<typeof UpdateDietitianProfileInputSchema>;

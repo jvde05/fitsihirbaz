@@ -24,6 +24,14 @@ describe("CreateDietPlanInputSchema", () => {
     const result = CreateDietPlanInputSchema.safeParse({ ...validInput, title: "" });
     expect(result.success).toBe(false);
   });
+
+  it("boş string targetCalories değerini (doldurulmamış form alanı) kabul eder", () => {
+    const result = CreateDietPlanInputSchema.safeParse({ ...validInput, targetCalories: "" });
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.targetCalories).toBeUndefined();
+    }
+  });
 });
 
 describe("AddDietPlanMealInputSchema", () => {

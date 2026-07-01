@@ -2,6 +2,7 @@ import { TRPCError } from "@trpc/server";
 import {
   ClientSummarySchema,
   DietitianProfileSchema,
+  DietitianPublicSummarySchema,
   DietitianSearchInputSchema,
   DietitianSearchResultSchema,
   UpdateDietitianProfileInputSchema,
@@ -43,6 +44,17 @@ export function createDietitiansRouter(service: DietitiansService) {
       .input(DietitianSearchInputSchema)
       .output(DietitianSearchResultSchema)
       .query(({ input }) => service.search(input)),
+
+    getPublicProfile: publicProcedure
+      .input(z.object({ id: z.string().uuid() }))
+      .output(DietitianPublicSummarySchema)
+      .query(async ({ input }) => {
+        try {
+          return await service.getPublicProfile(input.id);
+        } catch (error) {
+          mapProfileNotFound(error);
+        }
+      }),
 
     getMyClients: dietitianProcedure.output(z.array(ClientSummarySchema)).query(async ({ ctx }) => {
       try {
