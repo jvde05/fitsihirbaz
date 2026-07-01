@@ -51,3 +51,15 @@ export const UpdateDietitianProfileInputSchema = z.object({
   licenseNumber: z.string().min(1).max(50).optional(),
 });
 export type UpdateDietitianProfileInput = z.infer<typeof UpdateDietitianProfileInputSchema>;
+
+// Admin: diyetisyen doğrulama kuyruğu.
+export const AdminListDietitiansInputSchema = z.object({
+  status: VerificationStatusSchema.optional(),
+});
+export type AdminListDietitiansInput = z.infer<typeof AdminListDietitiansInputSchema>;
+
+export const AdminVerifyDietitianInputSchema = z.object({
+  id: z.string().uuid(),
+  status: z.enum(["VERIFIED", "REJECTED"]),
+});
+export type AdminVerifyDietitianInput = z.infer<typeof AdminVerifyDietitianInputSchema>;

@@ -126,4 +126,21 @@ describe("DietitiansService", () => {
       expect(result[0]).toMatchObject({ firstName: "Ali", linkSource: "MANUAL_ADD" });
     });
   });
+
+  describe("adminVerify", () => {
+    it("diyetisyen yoksa DietitianProfileNotFoundError fırlatır", async () => {
+      prisma.dietitianProfile.findUnique.mockResolvedValue(null);
+      await expect(service.adminVerify("dietitian-1", "VERIFIED")).rejects.toBeInstanceOf(
+        DietitianProfileNotFoundError,
+      );
+    });
+
+    it("verificationStatus alanını günceller", async () => {
+      prisma.dietitianProfile.findUnique.mockResolvedValue(buildDietitianRow());
+      prisma.dietitianProfile.update.mockResolvedValue(buildDietitianRow({ verificationStatus: "VERIFIED" }));
+
+      const result = await service.adminVerify("dietitian-1", "VERIFIED");
+      expect(result.verificationStatus).toBe("VERIFIED");
+    });
+  });
 });

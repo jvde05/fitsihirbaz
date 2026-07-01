@@ -1,5 +1,7 @@
 import { TRPCError } from "@trpc/server";
 import {
+  AdminListDietitiansInputSchema,
+  AdminVerifyDietitianInputSchema,
   ClientSummarySchema,
   DietitianProfileSchema,
   DietitianPublicSummarySchema,
@@ -8,7 +10,7 @@ import {
   UpdateDietitianProfileInputSchema,
 } from "@fit-sihirbaz/shared";
 import { z } from "zod";
-import { dietitianProcedure, publicProcedure, router } from "../trpc/trpc";
+import { adminProcedure, dietitianProcedure, publicProcedure, router } from "../trpc/trpc";
 import type { DietitiansService } from "./dietitians.service";
 import { DietitianProfileNotFoundError } from "./dietitians.errors";
 
@@ -63,5 +65,25 @@ export function createDietitiansRouter(service: DietitiansService) {
         mapProfileNotFound(error);
       }
     }),
+  });
+}
+
+export function createAdminDietitiansRouter(service: DietitiansService) {
+  return router({
+    list: adminProcedure
+      .input(AdminListDietitiansInputSchema)
+      .output(z.array(DietitianPublicSummarySchema))
+      .query(({ input }) => service.adminList(input)),
+
+    verify: adminProcedure
+      .input(AdminVerifyDietitianInputSchema)
+      .output(DietitianPublicSummarySchema)
+      .mutation(async ({ input }) => {
+        try {
+          return await service.adminVerify(input.id, input.status);
+        } catch (error) {
+          mapProfileNotFound(error);
+        }
+      }),
   });
 }

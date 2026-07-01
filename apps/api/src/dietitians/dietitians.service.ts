@@ -1,6 +1,7 @@
 import { Injectable } from "@nestjs/common";
 import type { Prisma } from "@fit-sihirbaz/db";
 import type {
+  AdminListDietitiansInput,
   ClientSummary,
   DietitianProfile,
   DietitianPublicSummary,
@@ -95,5 +96,27 @@ export class DietitiansService {
     });
 
     return links.map(toClientSummary);
+  }
+
+  async adminList(input: AdminListDietitiansInput): Promise<DietitianPublicSummary[]> {
+    const rows = await this.prisma.dietitianProfile.findMany({
+      where: input.status ? { verificationStatus: input.status } : {},
+      include: { user: true },
+      orderBy: { createdAt: "asc" },
+    });
+    return rows.map(toDietitianPublicSummary);
+  }
+
+  async adminVerify(dietitianProfileId: string, status: "VERIFIED" | "REJECTED"): Promise<DietitianPublicSummary> {
+    const existing = await this.prisma.dietitianProfile.findUnique({ where: { id: dietitianProfileId } });
+    if (!existing) {
+      throw new DietitianProfileNotFoundError();
+    }
+    const row = await this.prisma.dietitianProfile.update({
+      where: { id: dietitianProfileId },
+      data: { verificationStatus: status },
+      include: { user: true },
+    });
+    return toDietitianPublicSummary(row);
   }
 }
