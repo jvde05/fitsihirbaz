@@ -44,6 +44,14 @@ describe("RegisterInputSchema", () => {
     });
     expect(result.success).toBe(false);
   });
+
+  it("boş string telefon değerini (doldurulmamış form alanı) kabul eder", () => {
+    const result = RegisterInputSchema.safeParse({ ...validInput, phone: "" });
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.phone).toBeUndefined();
+    }
+  });
 });
 
 describe("LoginInputSchema", () => {

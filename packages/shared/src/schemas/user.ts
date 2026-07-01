@@ -19,15 +19,22 @@ export const PublicUserSchema = z.object({
 });
 export type PublicUser = z.infer<typeof PublicUserSchema>;
 
-export const UpdateProfileInputSchema = z.object({
-  firstName: z.string().min(1).max(100).optional(),
-  lastName: z.string().min(1).max(100).optional(),
-  phone: z
+// Form input'larında boş bırakılan opsiyonel alanlar "" olarak gelir (undefined değil);
+// preprocess ile "" -> undefined çevrilir ki .min(7) gibi kurallar boş değeri reddetmesin.
+export const optionalPhoneSchema = z.preprocess(
+  (value) => (value === "" ? undefined : value),
+  z
     .string()
     .min(7)
     .max(20)
     .regex(/^\+?[0-9 ]+$/, "Geçerli bir telefon numarası girin")
     .optional(),
+);
+
+export const UpdateProfileInputSchema = z.object({
+  firstName: z.string().min(1).max(100).optional(),
+  lastName: z.string().min(1).max(100).optional(),
+  phone: optionalPhoneSchema,
   avatarUrl: z.string().url().optional(),
 });
 export type UpdateProfileInput = z.infer<typeof UpdateProfileInputSchema>;

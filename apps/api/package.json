@@ -2,6 +2,7 @@
   "name": "@fit-sihirbaz/api",
   "version": "0.0.1",
   "private": true,
+  "types": "src/trpc/app.router.ts",
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "start": "node dist/main.js",
