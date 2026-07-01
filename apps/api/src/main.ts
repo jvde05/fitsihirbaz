@@ -10,6 +10,7 @@ import { FoodsService } from "./foods/foods.service";
 import { DietitiansService } from "./dietitians/dietitians.service";
 import { ClientsService } from "./clients/clients.service";
 import { DietPlansService } from "./diet-plans/diet-plans.service";
+import { PackagesService } from "./packages/packages.service";
 import { createAppRouter } from "./trpc/app.router";
 import { createContextFactory } from "./trpc/context";
 import type { Env } from "./config/env.validation";
@@ -28,6 +29,7 @@ async function bootstrap() {
     dietitiansService: app.get(DietitiansService),
     clientsService: app.get(ClientsService),
     dietPlansService: app.get(DietPlansService),
+    packagesService: app.get(PackagesService),
   });
   app.use(
     "/trpc",

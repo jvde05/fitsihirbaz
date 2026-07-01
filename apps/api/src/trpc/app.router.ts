@@ -8,6 +8,8 @@ import { createClientsRouter } from "../clients/clients.router";
 import type { ClientsService } from "../clients/clients.service";
 import { createDietPlansRouter } from "../diet-plans/diet-plans.router";
 import type { DietPlansService } from "../diet-plans/diet-plans.service";
+import { createPackagesRouter } from "../packages/packages.router";
+import type { PackagesService } from "../packages/packages.service";
 import { router } from "./trpc";
 
 interface AppRouterDeps {
@@ -16,6 +18,7 @@ interface AppRouterDeps {
   dietitiansService: DietitiansService;
   clientsService: ClientsService;
   dietPlansService: DietPlansService;
+  packagesService: PackagesService;
 }
 
 export function createAppRouter(deps: AppRouterDeps) {
@@ -25,6 +28,7 @@ export function createAppRouter(deps: AppRouterDeps) {
     dietitians: createDietitiansRouter(deps.dietitiansService),
     clients: createClientsRouter(deps.clientsService),
     dietPlans: createDietPlansRouter(deps.dietPlansService),
+    packages: createPackagesRouter(deps.packagesService),
     admin: router({
       foods: createAdminFoodsRouter(deps.foodsService),
     }),
