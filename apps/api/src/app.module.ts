@@ -6,6 +6,7 @@ import { AuthModule } from "./auth/auth.module";
 import { FoodsModule } from "./foods/foods.module";
 import { DietitiansModule } from "./dietitians/dietitians.module";
 import { ClientsModule } from "./clients/clients.module";
+import { DietPlansModule } from "./diet-plans/diet-plans.module";
 import { validateEnv } from "./config/env.validation";
 
 @Module({
@@ -20,6 +21,7 @@ import { validateEnv } from "./config/env.validation";
     FoodsModule,
     DietitiansModule,
     ClientsModule,
+    DietPlansModule,
   ],
 })
 export class AppModule {}
