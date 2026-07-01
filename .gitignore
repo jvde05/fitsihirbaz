@@ -1,0 +1,32 @@
+node_modules/
+dist/
+build/
+.next/
+out/
+coverage/
+
+# env
+.env
+.env.local
+.env.*.local
+
+# logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# editor
+.vscode/*
+!.vscode/extensions.json
+.idea/
+
+# expo / mobile
+.expo/
+.expo-shared/
+
+# prisma
+packages/db/prisma/dev.db*
+
+# misc
+.DS_Store
+*.tsbuildinfo
