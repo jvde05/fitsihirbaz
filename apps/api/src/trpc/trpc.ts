@@ -31,4 +31,5 @@ function requireRole(...roles: Role[]) {
 
 export const adminProcedure = t.procedure.use(requireRole("ADMIN"));
 export const dietitianProcedure = t.procedure.use(requireRole("DIETITIAN"));
+export const clientProcedure = t.procedure.use(requireRole("CLIENT"));
 export const dietitianOrAdminProcedure = t.procedure.use(requireRole("DIETITIAN", "ADMIN"));

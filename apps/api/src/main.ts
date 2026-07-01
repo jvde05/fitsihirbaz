@@ -7,6 +7,8 @@ import { AppModule } from "./app.module";
 import { AuthService } from "./auth/auth.service";
 import { TokenService } from "./auth/token.service";
 import { FoodsService } from "./foods/foods.service";
+import { DietitiansService } from "./dietitians/dietitians.service";
+import { ClientsService } from "./clients/clients.service";
 import { createAppRouter } from "./trpc/app.router";
 import { createContextFactory } from "./trpc/context";
 import type { Env } from "./config/env.validation";
@@ -22,6 +24,8 @@ async function bootstrap() {
   const appRouter = createAppRouter({
     authService: app.get(AuthService),
     foodsService: app.get(FoodsService),
+    dietitiansService: app.get(DietitiansService),
+    clientsService: app.get(ClientsService),
   });
   app.use(
     "/trpc",
