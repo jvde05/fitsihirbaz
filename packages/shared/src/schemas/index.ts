@@ -8,3 +8,4 @@ export * from "./diet-plan";
 export * from "./package";
 export * from "./progress";
 export * from "./appointment";
+export * from "./message";

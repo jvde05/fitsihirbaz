@@ -14,6 +14,8 @@ import { createProgressRouter } from "../progress/progress.router";
 import type { ProgressService } from "../progress/progress.service";
 import { createAppointmentsRouter } from "../appointments/appointments.router";
 import type { AppointmentsService } from "../appointments/appointments.service";
+import { createMessagesRouter } from "../messages/messages.router";
+import type { MessagesService } from "../messages/messages.service";
 import { router } from "./trpc";
 
 interface AppRouterDeps {
@@ -25,6 +27,7 @@ interface AppRouterDeps {
   packagesService: PackagesService;
   progressService: ProgressService;
   appointmentsService: AppointmentsService;
+  messagesService: MessagesService;
 }
 
 export function createAppRouter(deps: AppRouterDeps) {
@@ -37,6 +40,7 @@ export function createAppRouter(deps: AppRouterDeps) {
     packages: createPackagesRouter(deps.packagesService),
     progress: createProgressRouter(deps.progressService),
     appointments: createAppointmentsRouter(deps.appointmentsService),
+    messages: createMessagesRouter(deps.messagesService),
     admin: router({
       foods: createAdminFoodsRouter(deps.foodsService),
     }),
