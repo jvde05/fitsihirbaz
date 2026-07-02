@@ -1,12 +1,16 @@
 "use client";
 
+import Link from "next/link";
 import { useParams } from "next/navigation";
 import { trpc } from "@/lib/trpc";
+import { useAuthStore } from "@/lib/auth-store";
 
 export default function DiyetisyenProfilPage() {
   const params = useParams<{ id: string }>();
+  const { status, user } = useAuthStore();
   const dietitianQuery = trpc.dietitians.getPublicProfile.useQuery({ id: params.id });
   const packagesQuery = trpc.packages.browse.useQuery({ dietitianId: params.id, limit: 50 });
+  const isClient = status === "authenticated" && user?.role === "CLIENT";
 
   if (dietitianQuery.isLoading) {
     return <p className="text-gray-500">Yükleniyor...</p>;
@@ -58,14 +62,23 @@ export default function DiyetisyenProfilPage() {
               </p>
             </div>
             {pkg.description && <p className="mt-2 text-sm text-gray-600">{pkg.description}</p>}
-            <button
-              type="button"
-              disabled
-              title="Ödeme entegrasyonu yakında eklenecek"
-              className="mt-3 w-full cursor-not-allowed rounded-md bg-gray-200 px-4 py-2 text-sm font-medium text-gray-500"
-            >
-              Satın Al (Çok Yakında)
-            </button>
+            {isClient ? (
+              <Link
+                href={`/danisan/satin-al/${pkg.id}`}
+                className="mt-3 block w-full rounded-md bg-brand-600 px-4 py-2 text-center text-sm font-medium text-white hover:bg-brand-700"
+              >
+                Satın Al
+              </Link>
+            ) : (
+              <button
+                type="button"
+                disabled
+                title="Satın almak için danışan hesabıyla giriş yapmalısınız"
+                className="mt-3 w-full cursor-not-allowed rounded-md bg-gray-200 px-4 py-2 text-sm font-medium text-gray-500"
+              >
+                Satın Al
+              </button>
+            )}
           </div>
         ))}
       </div>
