@@ -1,12 +1,35 @@
-# Fit Sihirbaz
+# Fit Sihirbaz 🥑
 
-BeBiS'in modern, çok kullanıcılı SaaS alternatifi — diyetisyen-danışan yönetimi,
-besin veritabanı, diyet planı, pazaryeri (paket satışı + mock ödeme akışı), randevu,
-mesajlaşma ve yorumlar. Monorepo: `apps/web` (Next.js), `apps/api` (NestJS + tRPC),
-`apps/mobile` (Expo), `packages/db` (Prisma), `packages/shared` (zod şemaları).
+**Türkiye'nin diyetisyenleri için BeBiS'in yerini alacak, çok kullanıcılı bir SaaS
+platform inşa ediyoruz** — ve bu akşam çalışır halde göreceksin.
 
-Proje detayları için bkz. `CLAUDE.md` (ana doküman), `DATABASE.md`, `BACKEND.md`,
-`WEB.md`, `MOBIL.md`.
+BeBiS 20 yıllık, tek kullanıcılı, internetsiz bir masaüstü programı. Fit Sihirbaz ise
+web + iOS + Android'de aynı anda çalışan, diyetisyenlerin danışanlarını yönettiği,
+danışanların da pazaryerinden diyetisyen bulup paket satın alabildiği tam bir platform.
+Ve bu repo o platformun **çalışan, uçtan uca test edilmiş** bir hâli — mock değil,
+demo değil, gerçek bir backend + gerçek bir veritabanı + gerçek bir ödeme state
+machine'i üzerinde çalışan bir ürün.
+
+## Şu an ne var?
+
+- 🍎 **20.000+ besinlik veritabanı altyapısı** — arama, admin onayı, tarif oluşturma
+  ve otomatik besin değeri hesaplama
+- 👩‍⚕️ **Diyetisyen ↔ danışan yönetimi** — manuel ekleme, diyet planı oluşturma,
+  kalori/makro hesaplama, ilerleme takibi
+- 🛒 **Gerçek bir pazaryeri** — paket satın alma, sipariş/ödeme state machine'i,
+  komisyon hesaplama, otomatik diyetisyen-danışan eşleştirme, yorum/puanlama
+- 📅 **Randevu + mesajlaşma + bildirimler** — polling tabanlı, ama gerçek
+- 📱 **Web + mobil aynı backend'i paylaşıyor** — Next.js web arayüzü ve Expo mobil
+  uygulaması, tek tRPC API, tek Prisma şeması, tek doğrulama katmanı
+- 🔐 **Admin paneli** — diyetisyen onayı, besin onayı, kullanıcı yönetimi
+
+Ödeme tarafı gerçek iyzico/PayTR anahtarları gelmediği için şu an **mock bir
+sağlayıcı** ile çalışıyor — ama mimari gerçek sağlayıcıyı takmaya hazır (bkz.
+`apps/api/src/payments/payments.provider.ts`). Sipariş, komisyon, webhook, state
+machine — hepsi gerçek, sadece son adımda kartın çekildiği yer simüle ediliyor.
+
+Detaylı mimari ve modül dokümanları: `CLAUDE.md` (ana doküman), `DATABASE.md`,
+`BACKEND.md`, `WEB.md`, `MOBIL.md`.
 
 ## Gereksinimler
 
@@ -14,7 +37,7 @@ Proje detayları için bkz. `CLAUDE.md` (ana doküman), `DATABASE.md`, `BACKEND.
 - pnpm (`corepack enable` yeterli, `packageManager` alanı sürümü sabitliyor)
 - PostgreSQL 16 ve Redis (yerel kurulum ya da aşağıdaki `docker-compose.yml`)
 
-## Kurulum
+## Kurulum — 5 dakikada ayakta
 
 ```bash
 pnpm install
@@ -29,14 +52,15 @@ cp .env.example .env
 pnpm db:generate
 pnpm db:migrate
 
-# Örnek veri: 8 besin + 1 admin kullanıcı (admin@fitsihirbaz.com / ChangeMe123!)
+# Demo veri: diyetisyenler, danışanlar, paketler, ödenmiş bir sipariş, yorumlar...
+# boş bir ekranla değil, dolu bir platformla karşılaşacaksın
 pnpm db:seed
 ```
 
 Yerel Postgres/Redis kullanıyorsanız (Docker yerine), `.env` içindeki
 `DATABASE_URL`/`REDIS_URL` bağlantı bilgilerini kendi kurulumunuza göre güncelleyin.
 
-## Çalıştırma
+## Çalıştır ve gör
 
 Üç ayrı terminalde:
 
@@ -48,25 +72,34 @@ pnpm dev:mobile   # Expo — QR kod ile cihazda aç, veya "w" tuşuna basıp web
 
 `apps/api` ayakta değilse hem web hem mobil boş/hata döner — önce API'yi başlatın.
 
-## Giriş yapmak için
+## Demo hesaplarla gir
 
-Seed sadece bir admin hesabı oluşturuyor. Diyetisyen ve danışan hesapları web
-üzerinden `/kayit` sayfasından (veya mobilde kayıt ekranından) serbestçe
-oluşturulabilir — e-posta doğrulama zorunlu değil, kayıt olur olmaz giriş yapılmış
-sayılır. Örnek akış:
+Seed script'i az önce çalışırken arkanda gerçek bir pazaryeri kurdu. Şifre hepsinde
+aynı: **`Demo1234`**
 
-1. `/kayit` → "Diyetisyen" seçip kayıt ol → `/diyetisyen/paketler`'den bir paket oluştur
-2. Farklı bir tarayıcı sekmesinde (ya da gizli pencerede) `/kayit` → "Danışan" seçip
-   kayıt ol → `/diyetisyenler`'den az önceki diyetisyeni bul → paketi satın al
-3. Ödeme adımı gerçek bir sağlayıcı değil, mock bir simülasyon sayfasıdır
-   ("Ödemeyi Onayla" / "Ödemeyi Reddet") — gerçek iyzico/PayTR entegrasyonu
-   henüz yok, bkz. `apps/api/src/payments/payments.provider.ts`
+| Rol | E-posta | Ne göreceksin |
+|---|---|---|
+| Diyetisyen | `ayse.yilmaz@fitsihirbaz.com` | Onaylı profil, 2 paket, ödenmiş bir sipariş, 5 yıldızlı bir yorum |
+| Diyetisyen | `mehmet.demir@fitsihirbaz.com` | Onaylı profil, sporcu paketi, ödenmiş sipariş, 4 yıldızlı yorum |
+| Diyetisyen | `zeynep.kaya@fitsihirbaz.com` | **Onay bekliyor** — admin panelindeki onay akışını görmek için |
+| Danışan | `elif.sahin@example.com` | Ayşe'den satın almış, yorum bırakmış, yaklaşan bir randevusu var |
+| Danışan | `can.ozturk@example.com` | Mehmet'ten satın almış |
+| Danışan | `deniz.aydin@example.com` | Hiçbir şeye bağlı değil — sıfırdan keşif/satın alma akışını denemek için |
+| Admin | `admin@fitsihirbaz.com` | Şifre: `ChangeMe123!` — `/admin/kullanicilar`, diyetisyen onayı |
+
+**En hızlı "vay be" anı:** `deniz.aydin@example.com` ile giriş yap → `/diyetisyenler`
+→ Ayşe'yi bul → bir paket satın al → mock ödeme sayfasında "Ödemeyi Onayla"'ya bas →
+saniyeler içinde sipariş PAID oluyor, Ayşe'nin danışan listesine otomatik ekleniyor,
+her iki tarafa bildirim gidiyor. Sonra Ayşe'nin profiline dönüp yorum bırak.
+
+Yeni diyetisyen/danışan hesapları da `/kayit` sayfasından serbestçe açılabilir —
+e-posta doğrulama yok, kayıt olur olmaz giriş yapılmış sayılırsın.
 
 ## Test / typecheck
 
 ```bash
 pnpm typecheck   # tüm workspace'ler
-pnpm test        # apps/api unit testleri (134 test)
+pnpm test        # apps/api unit testleri (134 test, hepsi yeşil)
 ```
 
 ## Notlar
