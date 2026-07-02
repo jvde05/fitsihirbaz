@@ -116,6 +116,7 @@ model User {
   lastName         String
   phone            String?
   avatarUrl        String?
+  expoPushToken    String?
   isEmailVerified  Boolean  @default(false)
   isActive         Boolean  @default(true)
   createdAt        DateTime @default(now())

@@ -39,6 +39,12 @@ export const UpdateProfileInputSchema = z.object({
 });
 export type UpdateProfileInput = z.infer<typeof UpdateProfileInputSchema>;
 
+// Mobil uygulama açılışında/giriş sonrası Expo push token'ını backend'e kaydeder.
+export const RegisterPushTokenInputSchema = z.object({
+  token: z.string().min(1),
+});
+export type RegisterPushTokenInput = z.infer<typeof RegisterPushTokenInputSchema>;
+
 // Admin: kullanıcı yönetimi.
 export const AdminUserSummarySchema = z.object({
   id: z.string().uuid(),
