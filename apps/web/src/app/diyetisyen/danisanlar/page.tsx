@@ -56,12 +56,12 @@ export default function DanisanlarPage() {
       <ul className="divide-y divide-gray-200 rounded-md border border-gray-200">
         {clientsQuery.data?.map((client) => (
           <li key={client.id} className="flex items-center justify-between px-4 py-3">
-            <div>
+            <Link href={`/diyetisyen/danisanlar/${client.id}`} className="hover:underline">
               <p className="font-medium text-gray-900">
                 {client.firstName} {client.lastName}
               </p>
               <p className="text-sm text-gray-500">{client.email}</p>
-            </div>
+            </Link>
             <Link
               href={`/diyetisyen/danisanlar/${client.id}/plan-olustur`}
               className="rounded-md border border-gray-300 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-100"
