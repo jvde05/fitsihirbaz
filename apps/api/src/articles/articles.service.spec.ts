@@ -93,4 +93,17 @@ describe("ArticlesService", () => {
       expect(result.publishedAt).not.toBeNull();
     });
   });
+
+  describe("listAll", () => {
+    it("yazardan bağımsız tüm makaleleri (taslak dahil) döner", async () => {
+      prisma.article.findMany.mockResolvedValue([
+        buildArticleRow({ id: "article-1", authorId: "author-1", publishedAt: null }),
+        buildArticleRow({ id: "article-2", authorId: "author-2", publishedAt: new Date() }),
+      ]);
+
+      const result = await service.listAll();
+      expect(result).toHaveLength(2);
+      expect(prisma.article.findMany.mock.calls[0][0].where).toBeUndefined();
+    });
+  });
 });

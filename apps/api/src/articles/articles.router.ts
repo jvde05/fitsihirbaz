@@ -8,7 +8,7 @@ import {
   ListArticlesResultSchema,
   PublishArticleInputSchema,
 } from "@fit-sihirbaz/shared";
-import { dietitianOrAdminProcedure, publicProcedure, router } from "../trpc/trpc";
+import { adminProcedure, dietitianOrAdminProcedure, publicProcedure, router } from "../trpc/trpc";
 import type { ArticlesService } from "./articles.service";
 import { ArticleAccessDeniedError, ArticleNotFoundError, SlugAlreadyExistsError } from "./articles.errors";
 
@@ -68,5 +68,7 @@ export function createArticlesRouter(service: ArticlesService) {
     listMine: dietitianOrAdminProcedure.output(z.array(ArticleSummarySchema)).query(({ ctx }) =>
       service.listMine(ctx.user.id),
     ),
+
+    listAll: adminProcedure.output(z.array(ArticleSummarySchema)).query(() => service.listAll()),
   });
 }
