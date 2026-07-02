@@ -12,6 +12,7 @@ import { DietPlansModule } from "./diet-plans/diet-plans.module";
 import { PackagesModule } from "./packages/packages.module";
 import { OrdersModule } from "./orders/orders.module";
 import { PaymentsModule } from "./payments/payments.module";
+import { ReviewsModule } from "./reviews/reviews.module";
 import { ProgressModule } from "./progress/progress.module";
 import { AppointmentsModule } from "./appointments/appointments.module";
 import { MessagesModule } from "./messages/messages.module";
@@ -40,6 +41,7 @@ import { validateEnv } from "./config/env.validation";
     PackagesModule,
     OrdersModule,
     PaymentsModule,
+    ReviewsModule,
     ProgressModule,
     AppointmentsModule,
     MessagesModule,

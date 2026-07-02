@@ -549,6 +549,7 @@ model Review {
   client     ClientProfile    @relation(fields: [clientId], references: [id], onDelete: Cascade)
   dietitian  DietitianProfile @relation(fields: [dietitianId], references: [id], onDelete: Cascade)
 
+  @@unique([clientId, dietitianId])
   @@index([dietitianId])
 }
 
