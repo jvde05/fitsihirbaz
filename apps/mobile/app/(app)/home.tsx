@@ -93,6 +93,10 @@ export default function HomeScreen() {
               </Text>
             )}
           </View>
+
+          <Link href="/(app)/progress" testID="view-progress-link" style={styles.link}>
+            İlerlememi Görüntüle →
+          </Link>
         </>
       )}
 
