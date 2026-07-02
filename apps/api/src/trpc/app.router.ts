@@ -14,6 +14,12 @@ import { createDietPlansRouter } from "../diet-plans/diet-plans.router";
 import type { DietPlansService } from "../diet-plans/diet-plans.service";
 import { createPackagesRouter } from "../packages/packages.router";
 import type { PackagesService } from "../packages/packages.service";
+import { createOrdersRouter } from "../orders/orders.router";
+import type { OrdersService } from "../orders/orders.service";
+import { createPaymentsRouter } from "../payments/payments.router";
+import type { PaymentsService } from "../payments/payments.service";
+import { createReviewsRouter } from "../reviews/reviews.router";
+import type { ReviewsService } from "../reviews/reviews.service";
 import { createProgressRouter } from "../progress/progress.router";
 import type { ProgressService } from "../progress/progress.service";
 import { createAppointmentsRouter } from "../appointments/appointments.router";
@@ -35,6 +41,9 @@ interface AppRouterDeps {
   clientsService: ClientsService;
   dietPlansService: DietPlansService;
   packagesService: PackagesService;
+  ordersService: OrdersService;
+  paymentsService: PaymentsService;
+  reviewsService: ReviewsService;
   progressService: ProgressService;
   appointmentsService: AppointmentsService;
   messagesService: MessagesService;
@@ -52,6 +61,9 @@ export function createAppRouter(deps: AppRouterDeps) {
     clients: createClientsRouter(deps.clientsService),
     dietPlans: createDietPlansRouter(deps.dietPlansService),
     packages: createPackagesRouter(deps.packagesService),
+    orders: createOrdersRouter(deps.ordersService),
+    payments: createPaymentsRouter(deps.paymentsService),
+    reviews: createReviewsRouter(deps.reviewsService),
     progress: createProgressRouter(deps.progressService),
     appointments: createAppointmentsRouter(deps.appointmentsService),
     messages: createMessagesRouter(deps.messagesService),

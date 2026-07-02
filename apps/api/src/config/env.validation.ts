@@ -13,6 +13,13 @@ const EnvSchema = z.object({
   // verdiği için (gerçek bir CSRF riski) burada açıkça whitelist tutulur.
   WEB_ORIGIN: z.string().default("http://localhost:3000,http://localhost:8081"),
   REDIS_URL: z.string().default("redis://localhost:6379"),
+  // Checkout URL'lerini oluştururken kullanılan tek bir kanonik web app adresi
+  // (WEB_ORIGIN bir CORS whitelist'i, buradaki amaç farklı).
+  WEB_APP_URL: z.string().default("http://localhost:3000"),
+  // Ödeme webhook'unu imzalamak/doğrulamak için paylaşılan secret. Gerçek bir
+  // sağlayıcıya (iyzico/PayTR) geçildiğinde bu, o sağlayıcının kendi imza şemasıyla
+  // değiştirilecek.
+  PAYMENT_WEBHOOK_SECRET: z.string().default("dev-payment-webhook-secret-please-change-me"),
 });
 
 export type Env = z.infer<typeof EnvSchema>;

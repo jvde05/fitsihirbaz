@@ -10,6 +10,7 @@
     "build": "pnpm -r build",
     "dev:web": "pnpm --filter @fit-sihirbaz/web dev",
     "dev:api": "pnpm --filter @fit-sihirbaz/api start:dev",
+    "dev:mobile": "pnpm --filter @fit-sihirbaz/mobile start",
     "lint": "pnpm -r lint",
     "test": "pnpm -r test",
     "typecheck": "pnpm -r typecheck",

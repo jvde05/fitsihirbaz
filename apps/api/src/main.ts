@@ -13,6 +13,9 @@ import { DietitiansService } from "./dietitians/dietitians.service";
 import { ClientsService } from "./clients/clients.service";
 import { DietPlansService } from "./diet-plans/diet-plans.service";
 import { PackagesService } from "./packages/packages.service";
+import { OrdersService } from "./orders/orders.service";
+import { PaymentsService } from "./payments/payments.service";
+import { ReviewsService } from "./reviews/reviews.service";
 import { ProgressService } from "./progress/progress.service";
 import { AppointmentsService } from "./appointments/appointments.service";
 import { MessagesService } from "./messages/messages.service";
@@ -43,6 +46,9 @@ async function bootstrap() {
     clientsService: app.get(ClientsService),
     dietPlansService: app.get(DietPlansService),
     packagesService: app.get(PackagesService),
+    ordersService: app.get(OrdersService),
+    paymentsService: app.get(PaymentsService),
+    reviewsService: app.get(ReviewsService),
     progressService: app.get(ProgressService),
     appointmentsService: app.get(AppointmentsService),
     messagesService: app.get(MessagesService),

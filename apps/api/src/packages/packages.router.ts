@@ -4,6 +4,7 @@ import {
   BrowsePackagesResultSchema,
   CreatePackageInputSchema,
   PackageSchema,
+  PackageWithDietitianSchema,
   UpdatePackageInputSchema,
 } from "@fit-sihirbaz/shared";
 import { z } from "zod";
@@ -60,5 +61,16 @@ export function createPackagesRouter(service: PackagesService) {
       .input(BrowsePackagesInputSchema)
       .output(BrowsePackagesResultSchema)
       .query(({ input }) => service.browse(input)),
+
+    getById: publicProcedure
+      .input(z.object({ id: z.string().uuid() }))
+      .output(PackageWithDietitianSchema)
+      .query(async ({ input }) => {
+        try {
+          return await service.getById(input.id);
+        } catch (error) {
+          mapPackageError(error);
+        }
+      }),
   });
 }
