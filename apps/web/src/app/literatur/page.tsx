@@ -1,10 +1,14 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { trpc } from "@/lib/trpc";
 
+const PAGE_SIZE = 20;
+
 export default function LiteraturPage() {
-  const articlesQuery = trpc.articles.list.useQuery({ limit: 20 });
+  const [limit, setLimit] = useState(PAGE_SIZE);
+  const articlesQuery = trpc.articles.list.useQuery({ limit });
 
   return (
     <div>
@@ -33,6 +37,16 @@ export default function LiteraturPage() {
           </Link>
         ))}
       </div>
+
+      {articlesQuery.data && articlesQuery.data.items.length < articlesQuery.data.total && (
+        <button
+          type="button"
+          onClick={() => setLimit((current) => current + PAGE_SIZE)}
+          className="mt-6 rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100"
+        >
+          Daha Fazla Yükle
+        </button>
+      )}
     </div>
   );
 }
