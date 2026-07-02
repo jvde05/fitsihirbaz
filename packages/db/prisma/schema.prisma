@@ -84,6 +84,7 @@ enum OrderStatus {
 }
 
 enum PaymentProvider {
+  MOCK
   IYZICO
   PAYTR
 }
