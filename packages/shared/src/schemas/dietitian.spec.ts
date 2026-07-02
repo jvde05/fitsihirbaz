@@ -33,6 +33,21 @@ describe("UpdateDietitianProfileInputSchema", () => {
     const result = UpdateDietitianProfileInputSchema.safeParse({ yearsOfExperience: -1 });
     expect(result.success).toBe(false);
   });
+
+  it("boş string bio/licenseNumber alanlarını (doldurulmamış form alanı) kabul eder", () => {
+    const result = UpdateDietitianProfileInputSchema.safeParse({
+      title: "Uzm. Dyt.",
+      bio: "",
+      licenseNumber: "",
+      yearsOfExperience: "",
+    });
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.bio).toBeUndefined();
+      expect(result.data.licenseNumber).toBeUndefined();
+      expect(result.data.yearsOfExperience).toBeUndefined();
+    }
+  });
 });
 
 describe("AdminVerifyDietitianInputSchema", () => {

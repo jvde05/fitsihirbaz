@@ -25,4 +25,19 @@ describe("UpdateClientProfileInputSchema", () => {
     const result = UpdateClientProfileInputSchema.safeParse({ heightCm: 350 });
     expect(result.success).toBe(false);
   });
+
+  it("boş string enum alanlarını (doldurulmamış select) kabul eder", () => {
+    const result = UpdateClientProfileInputSchema.safeParse({
+      gender: "",
+      goal: "",
+      activityLevel: "",
+      heightCm: 168,
+    });
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.gender).toBeUndefined();
+      expect(result.data.goal).toBeUndefined();
+      expect(result.data.activityLevel).toBeUndefined();
+    }
+  });
 });

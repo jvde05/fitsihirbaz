@@ -106,7 +106,7 @@ export type DietPlanDetail = z.infer<typeof DietPlanDetailSchema>;
 export const DuplicateForNewCalorieTargetInputSchema = z.object({
   dietPlanId: z.string().uuid(),
   newTargetCalories: z.coerce.number().int().positive(),
-  newTitle: z.string().min(1).max(200).optional(),
+  newTitle: optionalCoerced(z.string().min(1).max(200)),
 });
 export type DuplicateForNewCalorieTargetInput = z.infer<typeof DuplicateForNewCalorieTargetInputSchema>;
 

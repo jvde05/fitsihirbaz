@@ -6,6 +6,7 @@ import { createExpressMiddleware } from "@trpc/server/adapters/express";
 import { AppModule } from "./app.module";
 import { AuthService } from "./auth/auth.service";
 import { TokenService } from "./auth/token.service";
+import { UsersService } from "./users/users.service";
 import { FoodsService } from "./foods/foods.service";
 import { DietitiansService } from "./dietitians/dietitians.service";
 import { ClientsService } from "./clients/clients.service";
@@ -29,6 +30,7 @@ async function bootstrap() {
 
   const appRouter = createAppRouter({
     authService: app.get(AuthService),
+    usersService: app.get(UsersService),
     foodsService: app.get(FoodsService),
     dietitiansService: app.get(DietitiansService),
     clientsService: app.get(ClientsService),

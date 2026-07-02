@@ -44,11 +44,11 @@ export const DietitianSearchResultSchema = z.object({
 export type DietitianSearchResult = z.infer<typeof DietitianSearchResultSchema>;
 
 export const UpdateDietitianProfileInputSchema = z.object({
-  title: z.string().min(1).max(100).optional(),
-  bio: z.string().min(1).max(2000).optional(),
+  title: optionalCoerced(z.string().min(1).max(100)),
+  bio: optionalCoerced(z.string().min(1).max(2000)),
   specialties: z.array(z.string().min(1).max(50)).max(20).optional(),
   yearsOfExperience: optionalCoerced(z.coerce.number().int().min(0).max(70)),
-  licenseNumber: z.string().min(1).max(50).optional(),
+  licenseNumber: optionalCoerced(z.string().min(1).max(50)),
 });
 export type UpdateDietitianProfileInput = z.infer<typeof UpdateDietitianProfileInputSchema>;
 

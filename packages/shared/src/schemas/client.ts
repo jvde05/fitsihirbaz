@@ -29,10 +29,10 @@ export type ClientProfile = z.infer<typeof ClientProfileSchema>;
 
 export const UpdateClientProfileInputSchema = z.object({
   birthDate: optionalCoerced(z.string().date("YYYY-MM-DD formatında olmalı")),
-  gender: GenderSchema.optional(),
+  gender: optionalCoerced(GenderSchema),
   heightCm: optionalCoerced(z.coerce.number().positive().max(300)),
-  goal: GoalSchema.optional(),
-  activityLevel: ActivityLevelSchema.optional(),
+  goal: optionalCoerced(GoalSchema),
+  activityLevel: optionalCoerced(ActivityLevelSchema),
   medicalNotes: z.string().max(5000).optional(),
 });
 export type UpdateClientProfileInput = z.infer<typeof UpdateClientProfileInputSchema>;

@@ -34,7 +34,7 @@ export type CreatePackageInput = z.infer<typeof CreatePackageInputSchema>;
 
 export const UpdatePackageInputSchema = z.object({
   id: z.string().uuid(),
-  title: z.string().min(1).max(200).optional(),
+  title: optionalCoerced(z.string().min(1).max(200)),
   description: z.string().max(2000).optional(),
   durationDays: optionalCoerced(z.coerce.number().int().positive()),
   sessionCount: optionalCoerced(z.coerce.number().int().positive()),

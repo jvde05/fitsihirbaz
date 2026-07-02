@@ -47,9 +47,9 @@ export type FoodDetail = z.infer<typeof FoodDetailSchema>;
 // Diyetisyen/admin kendi özel besinini eklerken kullanılır; isVerified=false başlar (admin.foods.verify onaylar).
 export const FoodCreateInputSchema = z.object({
   name: z.string().min(1, "Besin adı zorunlu").max(200),
-  nameEn: z.string().min(1).max(200).optional(),
+  nameEn: optionalCoerced(z.string().min(1).max(200)),
   category: z.string().min(1, "Kategori zorunlu").max(100),
-  servingDescription: z.string().min(1).max(100).optional(),
+  servingDescription: optionalCoerced(z.string().min(1).max(100)),
   servingGramWeight: optionalCoerced(z.coerce.number().positive()),
   calories: z.coerce.number().nonnegative(),
   protein: z.coerce.number().nonnegative(),

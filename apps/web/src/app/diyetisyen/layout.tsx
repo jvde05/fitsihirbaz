@@ -23,6 +23,9 @@ export default function DiyetisyenLayout({ children }: { children: React.ReactNo
           <Link href="/diyetisyen/icerik" className="font-medium text-brand-700 hover:underline">
             İçerik
           </Link>
+          <Link href="/diyetisyen/profil" className="font-medium text-brand-700 hover:underline">
+            Profilim
+          </Link>
         </nav>
         {children}
       </div>

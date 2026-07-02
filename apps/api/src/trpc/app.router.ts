@@ -1,5 +1,7 @@
 import { createAuthRouter } from "../auth/auth.router";
 import type { AuthService } from "../auth/auth.service";
+import { createUsersRouter } from "../users/users.router";
+import type { UsersService } from "../users/users.service";
 import { createAdminFoodsRouter, createFoodsRouter } from "../foods/foods.router";
 import type { FoodsService } from "../foods/foods.service";
 import { createAdminDietitiansRouter, createDietitiansRouter } from "../dietitians/dietitians.router";
@@ -22,6 +24,7 @@ import { router } from "./trpc";
 
 interface AppRouterDeps {
   authService: AuthService;
+  usersService: UsersService;
   foodsService: FoodsService;
   dietitiansService: DietitiansService;
   clientsService: ClientsService;
@@ -36,6 +39,7 @@ interface AppRouterDeps {
 export function createAppRouter(deps: AppRouterDeps) {
   return router({
     auth: createAuthRouter(deps.authService),
+    users: createUsersRouter(deps.usersService),
     foods: createFoodsRouter(deps.foodsService),
     dietitians: createDietitiansRouter(deps.dietitiansService),
     clients: createClientsRouter(deps.clientsService),

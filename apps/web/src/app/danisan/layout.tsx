@@ -20,6 +20,9 @@ export default function DanisanLayout({ children }: { children: React.ReactNode 
           <Link href="/danisan/mesajlar" className="font-medium text-brand-700 hover:underline">
             Mesajlar
           </Link>
+          <Link href="/danisan/profil" className="font-medium text-brand-700 hover:underline">
+            Profilim
+          </Link>
         </nav>
         {children}
       </div>
