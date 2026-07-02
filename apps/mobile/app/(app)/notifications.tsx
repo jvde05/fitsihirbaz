@@ -14,6 +14,14 @@ function describeNotification(notification: Notification): string {
       return `Randevu durumu güncellendi: ${notification.payload.status ?? ""}`;
     case "APPOINTMENT_REMINDER":
       return "Randevunuza 1 saat kaldı.";
+    case "ORDER_PAID":
+      return `Siparişiniz onaylandı: ${notification.payload.packageTitle ?? ""}`;
+    case "NEW_ORDER":
+      return `Yeni sipariş: ${notification.payload.packageTitle ?? ""} (${notification.payload.amount ?? ""} TRY)`;
+    case "DIETITIAN_VERIFIED":
+      return "Diyetisyen profiliniz onaylandı! Artık pazaryerinde görünüyorsunuz.";
+    case "DIETITIAN_REJECTED":
+      return "Diyetisyen profiliniz onaylanmadı. Detaylar için bizimle iletişime geçin.";
     default:
       return notification.type;
   }
