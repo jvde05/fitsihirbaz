@@ -5,6 +5,7 @@ import { PrismaModule } from "./prisma/prisma.module";
 import { AuthModule } from "./auth/auth.module";
 import { UsersModule } from "./users/users.module";
 import { FoodsModule } from "./foods/foods.module";
+import { RecipesModule } from "./recipes/recipes.module";
 import { DietitiansModule } from "./dietitians/dietitians.module";
 import { ClientsModule } from "./clients/clients.module";
 import { DietPlansModule } from "./diet-plans/diet-plans.module";
@@ -28,6 +29,7 @@ import { validateEnv } from "./config/env.validation";
     AuthModule,
     UsersModule,
     FoodsModule,
+    RecipesModule,
     DietitiansModule,
     ClientsModule,
     DietPlansModule,

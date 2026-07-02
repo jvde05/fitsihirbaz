@@ -8,6 +8,7 @@ import { AuthService } from "./auth/auth.service";
 import { TokenService } from "./auth/token.service";
 import { UsersService } from "./users/users.service";
 import { FoodsService } from "./foods/foods.service";
+import { RecipesService } from "./recipes/recipes.service";
 import { DietitiansService } from "./dietitians/dietitians.service";
 import { ClientsService } from "./clients/clients.service";
 import { DietPlansService } from "./diet-plans/diet-plans.service";
@@ -33,6 +34,7 @@ async function bootstrap() {
     authService: app.get(AuthService),
     usersService: app.get(UsersService),
     foodsService: app.get(FoodsService),
+    recipesService: app.get(RecipesService),
     dietitiansService: app.get(DietitiansService),
     clientsService: app.get(ClientsService),
     dietPlansService: app.get(DietPlansService),
