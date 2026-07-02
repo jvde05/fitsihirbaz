@@ -67,6 +67,7 @@ describe("DietPlansService", () => {
     dietPlanMeal: { create: jest.Mock; findUnique: jest.Mock };
     dietPlanMealItem: { create: jest.Mock };
     foodItem: { findUnique: jest.Mock };
+    recipe: { findUnique: jest.Mock };
     $transaction: jest.Mock;
   };
   let service: DietPlansService;
@@ -81,6 +82,7 @@ describe("DietPlansService", () => {
       dietPlanMeal: { create: jest.fn(), findUnique: jest.fn() },
       dietPlanMealItem: { create: jest.fn() },
       foodItem: { findUnique: jest.fn() },
+      recipe: { findUnique: jest.fn() },
       $transaction: jest.fn(),
     };
     service = new DietPlansService(prisma as unknown as PrismaService);
@@ -176,7 +178,34 @@ describe("DietPlansService", () => {
         quantity: 100,
         unit: "GRAM",
       });
-      expect(result).toMatchObject({ foodName: "Elma", calories: 52, protein: 0.3 });
+      expect(result).toMatchObject({ itemName: "Elma", calories: 52, protein: 0.3 });
+    });
+
+    it("geçerli tarif için porsiyon başı besin değerini ölçekleyerek öğe ekler", async () => {
+      prisma.dietitianProfile.findUnique.mockResolvedValue({ id: "dietitian-1" });
+      prisma.dietPlanMeal.findUnique.mockResolvedValue({
+        id: "meal-1",
+        dietPlanDay: { dietPlan: { dietitianId: "dietitian-1" } },
+      });
+      const recipe = {
+        id: "recipe-1",
+        name: "Yulaf Lapası",
+        servings: 2,
+        ingredients: [
+          { quantity: "200", unit: "GRAM", foodItem: buildFoodItem() },
+        ],
+      };
+      prisma.recipe.findUnique.mockResolvedValue(recipe);
+      prisma.dietPlanMealItem.create.mockResolvedValue({ id: "item-1", quantity: "2", unit: "PORTION" });
+
+      const result = await service.addMealItem("dyt-user-1", {
+        dietPlanMealId: "meal-1",
+        recipeId: "recipe-1",
+        quantity: 2,
+        unit: "PORTION",
+      });
+      // 200g Elma'nın toplamı 104 kcal / 2 porsiyon = 52 kcal/porsiyon; 2 porsiyon eklendi -> 104 kcal
+      expect(result).toMatchObject({ itemName: "Yulaf Lapası", recipeId: "recipe-1", calories: 104 });
     });
   });
 
@@ -201,7 +230,7 @@ describe("DietPlansService", () => {
 
       const result = await service.getById("dyt-user-1", "DIETITIAN", "plan-1");
       expect(result.days).toHaveLength(1);
-      expect(result.days[0].meals[0].items[0]).toMatchObject({ foodName: "Elma", calories: 52 });
+      expect(result.days[0].meals[0].items[0]).toMatchObject({ itemName: "Elma", calories: 52 });
       expect(result.totals.calories).toBe(52);
     });
   });

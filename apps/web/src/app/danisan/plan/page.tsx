@@ -60,7 +60,7 @@ export default function DanisanPlanPage() {
                 {meal.items.map((item) => (
                   <li key={item.id} className="flex justify-between">
                     <span>
-                      {item.foodName} — {item.quantity} {item.unit}
+                      {item.itemName} — {item.quantity} {item.unit}
                     </span>
                     <span className="text-gray-400">{item.calories} kcal</span>
                   </li>

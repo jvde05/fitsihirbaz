@@ -1,5 +1,6 @@
 import {
   AddDietPlanMealInputSchema,
+  AddDietPlanMealItemInputSchema,
   CreateDietPlanInputSchema,
   DuplicateForNewCalorieTargetInputSchema,
 } from "./diet-plan";
@@ -49,6 +50,48 @@ describe("AddDietPlanMealInputSchema", () => {
       dietPlanDayId: "123e4567-e89b-12d3-a456-426614174000",
       mealType: "BREAKFAST",
       plannedTime: "8:30am",
+    });
+    expect(result.success).toBe(false);
+  });
+});
+
+describe("AddDietPlanMealItemInputSchema", () => {
+  const dietPlanMealId = "123e4567-e89b-12d3-a456-426614174000";
+  const foodItemId = "223e4567-e89b-12d3-a456-426614174000";
+  const recipeId = "323e4567-e89b-12d3-a456-426614174000";
+
+  it("sadece foodItemId ile geçerlidir", () => {
+    const result = AddDietPlanMealItemInputSchema.safeParse({
+      dietPlanMealId,
+      foodItemId,
+      quantity: 100,
+      unit: "GRAM",
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("sadece recipeId ile geçerlidir", () => {
+    const result = AddDietPlanMealItemInputSchema.safeParse({
+      dietPlanMealId,
+      recipeId,
+      quantity: 1,
+      unit: "PORTION",
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("ikisi de verilmezse reddeder", () => {
+    const result = AddDietPlanMealItemInputSchema.safeParse({ dietPlanMealId, quantity: 100, unit: "GRAM" });
+    expect(result.success).toBe(false);
+  });
+
+  it("ikisi birden verilirse reddeder", () => {
+    const result = AddDietPlanMealItemInputSchema.safeParse({
+      dietPlanMealId,
+      foodItemId,
+      recipeId,
+      quantity: 100,
+      unit: "GRAM",
     });
     expect(result.success).toBe(false);
   });

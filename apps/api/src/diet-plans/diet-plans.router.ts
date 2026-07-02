@@ -22,6 +22,7 @@ import {
   DietPlanFoodItemNotFoundError,
   DietPlanMealNotFoundError,
   DietPlanNotFoundError,
+  DietPlanRecipeNotFoundError,
   DietitianProfileNotFoundError,
   EmptyDietPlanError,
   MissingClientIdError,
@@ -39,6 +40,9 @@ function mapDietPlanError(error: unknown): never {
   }
   if (error instanceof DietPlanFoodItemNotFoundError) {
     throw new TRPCError({ code: "NOT_FOUND", message: "Besin bulunamadı" });
+  }
+  if (error instanceof DietPlanRecipeNotFoundError) {
+    throw new TRPCError({ code: "NOT_FOUND", message: "Tarif bulunamadı" });
   }
   if (error instanceof DietPlanAccessDeniedError) {
     throw new TRPCError({ code: "FORBIDDEN", message: "Bu diyet planına erişiminiz yok" });

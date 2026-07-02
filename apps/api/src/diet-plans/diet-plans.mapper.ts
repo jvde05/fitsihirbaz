@@ -13,11 +13,15 @@ import type {
   DietPlanMealView,
   DietPlanSummary,
 } from "@fit-sihirbaz/shared";
+import { calculateRecipeTotalsPerServing, type RecipeWithIngredients } from "../recipes/recipes.mapper";
 import { addTotals, calculateItemNutrients, zeroTotals } from "./diet-plans.calculator";
 import { DietPlanFoodItemNotFoundError } from "./diet-plans.errors";
 
 type FoodItemWithNutrients = FoodItem & { nutrientData: NutrientData | null };
-type MealItemRow = DietPlanMealItem & { foodItem: FoodItemWithNutrients | null };
+type MealItemRow = DietPlanMealItem & {
+  foodItem: FoodItemWithNutrients | null;
+  recipe: RecipeWithIngredients | null;
+};
 type MealRow = DietPlanMeal & { items: MealItemRow[] };
 type DayRow = DietPlanDay & { meals: MealRow[] };
 export type DietPlanWithHierarchy = DietPlan & { days: DayRow[] };
@@ -34,7 +38,24 @@ function toTimeString(value: Date): string {
   return value.toISOString().slice(11, 16);
 }
 
-function buildMealItemView(item: MealItemRow): DietPlanMealItemView {
+export function buildMealItemView(item: MealItemRow): DietPlanMealItemView {
+  if (item.recipe) {
+    const perServing = calculateRecipeTotalsPerServing(item.recipe);
+    const quantity = Number(item.quantity);
+    return {
+      id: item.id,
+      foodItemId: null,
+      recipeId: item.recipe.id,
+      itemName: item.recipe.name,
+      quantity,
+      unit: item.unit,
+      calories: Math.round(perServing.calories * quantity * 100) / 100,
+      protein: Math.round(perServing.protein * quantity * 100) / 100,
+      carbs: Math.round(perServing.carbs * quantity * 100) / 100,
+      fat: Math.round(perServing.fat * quantity * 100) / 100,
+    };
+  }
+
   if (!item.foodItem || !item.foodItem.nutrientData) {
     throw new DietPlanFoodItemNotFoundError();
   }
@@ -51,7 +72,8 @@ function buildMealItemView(item: MealItemRow): DietPlanMealItemView {
   return {
     id: item.id,
     foodItemId: item.foodItem.id,
-    foodName: item.foodItem.name,
+    recipeId: null,
+    itemName: item.foodItem.name,
     quantity: Number(item.quantity),
     unit: item.unit,
     ...nutrients,

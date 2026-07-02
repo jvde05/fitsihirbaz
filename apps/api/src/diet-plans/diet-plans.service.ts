@@ -13,7 +13,6 @@ import type {
   Role,
 } from "@fit-sihirbaz/shared";
 import { PrismaService } from "../prisma/prisma.service";
-import { calculateItemNutrients } from "./diet-plans.calculator";
 import {
   ClientNotLinkedError,
   DietPlanAccessDeniedError,
@@ -21,11 +20,21 @@ import {
   DietPlanFoodItemNotFoundError,
   DietPlanMealNotFoundError,
   DietPlanNotFoundError,
+  DietPlanRecipeNotFoundError,
   DietitianProfileNotFoundError,
   EmptyDietPlanError,
   MissingClientIdError,
 } from "./diet-plans.errors";
-import { type DietPlanWithHierarchy, toDietPlanDetail, toDietPlanSummary } from "./diet-plans.mapper";
+import { buildMealItemView, type DietPlanWithHierarchy, toDietPlanDetail, toDietPlanSummary } from "./diet-plans.mapper";
+
+const RECIPE_INCLUDE = {
+  ingredients: { include: { foodItem: { include: { nutrientData: true } } } },
+};
+
+const MEAL_ITEM_INCLUDE = {
+  foodItem: { include: { nutrientData: true } },
+  recipe: { include: RECIPE_INCLUDE },
+};
 
 const PLAN_HIERARCHY_INCLUDE = {
   days: {
@@ -35,7 +44,7 @@ const PLAN_HIERARCHY_INCLUDE = {
         orderBy: { createdAt: "asc" as const },
         include: {
           items: {
-            include: { foodItem: { include: { nutrientData: true } } },
+            include: MEAL_ITEM_INCLUDE,
           },
         },
       },
@@ -129,6 +138,25 @@ export class DietPlansService {
       throw new DietPlanAccessDeniedError();
     }
 
+    if (input.recipeId) {
+      const recipe = await this.prisma.recipe.findUnique({
+        where: { id: input.recipeId },
+        include: RECIPE_INCLUDE,
+      });
+      if (!recipe) {
+        throw new DietPlanRecipeNotFoundError();
+      }
+      const item = await this.prisma.dietPlanMealItem.create({
+        data: {
+          dietPlanMealId: input.dietPlanMealId,
+          recipeId: input.recipeId,
+          quantity: input.quantity,
+          unit: input.unit,
+        },
+      });
+      return buildMealItemView({ ...item, foodItem: null, recipe });
+    }
+
     const foodItem = await this.prisma.foodItem.findUnique({
       where: { id: input.foodItemId },
       include: { nutrientData: true },
@@ -146,7 +174,7 @@ export class DietPlansService {
       },
     });
 
-    return toDietPlanDetailItemView(item, foodItem);
+    return buildMealItemView({ ...item, foodItem, recipe: null });
   }
 
   async getById(userId: string, role: Role, dietPlanId: string): Promise<DietPlanDetail> {
@@ -234,6 +262,17 @@ export class DietPlansService {
             },
           });
           for (const item of meal.items) {
+            if (item.recipeId) {
+              await tx.dietPlanMealItem.create({
+                data: {
+                  dietPlanMealId: newMeal.id,
+                  recipeId: item.recipeId,
+                  quantity: Number(item.quantity) * scaleFactor,
+                  unit: item.unit,
+                },
+              });
+              continue;
+            }
             if (!item.foodItemId) continue;
             await tx.dietPlanMealItem.create({
               data: {
@@ -302,35 +341,4 @@ export class DietPlansService {
       include: PLAN_HIERARCHY_INCLUDE,
     });
   }
-}
-
-function toDietPlanDetailItemView(
-  item: { id: string; quantity: unknown; unit: "GRAM" | "ML" | "PORTION" | "PIECE" },
-  foodItem: {
-    id: string;
-    name: string;
-    servingGramWeight: unknown;
-    nutrientData: { calories: unknown; protein: unknown; carbs: unknown; fat: unknown } | null;
-  },
-): DietPlanMealItemView {
-  if (!foodItem.nutrientData) {
-    throw new DietPlanFoodItemNotFoundError();
-  }
-  const nutrients = calculateItemNutrients({
-    caloriesPer100g: Number(foodItem.nutrientData.calories),
-    proteinPer100g: Number(foodItem.nutrientData.protein),
-    carbsPer100g: Number(foodItem.nutrientData.carbs),
-    fatPer100g: Number(foodItem.nutrientData.fat),
-    servingGramWeight: foodItem.servingGramWeight === null ? null : Number(foodItem.servingGramWeight),
-    quantity: Number(item.quantity),
-    unit: item.unit,
-  });
-  return {
-    id: item.id,
-    foodItemId: foodItem.id,
-    foodName: foodItem.name,
-    quantity: Number(item.quantity),
-    unit: item.unit,
-    ...nutrients,
-  };
 }

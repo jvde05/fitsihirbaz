@@ -46,20 +46,27 @@ export const AddDietPlanMealInputSchema = z.object({
 });
 export type AddDietPlanMealInput = z.infer<typeof AddDietPlanMealInputSchema>;
 
-// MVP kapsamında yalnızca foodItemId destekleniyor; recipeId, Recipes modülü
-// eklendiğinde (BACKEND.md §6) devreye alınacak.
-export const AddDietPlanMealItemInputSchema = z.object({
-  dietPlanMealId: z.string().uuid(),
-  foodItemId: z.string().uuid(),
-  quantity: z.coerce.number().positive(),
-  unit: MeasurementUnitSchema,
-});
+// foodItemId veya recipeId'den yalnızca biri belirtilmeli (bkz. DATABASE.md §13).
+// Recipe seçildiğinde quantity, tarifin kaç porsiyonunun ekleneceğini belirtir (unit=PORTION olmalı).
+export const AddDietPlanMealItemInputSchema = z
+  .object({
+    dietPlanMealId: z.string().uuid(),
+    foodItemId: z.string().uuid().optional(),
+    recipeId: z.string().uuid().optional(),
+    quantity: z.coerce.number().positive(),
+    unit: MeasurementUnitSchema,
+  })
+  .refine((data) => Boolean(data.foodItemId) !== Boolean(data.recipeId), {
+    message: "foodItemId veya recipeId'den yalnızca biri belirtilmeli",
+    path: ["foodItemId"],
+  });
 export type AddDietPlanMealItemInput = z.infer<typeof AddDietPlanMealItemInputSchema>;
 
 export const DietPlanMealItemViewSchema = NutrientTotalsSchema.extend({
   id: z.string().uuid(),
-  foodItemId: z.string().uuid(),
-  foodName: z.string(),
+  foodItemId: z.string().uuid().nullable(),
+  recipeId: z.string().uuid().nullable(),
+  itemName: z.string(),
   quantity: z.number(),
   unit: MeasurementUnitSchema,
 });

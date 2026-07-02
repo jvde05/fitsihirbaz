@@ -3,6 +3,7 @@ export class DietPlanAccessDeniedError extends Error {}
 export class DietPlanDayNotFoundError extends Error {}
 export class DietPlanMealNotFoundError extends Error {}
 export class DietPlanFoodItemNotFoundError extends Error {}
+export class DietPlanRecipeNotFoundError extends Error {}
 export class ClientNotLinkedError extends Error {}
 export class DietitianProfileNotFoundError extends Error {}
 export class EmptyDietPlanError extends Error {}

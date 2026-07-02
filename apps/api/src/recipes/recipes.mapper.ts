@@ -1,9 +1,9 @@
 import type { FoodItem, MeasurementUnit, NutrientData, Recipe, RecipeIngredient } from "@fit-sihirbaz/db";
-import type { RecipeDetail, RecipeIngredientView, RecipeSummary } from "@fit-sihirbaz/shared";
+import type { NutrientTotals, RecipeDetail, RecipeIngredientView, RecipeSummary } from "@fit-sihirbaz/shared";
 import { addTotals, calculateItemNutrients, zeroTotals } from "../diet-plans/diet-plans.calculator";
 
 type IngredientWithFoodItem = RecipeIngredient & { foodItem: FoodItem & { nutrientData: NutrientData | null } };
-type RecipeWithIngredients = Recipe & { ingredients: IngredientWithFoodItem[] };
+export type RecipeWithIngredients = Recipe & { ingredients: IngredientWithFoodItem[] };
 
 function round2(value: number): number {
   return Math.round(value * 100) / 100;
@@ -28,8 +28,17 @@ function calculateTotals(ingredients: IngredientWithFoodItem[]) {
   }, zeroTotals());
 }
 
-export function toRecipeSummary(recipe: RecipeWithIngredients): RecipeSummary {
+export function calculateRecipeTotalsPerServing(recipe: RecipeWithIngredients): NutrientTotals {
   const totals = calculateTotals(recipe.ingredients);
+  return {
+    calories: round2(totals.calories / recipe.servings),
+    protein: round2(totals.protein / recipe.servings),
+    carbs: round2(totals.carbs / recipe.servings),
+    fat: round2(totals.fat / recipe.servings),
+  };
+}
+
+export function toRecipeSummary(recipe: RecipeWithIngredients): RecipeSummary {
   return {
     id: recipe.id,
     name: recipe.name,
@@ -37,12 +46,7 @@ export function toRecipeSummary(recipe: RecipeWithIngredients): RecipeSummary {
     servings: recipe.servings,
     isPublic: recipe.isPublic,
     createdByUserId: recipe.createdByUserId,
-    totalsPerServing: {
-      calories: round2(totals.calories / recipe.servings),
-      protein: round2(totals.protein / recipe.servings),
-      carbs: round2(totals.carbs / recipe.servings),
-      fat: round2(totals.fat / recipe.servings),
-    },
+    totalsPerServing: calculateRecipeTotalsPerServing(recipe),
   };
 }
 
