@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { FlatList, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { trpc } from "@/lib/trpc";
+import { useAuthStore } from "@/lib/auth-store";
 import type { Conversation, Message } from "@fit-sihirbaz/shared";
 
 const POLL_INTERVAL_MS = 5000;
@@ -79,8 +80,10 @@ function MessageThread({ conversationId, onBack }: { conversationId: string; onB
 
 export default function MessagesScreen() {
   const utils = trpc.useUtils();
+  const isDietitian = useAuthStore((s) => s.user?.role) === "DIETITIAN";
   const [conversationId, setConversationId] = useState<string | null>(null);
-  const dietitiansQuery = trpc.clients.getMyDietitians.useQuery();
+  const dietitiansQuery = trpc.clients.getMyDietitians.useQuery(undefined, { enabled: !isDietitian });
+  const clientsQuery = trpc.dietitians.getMyClients.useQuery(undefined, { enabled: isDietitian });
   const conversationsQuery = trpc.messages.listConversations.useQuery(undefined, {
     refetchInterval: POLL_INTERVAL_MS,
   });
@@ -96,7 +99,7 @@ export default function MessagesScreen() {
     return <MessageThread conversationId={conversationId} onBack={() => setConversationId(null)} />;
   }
 
-  const dietitians = dietitiansQuery.data ?? [];
+  const counterparts = isDietitian ? clientsQuery.data ?? [] : dietitiansQuery.data ?? [];
   const conversations = conversationsQuery.data ?? [];
 
   return (
@@ -111,18 +114,18 @@ export default function MessagesScreen() {
       ListHeaderComponent={
         <View style={styles.header}>
           <Text style={styles.title}>Mesajlar</Text>
-          {dietitians.length > 0 && (
+          {counterparts.length > 0 && (
             <View style={styles.startSection}>
               <Text style={styles.label}>Sohbet Başlat</Text>
-              {dietitians.map((dietitian) => (
+              {counterparts.map((counterpart) => (
                 <Pressable
-                  key={dietitian.id}
-                  testID={`start-conversation-${dietitian.id}`}
+                  key={counterpart.id}
+                  testID={`start-conversation-${counterpart.id}`}
                   style={styles.startButton}
-                  onPress={() => startConversationMutation.mutate({ counterpartId: dietitian.id })}
+                  onPress={() => startConversationMutation.mutate({ counterpartId: counterpart.id })}
                 >
                   <Text style={styles.startButtonText}>
-                    {dietitian.firstName} {dietitian.lastName}
+                    {counterpart.firstName} {counterpart.lastName}
                   </Text>
                 </Pressable>
               ))}
