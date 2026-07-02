@@ -1,0 +1,125 @@
+import { z } from "zod";
+import { optionalCoerced } from "./common";
+
+export const DietPlanStatusSchema = z.enum(["DRAFT", "ACTIVE", "COMPLETED", "ARCHIVED"]);
+export type DietPlanStatus = z.infer<typeof DietPlanStatusSchema>;
+
+export const MealTypeSchema = z.enum(["BREAKFAST", "LUNCH", "DINNER", "SNACK"]);
+export type MealType = z.infer<typeof MealTypeSchema>;
+
+export const MeasurementUnitSchema = z.enum(["GRAM", "ML", "PORTION", "PIECE"]);
+export type MeasurementUnit = z.infer<typeof MeasurementUnitSchema>;
+
+export const NutrientTotalsSchema = z.object({
+  calories: z.number(),
+  protein: z.number(),
+  carbs: z.number(),
+  fat: z.number(),
+});
+export type NutrientTotals = z.infer<typeof NutrientTotalsSchema>;
+
+export const CreateDietPlanInputSchema = z.object({
+  clientId: z.string().uuid(),
+  title: z.string().min(1, "Başlık zorunlu").max(200),
+  startDate: z.string().date("YYYY-MM-DD formatında olmalı"),
+  endDate: optionalCoerced(z.string().date("YYYY-MM-DD formatında olmalı")),
+  targetCalories: optionalCoerced(z.coerce.number().int().positive()),
+  targetProteinG: optionalCoerced(z.coerce.number().nonnegative()),
+  targetCarbsG: optionalCoerced(z.coerce.number().nonnegative()),
+  targetFatG: optionalCoerced(z.coerce.number().nonnegative()),
+});
+export type CreateDietPlanInput = z.infer<typeof CreateDietPlanInputSchema>;
+
+export const AddDietPlanDayInputSchema = z.object({
+  dietPlanId: z.string().uuid(),
+  dayNumber: z.coerce.number().int().positive(),
+});
+export type AddDietPlanDayInput = z.infer<typeof AddDietPlanDayInputSchema>;
+
+export const AddDietPlanMealInputSchema = z.object({
+  dietPlanDayId: z.string().uuid(),
+  mealType: MealTypeSchema,
+  plannedTime: z
+    .string()
+    .regex(/^([01]\d|2[0-3]):[0-5]\d$/, "HH:MM formatında olmalı")
+    .optional(),
+});
+export type AddDietPlanMealInput = z.infer<typeof AddDietPlanMealInputSchema>;
+
+// foodItemId veya recipeId'den yalnızca biri belirtilmeli (bkz. DATABASE.md §13).
+// Recipe seçildiğinde quantity, tarifin kaç porsiyonunun ekleneceğini belirtir (unit=PORTION olmalı).
+export const AddDietPlanMealItemInputSchema = z
+  .object({
+    dietPlanMealId: z.string().uuid(),
+    foodItemId: z.string().uuid().optional(),
+    recipeId: z.string().uuid().optional(),
+    quantity: z.coerce.number().positive(),
+    unit: MeasurementUnitSchema,
+  })
+  .refine((data) => Boolean(data.foodItemId) !== Boolean(data.recipeId), {
+    message: "foodItemId veya recipeId'den yalnızca biri belirtilmeli",
+    path: ["foodItemId"],
+  });
+export type AddDietPlanMealItemInput = z.infer<typeof AddDietPlanMealItemInputSchema>;
+
+export const DietPlanMealItemViewSchema = NutrientTotalsSchema.extend({
+  id: z.string().uuid(),
+  foodItemId: z.string().uuid().nullable(),
+  recipeId: z.string().uuid().nullable(),
+  itemName: z.string(),
+  quantity: z.number(),
+  unit: MeasurementUnitSchema,
+});
+export type DietPlanMealItemView = z.infer<typeof DietPlanMealItemViewSchema>;
+
+export const DietPlanMealViewSchema = z.object({
+  id: z.string().uuid(),
+  mealType: MealTypeSchema,
+  plannedTime: z.string().nullable(),
+  items: z.array(DietPlanMealItemViewSchema),
+  totals: NutrientTotalsSchema,
+});
+export type DietPlanMealView = z.infer<typeof DietPlanMealViewSchema>;
+
+export const DietPlanDayViewSchema = z.object({
+  id: z.string().uuid(),
+  dayNumber: z.number().int(),
+  meals: z.array(DietPlanMealViewSchema),
+  totals: NutrientTotalsSchema,
+});
+export type DietPlanDayView = z.infer<typeof DietPlanDayViewSchema>;
+
+export const DietPlanSummarySchema = z.object({
+  id: z.string().uuid(),
+  clientId: z.string().uuid(),
+  dietitianId: z.string().uuid().nullable(),
+  title: z.string(),
+  startDate: z.string(),
+  endDate: z.string().nullable(),
+  targetCalories: z.number().int().nullable(),
+  targetProteinG: z.number().nullable(),
+  targetCarbsG: z.number().nullable(),
+  targetFatG: z.number().nullable(),
+  status: DietPlanStatusSchema,
+});
+export type DietPlanSummary = z.infer<typeof DietPlanSummarySchema>;
+
+export const DietPlanDetailSchema = DietPlanSummarySchema.extend({
+  days: z.array(DietPlanDayViewSchema),
+  totals: NutrientTotalsSchema,
+});
+export type DietPlanDetail = z.infer<typeof DietPlanDetailSchema>;
+
+export const DuplicateForNewCalorieTargetInputSchema = z.object({
+  dietPlanId: z.string().uuid(),
+  newTargetCalories: z.coerce.number().int().positive(),
+  newTitle: optionalCoerced(z.string().min(1).max(200)),
+});
+export type DuplicateForNewCalorieTargetInput = z.infer<typeof DuplicateForNewCalorieTargetInputSchema>;
+
+// CLIENT kendi planlarını listeler (clientId yok sayılır); DIETITIAN kendi oluşturduğu
+// planları belirli bir danışan için listeler (clientId zorunlu).
+export const ListDietPlansInputSchema = z.object({
+  clientId: z.string().uuid().optional(),
+});
+export type ListDietPlansInput = z.infer<typeof ListDietPlansInputSchema>;

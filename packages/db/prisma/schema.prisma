@@ -1,0 +1,589 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─────────────────────────────────────────────────────────────
+// Enum'lar
+// ─────────────────────────────────────────────────────────────
+
+enum Role {
+  CLIENT
+  DIETITIAN
+  ADMIN
+}
+
+enum VerificationStatus {
+  PENDING
+  VERIFIED
+  REJECTED
+}
+
+enum Gender {
+  MALE
+  FEMALE
+  OTHER
+}
+
+enum Goal {
+  WEIGHT_LOSS
+  WEIGHT_GAIN
+  MAINTENANCE
+  MUSCLE_GAIN
+  MEDICAL
+}
+
+enum ActivityLevel {
+  SEDENTARY
+  LIGHT
+  MODERATE
+  ACTIVE
+  VERY_ACTIVE
+}
+
+enum LinkStatus {
+  ACTIVE
+  ENDED
+}
+
+enum LinkSource {
+  MARKETPLACE
+  MANUAL_ADD
+}
+
+enum MeasurementUnit {
+  GRAM
+  ML
+  PORTION
+  PIECE
+}
+
+enum DietPlanStatus {
+  DRAFT
+  ACTIVE
+  COMPLETED
+  ARCHIVED
+}
+
+enum MealType {
+  BREAKFAST
+  LUNCH
+  DINNER
+  SNACK
+}
+
+enum OrderStatus {
+  PENDING
+  PAID
+  CANCELLED
+  REFUNDED
+}
+
+enum PaymentProvider {
+  IYZICO
+  PAYTR
+}
+
+enum PaymentStatus {
+  INITIATED
+  SUCCESS
+  FAILED
+  REFUNDED
+}
+
+enum AppointmentStatus {
+  SCHEDULED
+  COMPLETED
+  CANCELLED
+  NO_SHOW
+}
+
+// ─────────────────────────────────────────────────────────────
+// 1. User
+// ─────────────────────────────────────────────────────────────
+
+model User {
+  id               String   @id @default(uuid())
+  email            String   @unique
+  passwordHash     String
+  role             Role
+  firstName        String
+  lastName         String
+  phone            String?
+  avatarUrl        String?
+  isEmailVerified  Boolean  @default(false)
+  isActive         Boolean  @default(true)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  dietitianProfile DietitianProfile?
+  clientProfile    ClientProfile?
+  messages         Message[]
+  notifications    Notification[]
+  createdFoodItems FoodItem[]
+  createdRecipes   Recipe[]
+  articles         Article[]
+}
+
+// ─────────────────────────────────────────────────────────────
+// 2. DietitianProfile
+// ─────────────────────────────────────────────────────────────
+
+model DietitianProfile {
+  id                  String             @id @default(uuid())
+  userId              String             @unique
+  title               String?
+  bio                 String?
+  specialties         String[]
+  yearsOfExperience   Int?
+  licenseNumber       String?
+  certificationUrls   String[]
+  verificationStatus  VerificationStatus @default(PENDING)
+  commissionRate      Decimal            @default(0.15)
+  averageRating       Decimal?
+  payoutAccountInfo   Json?
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
+
+  user          User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  packages      Package[]
+  dietPlans     DietPlan[]
+  appointments  Appointment[]
+  clientLinks   ClientDietitianLink[]
+  reviews       Review[]
+  orders        Order[]
+  conversations Conversation[]
+}
+
+// ─────────────────────────────────────────────────────────────
+// 3. ClientProfile
+// ─────────────────────────────────────────────────────────────
+
+model ClientProfile {
+  id             String         @id @default(uuid())
+  userId         String         @unique
+  birthDate      DateTime?      @db.Date
+  gender         Gender?
+  heightCm       Decimal?
+  goal           Goal?
+  activityLevel  ActivityLevel?
+  medicalNotes   String?
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  user          User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  progressLogs  ProgressLog[]
+  dietPlans     DietPlan[]
+  orders        Order[]
+  clientLinks   ClientDietitianLink[]
+  reviews       Review[]
+  appointments  Appointment[]
+  conversations Conversation[]
+}
+
+// ─────────────────────────────────────────────────────────────
+// 4. ClientDietitianLink
+// ─────────────────────────────────────────────────────────────
+
+model ClientDietitianLink {
+  id           String     @id @default(uuid())
+  clientId     String
+  dietitianId  String
+  status       LinkStatus
+  startedAt    DateTime
+  endedAt      DateTime?
+  source       LinkSource
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  client     ClientProfile    @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  dietitian  DietitianProfile @relation(fields: [dietitianId], references: [id], onDelete: Cascade)
+
+  @@index([clientId])
+  @@index([dietitianId])
+}
+
+// ─────────────────────────────────────────────────────────────
+// 5. FoodSource
+// ─────────────────────────────────────────────────────────────
+
+model FoodSource {
+  id        String   @id @default(uuid())
+  name      String
+  citation  String
+  url       String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  foodItems FoodItem[]
+}
+
+// ─────────────────────────────────────────────────────────────
+// 6. FoodItem
+// ─────────────────────────────────────────────────────────────
+
+model FoodItem {
+  id                  String   @id @default(uuid())
+  name                String
+  nameEn              String?
+  category            String
+  servingDescription  String?
+  servingGramWeight   Decimal?
+  sourceId            String
+  isVerified          Boolean  @default(false)
+  createdByUserId     String?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  source              FoodSource            @relation(fields: [sourceId], references: [id])
+  createdByUser       User?                 @relation(fields: [createdByUserId], references: [id])
+  nutrientData        NutrientData?
+  recipeIngredients   RecipeIngredient[]
+  dietPlanMealItems   DietPlanMealItem[]
+
+  @@index([name])
+  @@index([category])
+}
+
+// ─────────────────────────────────────────────────────────────
+// 7. NutrientData
+// ─────────────────────────────────────────────────────────────
+
+model NutrientData {
+  id             String   @id @default(uuid())
+  foodItemId     String   @unique
+  calories       Decimal
+  protein        Decimal
+  carbs          Decimal
+  fat            Decimal
+  fiber          Decimal?
+  sugar          Decimal?
+  glycemicIndex  Int?
+  oracValue      Decimal?
+  vitamins       Json?
+  minerals       Json?
+  aminoAcids     Json?
+  fattyAcids     Json?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  foodItem FoodItem @relation(fields: [foodItemId], references: [id], onDelete: Cascade)
+}
+
+// ─────────────────────────────────────────────────────────────
+// 8. Recipe
+// ─────────────────────────────────────────────────────────────
+
+model Recipe {
+  id               String   @id @default(uuid())
+  name             String
+  description      String?
+  servings         Int
+  instructions     String?
+  createdByUserId  String
+  isPublic         Boolean  @default(false)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  createdByUser      User                @relation(fields: [createdByUserId], references: [id])
+  ingredients        RecipeIngredient[]
+  dietPlanMealItems  DietPlanMealItem[]
+}
+
+// ─────────────────────────────────────────────────────────────
+// 9. RecipeIngredient
+// ─────────────────────────────────────────────────────────────
+
+model RecipeIngredient {
+  id          String          @id @default(uuid())
+  recipeId    String
+  foodItemId  String
+  quantity    Decimal
+  unit        MeasurementUnit
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  recipe    Recipe   @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+  foodItem  FoodItem @relation(fields: [foodItemId], references: [id])
+}
+
+// ─────────────────────────────────────────────────────────────
+// 10. DietPlan
+// ─────────────────────────────────────────────────────────────
+
+model DietPlan {
+  id                String         @id @default(uuid())
+  clientId          String
+  dietitianId       String?
+  title             String
+  startDate         DateTime       @db.Date
+  endDate           DateTime?      @db.Date
+  targetCalories    Int?
+  targetProteinG    Decimal?
+  targetCarbsG      Decimal?
+  targetFatG        Decimal?
+  status            DietPlanStatus
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+
+  client     ClientProfile     @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  dietitian  DietitianProfile? @relation(fields: [dietitianId], references: [id])
+  days       DietPlanDay[]
+}
+
+// ─────────────────────────────────────────────────────────────
+// 11. DietPlanDay
+// ─────────────────────────────────────────────────────────────
+
+model DietPlanDay {
+  id          String   @id @default(uuid())
+  dietPlanId  String
+  dayNumber   Int
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  dietPlan  DietPlan       @relation(fields: [dietPlanId], references: [id], onDelete: Cascade)
+  meals     DietPlanMeal[]
+
+  @@index([dietPlanId])
+}
+
+// ─────────────────────────────────────────────────────────────
+// 12. DietPlanMeal
+// ─────────────────────────────────────────────────────────────
+
+model DietPlanMeal {
+  id               String    @id @default(uuid())
+  dietPlanDayId    String
+  mealType         MealType
+  plannedTime      DateTime? @db.Time
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  dietPlanDay  DietPlanDay        @relation(fields: [dietPlanDayId], references: [id], onDelete: Cascade)
+  items        DietPlanMealItem[]
+
+  @@index([dietPlanDayId])
+}
+
+// ─────────────────────────────────────────────────────────────
+// 13. DietPlanMealItem
+// ─────────────────────────────────────────────────────────────
+
+model DietPlanMealItem {
+  id                String          @id @default(uuid())
+  dietPlanMealId    String
+  foodItemId        String?
+  recipeId          String?
+  quantity          Decimal
+  unit              MeasurementUnit
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+
+  dietPlanMeal  DietPlanMeal @relation(fields: [dietPlanMealId], references: [id], onDelete: Cascade)
+  foodItem      FoodItem?    @relation(fields: [foodItemId], references: [id])
+  recipe        Recipe?      @relation(fields: [recipeId], references: [id])
+
+  @@index([dietPlanMealId])
+}
+
+// ─────────────────────────────────────────────────────────────
+// 14. Package
+// ─────────────────────────────────────────────────────────────
+
+model Package {
+  id             String   @id @default(uuid())
+  dietitianId    String
+  title          String
+  description    String?
+  durationDays   Int
+  sessionCount   Int?
+  price          Decimal
+  currency       String   @default("TRY")
+  isActive       Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  dietitian  DietitianProfile @relation(fields: [dietitianId], references: [id], onDelete: Cascade)
+  orders     Order[]
+
+  @@index([dietitianId])
+}
+
+// ─────────────────────────────────────────────────────────────
+// 15. Order
+// ─────────────────────────────────────────────────────────────
+
+model Order {
+  id                      String      @id @default(uuid())
+  clientId                String
+  packageId               String
+  dietitianId             String
+  amount                  Decimal
+  commissionAmount        Decimal
+  dietitianPayoutAmount   Decimal
+  status                  OrderStatus
+  createdAt               DateTime    @default(now())
+  updatedAt               DateTime    @updatedAt
+
+  client     ClientProfile    @relation(fields: [clientId], references: [id])
+  package    Package          @relation(fields: [packageId], references: [id])
+  dietitian  DietitianProfile @relation(fields: [dietitianId], references: [id])
+  payment    Payment?
+
+  @@index([status])
+}
+
+// ─────────────────────────────────────────────────────────────
+// 16. Payment
+// ─────────────────────────────────────────────────────────────
+
+model Payment {
+  id                      String          @id @default(uuid())
+  orderId                 String          @unique
+  provider                PaymentProvider
+  providerTransactionId   String
+  status                  PaymentStatus
+  rawResponse             Json?
+  paidAt                  DateTime?
+  createdAt               DateTime        @default(now())
+  updatedAt               DateTime        @updatedAt
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+}
+
+// ─────────────────────────────────────────────────────────────
+// 17. Appointment
+// ─────────────────────────────────────────────────────────────
+
+model Appointment {
+  id                String             @id @default(uuid())
+  clientId          String
+  dietitianId       String
+  scheduledAt       DateTime
+  durationMinutes   Int                @default(30)
+  status            AppointmentStatus
+  meetingLink       String?
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+
+  client     ClientProfile    @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  dietitian  DietitianProfile @relation(fields: [dietitianId], references: [id], onDelete: Cascade)
+
+  @@index([scheduledAt])
+}
+
+// ─────────────────────────────────────────────────────────────
+// 18. Conversation & Message
+// ─────────────────────────────────────────────────────────────
+
+model Conversation {
+  id           String   @id @default(uuid())
+  clientId     String
+  dietitianId  String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  client     ClientProfile    @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  dietitian  DietitianProfile @relation(fields: [dietitianId], references: [id], onDelete: Cascade)
+  messages   Message[]
+
+  @@unique([clientId, dietitianId])
+}
+
+model Message {
+  id              String    @id @default(uuid())
+  conversationId  String
+  senderId        String
+  content         String
+  readAt          DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  conversation  Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  sender        User         @relation(fields: [senderId], references: [id])
+
+  @@index([conversationId])
+}
+
+// ─────────────────────────────────────────────────────────────
+// 19. ProgressLog
+// ─────────────────────────────────────────────────────────────
+
+model ProgressLog {
+  id               String   @id @default(uuid())
+  clientId         String
+  logDate          DateTime @db.Date
+  weightKg         Decimal?
+  bodyFatPercent   Decimal?
+  waistCm          Decimal?
+  hipCm            Decimal?
+  photoUrls        String[]
+  notes            String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  client ClientProfile @relation(fields: [clientId], references: [id], onDelete: Cascade)
+
+  @@index([clientId, logDate])
+}
+
+// ─────────────────────────────────────────────────────────────
+// 20. Review
+// ─────────────────────────────────────────────────────────────
+
+model Review {
+  id           String   @id @default(uuid())
+  clientId     String
+  dietitianId  String
+  rating       Int
+  comment      String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  client     ClientProfile    @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  dietitian  DietitianProfile @relation(fields: [dietitianId], references: [id], onDelete: Cascade)
+
+  @@index([dietitianId])
+}
+
+// ─────────────────────────────────────────────────────────────
+// 21. Article
+// ─────────────────────────────────────────────────────────────
+
+model Article {
+  id                String    @id @default(uuid())
+  title             String
+  slug              String    @unique
+  body              String
+  authorId          String
+  tags              String[]
+  sourceCitations   String[]
+  publishedAt       DateTime?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  author User @relation(fields: [authorId], references: [id])
+}
+
+// ─────────────────────────────────────────────────────────────
+// 22. Notification
+// ─────────────────────────────────────────────────────────────
+
+model Notification {
+  id         String   @id @default(uuid())
+  userId     String
+  type       String
+  payload    Json
+  isRead     Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}

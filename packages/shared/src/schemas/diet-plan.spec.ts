@@ -1,0 +1,116 @@
+import {
+  AddDietPlanMealInputSchema,
+  AddDietPlanMealItemInputSchema,
+  CreateDietPlanInputSchema,
+  DuplicateForNewCalorieTargetInputSchema,
+} from "./diet-plan";
+
+describe("CreateDietPlanInputSchema", () => {
+  const validInput = {
+    clientId: "123e4567-e89b-12d3-a456-426614174000",
+    title: "3 Aylık Kilo Verme Planı",
+    startDate: "2026-07-01",
+  };
+
+  it("geçerli girdiyi kabul eder", () => {
+    expect(CreateDietPlanInputSchema.safeParse(validInput).success).toBe(true);
+  });
+
+  it("geçersiz tarih formatını reddeder", () => {
+    const result = CreateDietPlanInputSchema.safeParse({ ...validInput, startDate: "01.07.2026" });
+    expect(result.success).toBe(false);
+  });
+
+  it("boş başlığı reddeder", () => {
+    const result = CreateDietPlanInputSchema.safeParse({ ...validInput, title: "" });
+    expect(result.success).toBe(false);
+  });
+
+  it("boş string targetCalories değerini (doldurulmamış form alanı) kabul eder", () => {
+    const result = CreateDietPlanInputSchema.safeParse({ ...validInput, targetCalories: "" });
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.targetCalories).toBeUndefined();
+    }
+  });
+});
+
+describe("AddDietPlanMealInputSchema", () => {
+  it("HH:MM formatındaki saati kabul eder", () => {
+    const result = AddDietPlanMealInputSchema.safeParse({
+      dietPlanDayId: "123e4567-e89b-12d3-a456-426614174000",
+      mealType: "BREAKFAST",
+      plannedTime: "08:30",
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("geçersiz saat formatını reddeder", () => {
+    const result = AddDietPlanMealInputSchema.safeParse({
+      dietPlanDayId: "123e4567-e89b-12d3-a456-426614174000",
+      mealType: "BREAKFAST",
+      plannedTime: "8:30am",
+    });
+    expect(result.success).toBe(false);
+  });
+});
+
+describe("AddDietPlanMealItemInputSchema", () => {
+  const dietPlanMealId = "123e4567-e89b-12d3-a456-426614174000";
+  const foodItemId = "223e4567-e89b-12d3-a456-426614174000";
+  const recipeId = "323e4567-e89b-12d3-a456-426614174000";
+
+  it("sadece foodItemId ile geçerlidir", () => {
+    const result = AddDietPlanMealItemInputSchema.safeParse({
+      dietPlanMealId,
+      foodItemId,
+      quantity: 100,
+      unit: "GRAM",
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("sadece recipeId ile geçerlidir", () => {
+    const result = AddDietPlanMealItemInputSchema.safeParse({
+      dietPlanMealId,
+      recipeId,
+      quantity: 1,
+      unit: "PORTION",
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("ikisi de verilmezse reddeder", () => {
+    const result = AddDietPlanMealItemInputSchema.safeParse({ dietPlanMealId, quantity: 100, unit: "GRAM" });
+    expect(result.success).toBe(false);
+  });
+
+  it("ikisi birden verilirse reddeder", () => {
+    const result = AddDietPlanMealItemInputSchema.safeParse({
+      dietPlanMealId,
+      foodItemId,
+      recipeId,
+      quantity: 100,
+      unit: "GRAM",
+    });
+    expect(result.success).toBe(false);
+  });
+});
+
+describe("DuplicateForNewCalorieTargetInputSchema", () => {
+  it("pozitif kalori hedefini kabul eder", () => {
+    const result = DuplicateForNewCalorieTargetInputSchema.safeParse({
+      dietPlanId: "123e4567-e89b-12d3-a456-426614174000",
+      newTargetCalories: 1800,
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("negatif kalori hedefini reddeder", () => {
+    const result = DuplicateForNewCalorieTargetInputSchema.safeParse({
+      dietPlanId: "123e4567-e89b-12d3-a456-426614174000",
+      newTargetCalories: -100,
+    });
+    expect(result.success).toBe(false);
+  });
+});
