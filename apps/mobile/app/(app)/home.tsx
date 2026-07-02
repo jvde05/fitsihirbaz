@@ -92,6 +92,9 @@ export default function HomeScreen() {
                 {formatDateTime(upcomingAppointment.scheduledAt)}
               </Text>
             )}
+            <Link href="/(app)/appointments" testID="view-appointments-link" style={styles.link}>
+              Randevularım →
+            </Link>
           </View>
 
           <Link href="/(app)/progress" testID="view-progress-link" style={styles.link}>
