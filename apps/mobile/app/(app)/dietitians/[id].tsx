@@ -1,11 +1,44 @@
-import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from "react-native";
+import { useState } from "react";
+import { ActivityIndicator, Linking, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import { useLocalSearchParams } from "expo-router";
 import { trpc } from "@/lib/trpc";
 
 export default function DietitianProfileScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
+  const utils = trpc.useUtils();
   const dietitianQuery = trpc.dietitians.getPublicProfile.useQuery({ id });
   const packagesQuery = trpc.packages.browse.useQuery({ dietitianId: id, limit: 50 });
+  const reviewsQuery = trpc.reviews.listForDietitian.useQuery({ dietitianId: id });
+  const ordersQuery = trpc.orders.listForClient.useQuery();
+  const canReview = (ordersQuery.data ?? []).some((order) => order.dietitianId === id && order.status === "PAID");
+
+  const [purchaseError, setPurchaseError] = useState<string | null>(null);
+  const createOrderMutation = trpc.orders.create.useMutation({ onError: (err) => setPurchaseError(err.message) });
+  const initiatePaymentMutation = trpc.payments.initiate.useMutation({ onError: (err) => setPurchaseError(err.message) });
+
+  async function handlePurchase(packageId: string) {
+    setPurchaseError(null);
+    try {
+      const order = await createOrderMutation.mutateAsync({ packageId });
+      const { checkoutUrl } = await initiatePaymentMutation.mutateAsync({ orderId: order.id });
+      await Linking.openURL(checkoutUrl);
+    } catch {
+      // Hata mesajı zaten onError ile state'e yazıldı.
+    }
+  }
+
+  const [rating, setRating] = useState(5);
+  const [comment, setComment] = useState("");
+  const [reviewError, setReviewError] = useState<string | null>(null);
+  const createReviewMutation = trpc.reviews.create.useMutation({
+    onSuccess: () => {
+      setReviewError(null);
+      setComment("");
+      utils.reviews.listForDietitian.invalidate({ dietitianId: id });
+      utils.dietitians.getPublicProfile.invalidate({ id });
+    },
+    onError: (err) => setReviewError(err.message),
+  });
 
   if (dietitianQuery.isLoading) {
     return (
@@ -24,6 +57,7 @@ export default function DietitianProfileScreen() {
   }
 
   const dietitian = dietitianQuery.data;
+  const isPurchasing = createOrderMutation.isLoading || initiatePaymentMutation.isLoading;
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
@@ -63,9 +97,60 @@ export default function DietitianProfileScreen() {
             </Text>
           </View>
           {pkg.description && <Text style={styles.packageDescription}>{pkg.description}</Text>}
-          <View style={styles.disabledButton}>
-            <Text style={styles.disabledButtonText}>Satın Al (Çok Yakında)</Text>
+          <Pressable
+            testID={`buy-package-${pkg.id}`}
+            style={styles.buyButton}
+            disabled={isPurchasing}
+            onPress={() => handlePurchase(pkg.id)}
+          >
+            <Text style={styles.buyButtonText}>{isPurchasing ? "Yönlendiriliyor..." : "Satın Al"}</Text>
+          </Pressable>
+        </View>
+      ))}
+      {purchaseError && <Text style={styles.errorText}>{purchaseError}</Text>}
+
+      <Text style={styles.sectionTitle}>Yorumlar</Text>
+
+      {canReview && (
+        <View style={styles.reviewForm}>
+          <Text style={styles.formLabel}>Puan</Text>
+          <View style={styles.ratingRow}>
+            {[1, 2, 3, 4, 5].map((value) => (
+              <Pressable key={value} testID={`rating-${value}`} onPress={() => setRating(value)}>
+                <Text style={styles.ratingStar}>{value <= rating ? "★" : "☆"}</Text>
+              </Pressable>
+            ))}
           </View>
+          <Text style={styles.formLabel}>Yorum (opsiyonel)</Text>
+          <TextInput
+            style={styles.commentInput}
+            value={comment}
+            onChangeText={setComment}
+            multiline
+            placeholder="Deneyiminizi paylaşın"
+          />
+          {reviewError && <Text style={styles.errorText}>{reviewError}</Text>}
+          <Pressable
+            testID="submit-review"
+            style={styles.buyButton}
+            disabled={createReviewMutation.isLoading}
+            onPress={() => createReviewMutation.mutate({ dietitianId: id, rating, comment: comment || undefined })}
+          >
+            <Text style={styles.buyButtonText}>
+              {createReviewMutation.isLoading ? "Gönderiliyor..." : "Yorumu Gönder"}
+            </Text>
+          </Pressable>
+        </View>
+      )}
+
+      {reviewsQuery.data?.length === 0 && <Text style={styles.emptyText}>Henüz yorum yapılmamış.</Text>}
+      {reviewsQuery.data?.map((review) => (
+        <View key={review.id} style={styles.reviewCard}>
+          <Text style={styles.reviewHeader}>
+            {"★".repeat(review.rating)}
+            {"☆".repeat(5 - review.rating)} {review.clientFirstName} {review.clientLastName}
+          </Text>
+          {review.comment && <Text style={styles.reviewComment}>{review.comment}</Text>}
         </View>
       ))}
     </ScrollView>
@@ -76,6 +161,7 @@ const styles = StyleSheet.create({
   container: { padding: 16, gap: 8 },
   center: { flex: 1, alignItems: "center", justifyContent: "center" },
   emptyText: { color: "#9ca3af", fontSize: 13 },
+  errorText: { color: "#dc2626", fontSize: 13 },
   name: { fontSize: 22, fontWeight: "600" },
   title: { fontSize: 14, color: "#6b7280" },
   rating: { fontSize: 13, color: "#374151" },
@@ -90,12 +176,20 @@ const styles = StyleSheet.create({
   packageMeta: { fontSize: 12, color: "#6b7280", marginTop: 2 },
   packagePrice: { fontSize: 16, fontWeight: "600" },
   packageDescription: { fontSize: 13, color: "#6b7280", marginTop: 8 },
-  disabledButton: {
+  buyButton: {
     marginTop: 10,
-    backgroundColor: "#e5e7eb",
+    backgroundColor: "#16a34a",
     borderRadius: 8,
     paddingVertical: 10,
     alignItems: "center",
   },
-  disabledButtonText: { color: "#9ca3af", fontWeight: "500", fontSize: 13 },
+  buyButtonText: { color: "#ffffff", fontWeight: "500", fontSize: 13 },
+  reviewForm: { borderWidth: 1, borderColor: "#e5e7eb", borderRadius: 8, padding: 14, marginBottom: 12, gap: 6 },
+  formLabel: { fontSize: 13, fontWeight: "500", color: "#374151" },
+  ratingRow: { flexDirection: "row", gap: 4 },
+  ratingStar: { fontSize: 22, color: "#f59e0b" },
+  commentInput: { borderWidth: 1, borderColor: "#d1d5db", borderRadius: 8, padding: 8, minHeight: 60, fontSize: 13 },
+  reviewCard: { borderWidth: 1, borderColor: "#e5e7eb", borderRadius: 8, padding: 12, marginBottom: 8 },
+  reviewHeader: { fontSize: 13, fontWeight: "500" },
+  reviewComment: { fontSize: 13, color: "#6b7280", marginTop: 4 },
 });
