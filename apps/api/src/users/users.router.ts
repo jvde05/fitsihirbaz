@@ -1,10 +1,12 @@
 import { TRPCError } from "@trpc/server";
+import { z } from "zod";
 import {
   AdminListUsersInputSchema,
   AdminListUsersResultSchema,
   AdminSetUserActiveInputSchema,
   AdminUserSummarySchema,
   PublicUserSchema,
+  RegisterPushTokenInputSchema,
   UpdateProfileInputSchema,
 } from "@fit-sihirbaz/shared";
 import { adminProcedure, protectedProcedure, router } from "../trpc/trpc";
@@ -19,6 +21,20 @@ export function createUsersRouter(service: UsersService) {
       .mutation(async ({ ctx, input }) => {
         try {
           return await service.updateProfile(ctx.user.id, input);
+        } catch (error) {
+          if (error instanceof UserNotFoundError) {
+            throw new TRPCError({ code: "NOT_FOUND", message: "Kullanıcı bulunamadı" });
+          }
+          throw error;
+        }
+      }),
+
+    registerPushToken: protectedProcedure
+      .input(RegisterPushTokenInputSchema)
+      .output(z.void())
+      .mutation(async ({ ctx, input }) => {
+        try {
+          await service.registerPushToken(ctx.user.id, input.token);
         } catch (error) {
           if (error instanceof UserNotFoundError) {
             throw new TRPCError({ code: "NOT_FOUND", message: "Kullanıcı bulunamadı" });

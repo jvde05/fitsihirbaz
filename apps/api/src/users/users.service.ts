@@ -27,6 +27,14 @@ export class UsersService {
     return toPublicUser(user);
   }
 
+  async registerPushToken(userId: string, token: string): Promise<void> {
+    const existing = await this.prisma.user.findUnique({ where: { id: userId } });
+    if (!existing) {
+      throw new UserNotFoundError();
+    }
+    await this.prisma.user.update({ where: { id: userId }, data: { expoPushToken: token } });
+  }
+
   async adminList(input: AdminListUsersInput): Promise<AdminListUsersResult> {
     const where: Prisma.UserWhereInput = {
       ...(input.role ? { role: input.role } : {}),
