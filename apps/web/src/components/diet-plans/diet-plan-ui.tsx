@@ -1,11 +1,6 @@
-import type { MealType, NutrientTotals } from "@fit-sihirbaz/shared";
+import { MEAL_TYPE_LABELS, type NutrientTotals } from "@fit-sihirbaz/shared";
 
-export const MEAL_TYPE_LABELS: Record<MealType, string> = {
-  BREAKFAST: "Kahvaltı",
-  LUNCH: "Öğle Yemeği",
-  DINNER: "Akşam Yemeği",
-  SNACK: "Ara Öğün",
-};
+export { MEAL_TYPE_LABELS };
 
 export function TotalsBadge({ totals }: { totals: NutrientTotals }) {
   return (
