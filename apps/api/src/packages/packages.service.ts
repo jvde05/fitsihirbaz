@@ -5,6 +5,7 @@ import type {
   BrowsePackagesResult,
   CreatePackageInput,
   Package,
+  PackageWithDietitian,
   UpdatePackageInput,
 } from "@fit-sihirbaz/shared";
 import { PrismaService } from "../prisma/prisma.service";
@@ -62,6 +63,17 @@ export class PackagesService {
       orderBy: { createdAt: "desc" },
     });
     return packages.map(toPackage);
+  }
+
+  async getById(id: string): Promise<PackageWithDietitian> {
+    const pkg = await this.prisma.package.findUnique({
+      where: { id },
+      include: { dietitian: { include: { user: true } } },
+    });
+    if (!pkg || !pkg.isActive) {
+      throw new PackageNotFoundError();
+    }
+    return toPackageWithDietitian(pkg);
   }
 
   async browse(input: BrowsePackagesInput): Promise<BrowsePackagesResult> {
