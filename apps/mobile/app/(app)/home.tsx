@@ -104,6 +104,10 @@ export default function HomeScreen() {
           <Link href="/(app)/messages" testID="view-messages-link" style={styles.link}>
             Mesajlarım →
           </Link>
+
+          <Link href="/(app)/profile" testID="view-profile-link" style={styles.link}>
+            Profilim →
+          </Link>
         </>
       )}
 

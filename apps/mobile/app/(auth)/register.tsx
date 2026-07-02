@@ -20,7 +20,7 @@ export default function RegisterScreen() {
     formState: { errors, isSubmitting },
   } = useForm<RegisterInput>({
     resolver: zodResolver(RegisterInputSchema),
-    defaultValues: { role: "CLIENT" },
+    defaultValues: { role: "CLIENT", firstName: "", lastName: "", email: "", password: "", phone: "" },
   });
 
   async function onSubmit(values: RegisterInput) {

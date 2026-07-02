@@ -35,7 +35,10 @@ export default function ProgressScreen() {
     handleSubmit,
     reset,
     formState: { errors, isSubmitting },
-  } = useForm<AddProgressLogInput>({ resolver: zodResolver(AddProgressLogInputSchema) });
+  } = useForm<AddProgressLogInput>({
+    resolver: zodResolver(AddProgressLogInputSchema),
+    defaultValues: { logDate: "", weightKg: undefined, waistCm: undefined, hipCm: undefined },
+  });
 
   async function onSubmit(values: AddProgressLogInput) {
     setFormError(null);

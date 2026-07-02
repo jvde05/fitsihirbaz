@@ -18,7 +18,10 @@ export default function LoginScreen() {
     control,
     handleSubmit,
     formState: { errors, isSubmitting },
-  } = useForm<LoginInput>({ resolver: zodResolver(LoginInputSchema) });
+  } = useForm<LoginInput>({
+    resolver: zodResolver(LoginInputSchema),
+    defaultValues: { email: "", password: "" },
+  });
 
   async function onSubmit(values: LoginInput) {
     setServerError(null);
