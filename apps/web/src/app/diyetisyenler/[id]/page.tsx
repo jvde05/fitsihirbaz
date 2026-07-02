@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { trpc } from "@/lib/trpc";
@@ -10,7 +11,30 @@ export default function DiyetisyenProfilPage() {
   const { status, user } = useAuthStore();
   const dietitianQuery = trpc.dietitians.getPublicProfile.useQuery({ id: params.id });
   const packagesQuery = trpc.packages.browse.useQuery({ dietitianId: params.id, limit: 50 });
+  const reviewsQuery = trpc.reviews.listForDietitian.useQuery({ dietitianId: params.id });
   const isClient = status === "authenticated" && user?.role === "CLIENT";
+  const ordersQuery = trpc.orders.listForClient.useQuery(undefined, { enabled: isClient });
+  const canReview = isClient && (ordersQuery.data ?? []).some((order) => order.dietitianId === params.id && order.status === "PAID");
+
+  const utils = trpc.useUtils();
+  const [rating, setRating] = useState(5);
+  const [comment, setComment] = useState("");
+  const [reviewError, setReviewError] = useState<string | null>(null);
+  const createReviewMutation = trpc.reviews.create.useMutation({
+    onSuccess: () => {
+      setReviewError(null);
+      setComment("");
+      utils.reviews.listForDietitian.invalidate({ dietitianId: params.id });
+      utils.dietitians.getPublicProfile.invalidate({ id: params.id });
+    },
+    onError: (err) => setReviewError(err.message),
+  });
+
+  function handleReviewSubmit(event: React.FormEvent) {
+    event.preventDefault();
+    setReviewError(null);
+    createReviewMutation.mutate({ dietitianId: params.id, rating, comment: comment || undefined });
+  }
 
   if (dietitianQuery.isLoading) {
     return <p className="text-gray-500">Yükleniyor...</p>;
@@ -82,6 +106,68 @@ export default function DiyetisyenProfilPage() {
           </div>
         ))}
       </div>
+
+      <h2 className="mb-3 mt-8 text-lg font-semibold text-gray-900">Yorumlar</h2>
+
+      {canReview && (
+        <form onSubmit={handleReviewSubmit} className="mb-6 flex flex-col gap-3 rounded-md border border-gray-200 p-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700" htmlFor="rating">
+              Puan
+            </label>
+            <select
+              id="rating"
+              value={rating}
+              onChange={(event) => setRating(Number(event.target.value))}
+              className="mt-1 rounded-md border border-gray-300 px-2 py-1.5"
+            >
+              {[5, 4, 3, 2, 1].map((value) => (
+                <option key={value} value={value}>
+                  {value} yıldız
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700" htmlFor="comment">
+              Yorum (opsiyonel)
+            </label>
+            <textarea
+              id="comment"
+              rows={3}
+              value={comment}
+              onChange={(event) => setComment(event.target.value)}
+              className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2"
+            />
+          </div>
+          {reviewError && <p className="text-sm text-red-600">{reviewError}</p>}
+          <button
+            type="submit"
+            disabled={createReviewMutation.isLoading}
+            className="self-start rounded-md bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-700 disabled:opacity-60"
+          >
+            {createReviewMutation.isLoading ? "Gönderiliyor..." : "Yorumu Gönder"}
+          </button>
+        </form>
+      )}
+
+      {reviewsQuery.data && reviewsQuery.data.length === 0 && (
+        <p className="text-gray-500">Henüz yorum yapılmamış.</p>
+      )}
+      <ul className="space-y-3">
+        {reviewsQuery.data?.map((review) => (
+          <li key={review.id} className="rounded-md border border-gray-200 p-4">
+            <p className="text-sm font-medium text-gray-900">
+              {"★".repeat(review.rating)}
+              {"☆".repeat(5 - review.rating)}{" "}
+              <span className="font-normal text-gray-500">
+                {review.clientFirstName} {review.clientLastName}
+              </span>
+            </p>
+            {review.comment && <p className="mt-1 text-sm text-gray-600">{review.comment}</p>}
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }
