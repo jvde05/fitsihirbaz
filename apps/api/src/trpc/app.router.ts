@@ -16,6 +16,8 @@ import { createPackagesRouter } from "../packages/packages.router";
 import type { PackagesService } from "../packages/packages.service";
 import { createOrdersRouter } from "../orders/orders.router";
 import type { OrdersService } from "../orders/orders.service";
+import { createPaymentsRouter } from "../payments/payments.router";
+import type { PaymentsService } from "../payments/payments.service";
 import { createProgressRouter } from "../progress/progress.router";
 import type { ProgressService } from "../progress/progress.service";
 import { createAppointmentsRouter } from "../appointments/appointments.router";
@@ -38,6 +40,7 @@ interface AppRouterDeps {
   dietPlansService: DietPlansService;
   packagesService: PackagesService;
   ordersService: OrdersService;
+  paymentsService: PaymentsService;
   progressService: ProgressService;
   appointmentsService: AppointmentsService;
   messagesService: MessagesService;
@@ -56,6 +59,7 @@ export function createAppRouter(deps: AppRouterDeps) {
     dietPlans: createDietPlansRouter(deps.dietPlansService),
     packages: createPackagesRouter(deps.packagesService),
     orders: createOrdersRouter(deps.ordersService),
+    payments: createPaymentsRouter(deps.paymentsService),
     progress: createProgressRouter(deps.progressService),
     appointments: createAppointmentsRouter(deps.appointmentsService),
     messages: createMessagesRouter(deps.messagesService),
