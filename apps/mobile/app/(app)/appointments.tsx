@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { FlatList, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { trpc } from "@/lib/trpc";
-import type { Appointment } from "@fit-sihirbaz/shared";
+import { useAuthStore } from "@/lib/auth-store";
+import type { Appointment, AppointmentStatus } from "@fit-sihirbaz/shared";
 
 const STATUS_LABELS: Record<string, string> = {
   SCHEDULED: "Planlandı",
@@ -14,7 +15,52 @@ function formatDateTime(iso: string): string {
   return new Date(iso).toLocaleString("tr-TR");
 }
 
-export default function AppointmentsScreen() {
+function DietitianAppointmentsScreen() {
+  const utils = trpc.useUtils();
+  const appointmentsQuery = trpc.appointments.listForDietitian.useQuery();
+
+  const updateStatusMutation = trpc.appointments.updateStatus.useMutation({
+    onSuccess: () => utils.appointments.listForDietitian.invalidate(),
+  });
+
+  return (
+    <FlatList<Appointment>
+      data={appointmentsQuery.data ?? []}
+      keyExtractor={(item) => item.id}
+      contentContainerStyle={styles.listContent}
+      ListEmptyComponent={<Text style={styles.emptyText}>Henüz randevunuz yok.</Text>}
+      ListHeaderComponent={<Text style={styles.title}>Randevu Takvimi</Text>}
+      renderItem={({ item }) => (
+        <View style={styles.row}>
+          <View style={styles.rowInfo}>
+            <Text style={styles.rowName}>
+              {item.counterpartFirstName} {item.counterpartLastName}
+            </Text>
+            <Text style={styles.rowMeta}>
+              {formatDateTime(item.scheduledAt)} · {STATUS_LABELS[item.status]}
+            </Text>
+          </View>
+          {item.status === "SCHEDULED" && (
+            <View style={styles.statusButtonRow}>
+              {(["COMPLETED", "CANCELLED", "NO_SHOW"] as AppointmentStatus[]).map((status) => (
+                <Pressable
+                  key={status}
+                  testID={`set-status-${status}-${item.id}`}
+                  style={styles.statusButton}
+                  onPress={() => updateStatusMutation.mutate({ id: item.id, status })}
+                >
+                  <Text style={styles.statusButtonText}>{STATUS_LABELS[status]}</Text>
+                </Pressable>
+              ))}
+            </View>
+          )}
+        </View>
+      )}
+    />
+  );
+}
+
+function ClientAppointmentsScreen() {
   const utils = trpc.useUtils();
   const appointmentsQuery = trpc.appointments.listForClient.useQuery();
   const dietitiansQuery = trpc.clients.getMyDietitians.useQuery();
@@ -130,10 +176,15 @@ export default function AppointmentsScreen() {
   );
 }
 
+export default function AppointmentsScreen() {
+  const isDietitian = useAuthStore((s) => s.user?.role) === "DIETITIAN";
+  return isDietitian ? <DietitianAppointmentsScreen /> : <ClientAppointmentsScreen />;
+}
+
 const styles = StyleSheet.create({
   listContent: { padding: 16 },
   header: { gap: 8, marginBottom: 8 },
-  title: { fontSize: 22, fontWeight: "600" },
+  title: { fontSize: 22, fontWeight: "600", marginBottom: 8 },
   form: { borderWidth: 1, borderColor: "#e5e7eb", borderRadius: 8, padding: 12, gap: 4 },
   label: { fontSize: 13, fontWeight: "500", marginTop: 8 },
   dietitianList: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 4 },
@@ -179,4 +230,7 @@ const styles = StyleSheet.create({
   rowMeta: { fontSize: 12, color: "#6b7280", marginTop: 2 },
   cancelButton: { borderWidth: 1, borderColor: "#d1d5db", borderRadius: 8, paddingHorizontal: 10, paddingVertical: 6 },
   cancelButtonText: { fontSize: 12, color: "#374151", fontWeight: "500" },
+  statusButtonRow: { flexDirection: "row", gap: 6 },
+  statusButton: { borderWidth: 1, borderColor: "#d1d5db", borderRadius: 8, paddingHorizontal: 8, paddingVertical: 6 },
+  statusButtonText: { fontSize: 11, color: "#374151", fontWeight: "500" },
 });

@@ -29,11 +29,27 @@ export default function HomeScreen() {
   const clearSession = useAuthStore((s) => s.clearSession);
   const logoutMutation = trpc.auth.logout.useMutation();
   const isClient = user?.role === "CLIENT";
+  const isDietitian = user?.role === "DIETITIAN";
 
   const plansQuery = trpc.dietPlans.list.useQuery({}, { enabled: isClient });
   const appointmentsQuery = trpc.appointments.listForClient.useQuery(undefined, { enabled: isClient });
+  const clientsQuery = trpc.dietitians.getMyClients.useQuery(undefined, { enabled: isDietitian });
+  const dietitianAppointmentsQuery = trpc.appointments.listForDietitian.useQuery(undefined, {
+    enabled: isDietitian,
+  });
   const notificationsQuery = trpc.notifications.list.useQuery();
   const unreadNotificationCount = notificationsQuery.data?.filter((n) => !n.isRead).length ?? 0;
+
+  const todayAppointments = (dietitianAppointmentsQuery.data ?? []).filter((appointment) => {
+    if (appointment.status !== "SCHEDULED") return false;
+    const scheduledDate = new Date(appointment.scheduledAt);
+    const now = new Date();
+    return (
+      scheduledDate.getFullYear() === now.getFullYear() &&
+      scheduledDate.getMonth() === now.getMonth() &&
+      scheduledDate.getDate() === now.getDate()
+    );
+  });
 
   async function handleLogout() {
     try {
@@ -61,8 +77,54 @@ export default function HomeScreen() {
         Bildirimler{unreadNotificationCount > 0 ? ` (${unreadNotificationCount})` : ""} →
       </Link>
 
-      {!isClient && (
-        <Text style={styles.notice}>Bu ekran şu an danışan hesapları için hazırlanmıştır.</Text>
+      {!isClient && !isDietitian && (
+        <Text style={styles.notice}>Bu ekran şu an danışan ve diyetisyen hesapları için hazırlanmıştır.</Text>
+      )}
+
+      {isDietitian && (
+        <>
+          <View style={styles.card}>
+            <Text style={styles.cardTitle}>Danışan Sayısı</Text>
+            {clientsQuery.isLoading && <ActivityIndicator />}
+            {!clientsQuery.isLoading && (
+              <Text style={styles.planName} testID="client-count">
+                {clientsQuery.data?.length ?? 0}
+              </Text>
+            )}
+            <Link href="/(app)/clients" testID="view-clients-link" style={styles.link}>
+              Danışanlarım →
+            </Link>
+          </View>
+
+          <View style={styles.card}>
+            <Text style={styles.cardTitle}>Bugünkü Randevular</Text>
+            {dietitianAppointmentsQuery.isLoading && <ActivityIndicator />}
+            {!dietitianAppointmentsQuery.isLoading && todayAppointments.length === 0 && (
+              <Text style={styles.emptyText}>Bugün için randevunuz yok.</Text>
+            )}
+            {todayAppointments.map((appointment) => (
+              <Text key={appointment.id} style={styles.planMeta}>
+                {appointment.counterpartFirstName} {appointment.counterpartLastName} —{" "}
+                {formatDateTime(appointment.scheduledAt)}
+              </Text>
+            ))}
+            <Link href="/(app)/appointments" testID="view-appointments-link" style={styles.link}>
+              Randevu Takvimi →
+            </Link>
+          </View>
+
+          <Link href="/(app)/orders" testID="view-orders-link" style={styles.link}>
+            Siparişlerim / Kazancım →
+          </Link>
+
+          <Link href="/(app)/messages" testID="view-messages-link" style={styles.link}>
+            Mesajlarım →
+          </Link>
+
+          <Link href="/(app)/profile" testID="view-profile-link" style={styles.link}>
+            Profilim →
+          </Link>
+        </>
       )}
 
       {isClient && (

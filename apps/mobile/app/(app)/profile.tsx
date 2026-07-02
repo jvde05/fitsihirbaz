@@ -7,14 +7,17 @@ import {
   GenderSchema,
   GoalSchema,
   UpdateClientProfileInputSchema,
+  UpdateDietitianProfileInputSchema,
   UpdateProfileInputSchema,
   type ActivityLevel,
   type Gender,
   type Goal,
   type UpdateClientProfileInput,
+  type UpdateDietitianProfileInput,
   type UpdateProfileInput,
 } from "@fit-sihirbaz/shared";
 import { trpc } from "@/lib/trpc";
+import { useAuthStore } from "@/lib/auth-store";
 
 const GENDER_LABELS: Record<Gender, string> = { MALE: "Erkek", FEMALE: "Kadın", OTHER: "Diğer" };
 const GOAL_LABELS: Record<Goal, string> = {
@@ -61,21 +64,107 @@ function ChipSelect<T extends string>({
   );
 }
 
-export default function ProfileScreen() {
+function PersonalInfoCard({
+  firstName,
+  lastName,
+  phone,
+}: {
+  firstName: string;
+  lastName: string;
+  phone: string | null;
+}) {
   const utils = trpc.useUtils();
-  const profileQuery = trpc.clients.getProfile.useQuery();
-
+  const [saved, setSaved] = useState(false);
   const updateUserMutation = trpc.users.updateProfile.useMutation({
-    onSuccess: () => utils.clients.getProfile.invalidate(),
-  });
-  const updateClientMutation = trpc.clients.updateProfile.useMutation({
-    onSuccess: () => utils.clients.getProfile.invalidate(),
+    onSuccess: () => {
+      utils.clients.getProfile.invalidate();
+      utils.dietitians.getProfile.invalidate();
+    },
   });
 
   const userForm = useForm<UpdateProfileInput>({
     resolver: zodResolver(UpdateProfileInputSchema),
-    defaultValues: { firstName: "", lastName: "", phone: "" },
+    defaultValues: { firstName, lastName, phone: phone ?? "" },
   });
+
+  useEffect(() => {
+    userForm.reset({ firstName, lastName, phone: phone ?? "" });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [firstName, lastName, phone]);
+
+  return (
+    <View style={styles.card}>
+      <Text style={styles.cardTitle}>Kişisel Bilgiler</Text>
+
+      <Text style={styles.label}>Ad</Text>
+      <Controller
+        control={userForm.control}
+        name="firstName"
+        render={({ field }) => (
+          <TextInput
+            testID="profile-firstName"
+            style={styles.input}
+            value={field.value}
+            onChangeText={field.onChange}
+            onBlur={field.onBlur}
+          />
+        )}
+      />
+
+      <Text style={styles.label}>Soyad</Text>
+      <Controller
+        control={userForm.control}
+        name="lastName"
+        render={({ field }) => (
+          <TextInput
+            testID="profile-lastName"
+            style={styles.input}
+            value={field.value}
+            onChangeText={field.onChange}
+            onBlur={field.onBlur}
+          />
+        )}
+      />
+
+      <Text style={styles.label}>Telefon</Text>
+      <Controller
+        control={userForm.control}
+        name="phone"
+        render={({ field }) => (
+          <TextInput
+            testID="profile-phone"
+            style={styles.input}
+            keyboardType="phone-pad"
+            value={field.value}
+            onChangeText={field.onChange}
+            onBlur={field.onBlur}
+          />
+        )}
+      />
+
+      {saved && <Text style={styles.savedText}>Kaydedildi.</Text>}
+      <Pressable
+        testID="save-personal-info"
+        style={styles.button}
+        onPress={userForm.handleSubmit((values) => {
+          updateUserMutation.mutate(values);
+          setSaved(true);
+        })}
+      >
+        <Text style={styles.buttonText}>Kaydet</Text>
+      </Pressable>
+    </View>
+  );
+}
+
+function ClientProfileScreen() {
+  const utils = trpc.useUtils();
+  const profileQuery = trpc.clients.getProfile.useQuery();
+
+  const updateClientMutation = trpc.clients.updateProfile.useMutation({
+    onSuccess: () => utils.clients.getProfile.invalidate(),
+  });
+
   const clientForm = useForm<UpdateClientProfileInput>({
     resolver: zodResolver(UpdateClientProfileInputSchema),
     defaultValues: { birthDate: "", medicalNotes: "" },
@@ -83,11 +172,6 @@ export default function ProfileScreen() {
 
   useEffect(() => {
     if (!profileQuery.data) return;
-    userForm.reset({
-      firstName: profileQuery.data.firstName,
-      lastName: profileQuery.data.lastName,
-      phone: profileQuery.data.phone ?? "",
-    });
     clientForm.reset({
       birthDate: profileQuery.data.birthDate ?? "",
       gender: profileQuery.data.gender ?? undefined,
@@ -99,10 +183,9 @@ export default function ProfileScreen() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [profileQuery.data]);
 
-  const [savedUser, setSavedUser] = useState(false);
   const [savedClient, setSavedClient] = useState(false);
 
-  if (profileQuery.isLoading) {
+  if (profileQuery.isLoading || !profileQuery.data) {
     return (
       <View style={styles.center}>
         <Text style={styles.emptyText}>Yükleniyor...</Text>
@@ -114,67 +197,11 @@ export default function ProfileScreen() {
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.title}>Profilim</Text>
 
-      <View style={styles.card}>
-        <Text style={styles.cardTitle}>Kişisel Bilgiler</Text>
-
-        <Text style={styles.label}>Ad</Text>
-        <Controller
-          control={userForm.control}
-          name="firstName"
-          render={({ field }) => (
-            <TextInput
-              testID="profile-firstName"
-              style={styles.input}
-              value={field.value}
-              onChangeText={field.onChange}
-              onBlur={field.onBlur}
-            />
-          )}
-        />
-
-        <Text style={styles.label}>Soyad</Text>
-        <Controller
-          control={userForm.control}
-          name="lastName"
-          render={({ field }) => (
-            <TextInput
-              testID="profile-lastName"
-              style={styles.input}
-              value={field.value}
-              onChangeText={field.onChange}
-              onBlur={field.onBlur}
-            />
-          )}
-        />
-
-        <Text style={styles.label}>Telefon</Text>
-        <Controller
-          control={userForm.control}
-          name="phone"
-          render={({ field }) => (
-            <TextInput
-              testID="profile-phone"
-              style={styles.input}
-              keyboardType="phone-pad"
-              value={field.value}
-              onChangeText={field.onChange}
-              onBlur={field.onBlur}
-            />
-          )}
-        />
-
-        {savedUser && <Text style={styles.savedText}>Kaydedildi.</Text>}
-        <Pressable
-          testID="save-personal-info"
-          style={styles.button}
-          onPress={userForm.handleSubmit((values) => {
-            updateUserMutation.mutate(values);
-            setSavedUser(true);
-          })}
-        >
-          <Text style={styles.buttonText}>Kaydet</Text>
-        </Pressable>
-      </View>
+      <PersonalInfoCard
+        firstName={profileQuery.data.firstName}
+        lastName={profileQuery.data.lastName}
+        phone={profileQuery.data.phone}
+      />
 
       <View style={styles.card}>
         <Text style={styles.cardTitle}>Sağlık Bilgileri</Text>
@@ -287,6 +314,154 @@ export default function ProfileScreen() {
       </View>
     </ScrollView>
   );
+}
+
+function DietitianProfileScreen() {
+  const utils = trpc.useUtils();
+  const profileQuery = trpc.dietitians.getProfile.useQuery();
+  const [specialtiesInput, setSpecialtiesInput] = useState("");
+
+  const updateDietitianMutation = trpc.dietitians.updateProfile.useMutation({
+    onSuccess: () => utils.dietitians.getProfile.invalidate(),
+  });
+
+  const dietitianForm = useForm<UpdateDietitianProfileInput>({
+    resolver: zodResolver(UpdateDietitianProfileInputSchema),
+  });
+
+  useEffect(() => {
+    if (!profileQuery.data) return;
+    dietitianForm.reset({
+      title: profileQuery.data.title ?? "",
+      bio: profileQuery.data.bio ?? "",
+      yearsOfExperience: profileQuery.data.yearsOfExperience ?? undefined,
+      licenseNumber: profileQuery.data.licenseNumber ?? "",
+    });
+    setSpecialtiesInput(profileQuery.data.specialties.join(", "));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [profileQuery.data]);
+
+  const [savedDietitian, setSavedDietitian] = useState(false);
+
+  function handleDietitianSubmit(values: UpdateDietitianProfileInput) {
+    const specialties = specialtiesInput
+      .split(",")
+      .map((s) => s.trim())
+      .filter(Boolean);
+    updateDietitianMutation.mutate({ ...values, specialties });
+    setSavedDietitian(true);
+  }
+
+  if (profileQuery.isLoading || !profileQuery.data) {
+    return (
+      <View style={styles.center}>
+        <Text style={styles.emptyText}>Yükleniyor...</Text>
+      </View>
+    );
+  }
+
+  return (
+    <ScrollView contentContainerStyle={styles.container}>
+      <Text style={styles.title}>Profilim</Text>
+
+      <PersonalInfoCard
+        firstName={profileQuery.data.firstName}
+        lastName={profileQuery.data.lastName}
+        phone={profileQuery.data.phone}
+      />
+
+      <View style={styles.card}>
+        <Text style={styles.cardTitle}>Uzmanlık Bilgileri</Text>
+
+        <Text style={styles.label}>Unvan</Text>
+        <Controller
+          control={dietitianForm.control}
+          name="title"
+          render={({ field }) => (
+            <TextInput
+              testID="profile-title"
+              style={styles.input}
+              placeholder="örn. Uzm. Dyt."
+              value={field.value}
+              onChangeText={field.onChange}
+              onBlur={field.onBlur}
+            />
+          )}
+        />
+
+        <Text style={styles.label}>Biyografi</Text>
+        <Controller
+          control={dietitianForm.control}
+          name="bio"
+          render={({ field }) => (
+            <TextInput
+              testID="profile-bio"
+              style={[styles.input, styles.textArea]}
+              multiline
+              numberOfLines={4}
+              value={field.value}
+              onChangeText={field.onChange}
+              onBlur={field.onBlur}
+            />
+          )}
+        />
+
+        <Text style={styles.label}>Uzmanlık Alanları (virgülle ayırın)</Text>
+        <TextInput
+          testID="profile-specialties"
+          style={styles.input}
+          placeholder="örn. Spor Beslenmesi, Diyabet"
+          value={specialtiesInput}
+          onChangeText={setSpecialtiesInput}
+        />
+
+        <Text style={styles.label}>Deneyim (yıl)</Text>
+        <Controller
+          control={dietitianForm.control}
+          name="yearsOfExperience"
+          render={({ field }) => (
+            <TextInput
+              testID="profile-yearsOfExperience"
+              style={styles.input}
+              keyboardType="number-pad"
+              value={field.value === undefined ? "" : String(field.value)}
+              onChangeText={field.onChange}
+              onBlur={field.onBlur}
+            />
+          )}
+        />
+
+        <Text style={styles.label}>Lisans No</Text>
+        <Controller
+          control={dietitianForm.control}
+          name="licenseNumber"
+          render={({ field }) => (
+            <TextInput
+              testID="profile-licenseNumber"
+              style={styles.input}
+              value={field.value}
+              onChangeText={field.onChange}
+              onBlur={field.onBlur}
+            />
+          )}
+        />
+
+        {savedDietitian && <Text style={styles.savedText}>Kaydedildi.</Text>}
+        <Pressable
+          testID="save-dietitian-info"
+          style={styles.button}
+          onPress={dietitianForm.handleSubmit(handleDietitianSubmit)}
+        >
+          <Text style={styles.buttonText}>Kaydet</Text>
+        </Pressable>
+      </View>
+    </ScrollView>
+  );
+}
+
+export default function ProfileScreen() {
+  const isDietitian = useAuthStore((s) => s.user?.role) === "DIETITIAN";
+  return isDietitian ? <DietitianProfileScreen /> : <ClientProfileScreen />;
 }
 
 const styles = StyleSheet.create({
