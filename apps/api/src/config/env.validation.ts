@@ -8,6 +8,10 @@ const EnvSchema = z.object({
   JWT_ACCESS_EXPIRES_IN: z.string().default("15m"),
   JWT_REFRESH_EXPIRES_IN: z.string().default("30d"),
   API_PORT: z.coerce.number().int().positive().default(4000),
+  // Virgülle ayrılmış izinli web origin listesi (CORS). credentials:true ile birlikte
+  // origin:true kullanmak herhangi bir siteden kimlik bilgili istek yapılmasına izin
+  // verdiği için (gerçek bir CSRF riski) burada açıkça whitelist tutulur.
+  WEB_ORIGIN: z.string().default("http://localhost:3000,http://localhost:8081"),
 });
 
 export type Env = z.infer<typeof EnvSchema>;

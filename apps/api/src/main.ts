@@ -27,8 +27,12 @@ async function bootstrap() {
   const config = app.get(ConfigService<Env, true>);
 
   app.use(cookieParser());
-  // TODO: Faz 1'de NEXT_PUBLIC_API_URL'nin karşılığı olan web origin'i env'den okuyup whitelist'e alınmalı.
-  app.enableCors({ origin: true, credentials: true });
+  const allowedOrigins = config
+    .get("WEB_ORIGIN", { infer: true })
+    .split(",")
+    .map((origin) => origin.trim())
+    .filter(Boolean);
+  app.enableCors({ origin: allowedOrigins, credentials: true });
 
   const appRouter = createAppRouter({
     authService: app.get(AuthService),
