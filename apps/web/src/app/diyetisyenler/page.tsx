@@ -4,9 +4,12 @@ import { useState } from "react";
 import Link from "next/link";
 import { trpc } from "@/lib/trpc";
 
+const PAGE_SIZE = 20;
+
 export default function DiyetisyenlerPage() {
   const [query, setQuery] = useState("");
-  const searchQuery = trpc.dietitians.search.useQuery({ query: query || undefined, limit: 20 });
+  const [limit, setLimit] = useState(PAGE_SIZE);
+  const searchQuery = trpc.dietitians.search.useQuery({ query: query || undefined, limit });
 
   return (
     <div>
@@ -16,7 +19,10 @@ export default function DiyetisyenlerPage() {
         type="text"
         placeholder="İsim veya uzmanlık ara..."
         value={query}
-        onChange={(event) => setQuery(event.target.value)}
+        onChange={(event) => {
+          setQuery(event.target.value);
+          setLimit(PAGE_SIZE);
+        }}
         className="mb-6 w-full max-w-md rounded-md border border-gray-300 px-3 py-2"
       />
 
@@ -50,6 +56,16 @@ export default function DiyetisyenlerPage() {
           </Link>
         ))}
       </div>
+
+      {searchQuery.data && searchQuery.data.items.length < searchQuery.data.total && (
+        <button
+          type="button"
+          onClick={() => setLimit((current) => current + PAGE_SIZE)}
+          className="mt-6 rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100"
+        >
+          Daha Fazla Yükle
+        </button>
+      )}
     </div>
   );
 }
