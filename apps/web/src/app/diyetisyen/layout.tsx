@@ -8,6 +8,9 @@ export default function DiyetisyenLayout({ children }: { children: React.ReactNo
     <RequireRole role="DIETITIAN">
       <div>
         <nav className="mb-6 flex gap-4 border-b border-gray-200 pb-3 text-sm">
+          <Link href="/diyetisyen/panel" className="font-medium text-brand-700 hover:underline">
+            Panelim
+          </Link>
           <Link href="/diyetisyen/danisanlar" className="font-medium text-brand-700 hover:underline">
             Danışanlarım
           </Link>
