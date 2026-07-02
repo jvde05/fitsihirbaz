@@ -12,6 +12,7 @@ const EnvSchema = z.object({
   // origin:true kullanmak herhangi bir siteden kimlik bilgili istek yapılmasına izin
   // verdiği için (gerçek bir CSRF riski) burada açıkça whitelist tutulur.
   WEB_ORIGIN: z.string().default("http://localhost:3000,http://localhost:8081"),
+  REDIS_URL: z.string().default("redis://localhost:6379"),
 });
 
 export type Env = z.infer<typeof EnvSchema>;

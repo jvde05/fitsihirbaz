@@ -14,6 +14,8 @@ function describeNotification(notification: Notification): string {
       return "Yeni bir randevu talebi aldınız.";
     case "APPOINTMENT_STATUS_CHANGED":
       return `Randevu durumu güncellendi: ${notification.payload.status ?? ""}`;
+    case "APPOINTMENT_REMINDER":
+      return "Randevunuza 1 saat kaldı.";
     default:
       return notification.type;
   }

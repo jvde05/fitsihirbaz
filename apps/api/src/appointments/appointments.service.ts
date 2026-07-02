@@ -2,6 +2,7 @@ import { Injectable } from "@nestjs/common";
 import type { Appointment, CreateAppointmentInput, UpdateAppointmentStatusInput } from "@fit-sihirbaz/shared";
 import { PrismaService } from "../prisma/prisma.service";
 import { NotificationsService } from "../notifications/notifications.service";
+import { AppointmentReminderQueue } from "../jobs/appointment-reminder.queue";
 import {
   AppointmentAccessDeniedError,
   AppointmentNotFoundError,
@@ -21,6 +22,7 @@ export class AppointmentsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly notifications: NotificationsService,
+    private readonly reminderQueue: AppointmentReminderQueue,
   ) {}
 
   async create(clientUserId: string, input: CreateAppointmentInput): Promise<Appointment> {
@@ -52,6 +54,7 @@ export class AppointmentsService {
       appointmentId: appointment.id,
       scheduledAt: appointment.scheduledAt.toISOString(),
     });
+    await this.reminderQueue.scheduleReminder(appointment.id, appointment.scheduledAt);
 
     return toAppointment(appointment, "CLIENT");
   }
@@ -76,6 +79,9 @@ export class AppointmentsService {
       appointmentId: appointment.id,
       status: appointment.status,
     });
+    if (appointment.status !== "SCHEDULED") {
+      await this.reminderQueue.cancelReminder(appointment.id);
+    }
 
     return toAppointment(appointment, "DIETITIAN");
   }
@@ -103,6 +109,7 @@ export class AppointmentsService {
       data: { status: "CANCELLED" },
       include: APPOINTMENT_INCLUDE,
     });
+    await this.reminderQueue.cancelReminder(appointment.id);
     return toAppointment(appointment, role);
   }
 

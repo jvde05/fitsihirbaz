@@ -15,6 +15,7 @@ import { AppointmentsModule } from "./appointments/appointments.module";
 import { MessagesModule } from "./messages/messages.module";
 import { ArticlesModule } from "./articles/articles.module";
 import { NotificationsModule } from "./notifications/notifications.module";
+import { JobsModule } from "./jobs/jobs.module";
 import { validateEnv } from "./config/env.validation";
 
 @Module({
@@ -26,6 +27,7 @@ import { validateEnv } from "./config/env.validation";
     }),
     PrismaModule,
     NotificationsModule,
+    JobsModule,
     AuthModule,
     UsersModule,
     FoodsModule,

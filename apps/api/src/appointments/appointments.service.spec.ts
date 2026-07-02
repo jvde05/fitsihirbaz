@@ -1,6 +1,7 @@
 import { AppointmentsService } from "./appointments.service";
 import { PrismaService } from "../prisma/prisma.service";
 import { NotificationsService } from "../notifications/notifications.service";
+import { AppointmentReminderQueue } from "../jobs/appointment-reminder.queue";
 import {
   AppointmentAccessDeniedError,
   AppointmentNotFoundError,
@@ -32,6 +33,7 @@ describe("AppointmentsService", () => {
     appointment: { create: jest.Mock; findUnique: jest.Mock; update: jest.Mock; findMany: jest.Mock };
   };
   let notifications: { create: jest.Mock };
+  let reminderQueue: { scheduleReminder: jest.Mock; cancelReminder: jest.Mock };
   let service: AppointmentsService;
 
   beforeEach(() => {
@@ -42,7 +44,12 @@ describe("AppointmentsService", () => {
       appointment: { create: jest.fn(), findUnique: jest.fn(), update: jest.fn(), findMany: jest.fn() },
     };
     notifications = { create: jest.fn() };
-    service = new AppointmentsService(prisma as unknown as PrismaService, notifications as unknown as NotificationsService);
+    reminderQueue = { scheduleReminder: jest.fn(), cancelReminder: jest.fn() };
+    service = new AppointmentsService(
+      prisma as unknown as PrismaService,
+      notifications as unknown as NotificationsService,
+      reminderQueue as unknown as AppointmentReminderQueue,
+    );
   });
 
   describe("create", () => {
@@ -71,6 +78,7 @@ describe("AppointmentsService", () => {
         "APPOINTMENT_REQUESTED",
         expect.objectContaining({ appointmentId: "appt-1" }),
       );
+      expect(reminderQueue.scheduleReminder).toHaveBeenCalledWith("appt-1", expect.any(Date));
     });
   });
 
@@ -106,6 +114,7 @@ describe("AppointmentsService", () => {
         "APPOINTMENT_STATUS_CHANGED",
         expect.objectContaining({ appointmentId: "appt-1" }),
       );
+      expect(reminderQueue.cancelReminder).toHaveBeenCalledWith("appt-1");
     });
   });
 
@@ -126,6 +135,7 @@ describe("AppointmentsService", () => {
 
       const result = await service.cancel("client-user-1", "CLIENT", "appt-1");
       expect(result.status).toBe("CANCELLED");
+      expect(reminderQueue.cancelReminder).toHaveBeenCalledWith("appt-1");
     });
   });
 });
