@@ -100,6 +100,10 @@ export default function HomeScreen() {
           <Link href="/(app)/progress" testID="view-progress-link" style={styles.link}>
             İlerlememi Görüntüle →
           </Link>
+
+          <Link href="/(app)/messages" testID="view-messages-link" style={styles.link}>
+            Mesajlarım →
+          </Link>
         </>
       )}
 
