@@ -22,6 +22,8 @@ function describeNotification(notification: Notification): string {
       return "Diyetisyen profiliniz onaylandı! Artık pazaryerinde görünüyorsunuz.";
     case "DIETITIAN_REJECTED":
       return "Diyetisyen profiliniz onaylanmadı. Detaylar için bizimle iletişime geçin.";
+    case "NEW_REVIEW":
+      return `Yeni bir yorum aldınız: ${notification.payload.rating ?? ""} yıldız`;
     default:
       return notification.type;
   }

@@ -1,6 +1,7 @@
 import { Injectable } from "@nestjs/common";
 import type { CreateReviewInput, Review } from "@fit-sihirbaz/shared";
 import { PrismaService } from "../prisma/prisma.service";
+import { NotificationsService } from "../notifications/notifications.service";
 import { ClientProfileNotFoundError, NoPaidOrderError } from "./reviews.errors";
 import { toReview } from "./reviews.mapper";
 
@@ -8,7 +9,10 @@ const REVIEW_INCLUDE = { client: { include: { user: true } } } as const;
 
 @Injectable()
 export class ReviewsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly notifications: NotificationsService,
+  ) {}
 
   async create(clientUserId: string, input: CreateReviewInput): Promise<Review> {
     const clientProfile = await this.prisma.clientProfile.findUnique({ where: { userId: clientUserId } });
@@ -39,6 +43,7 @@ export class ReviewsService {
     });
 
     await this.recalculateAverageRating(input.dietitianId);
+    await this.notifyDietitian(input.dietitianId, review.rating);
 
     return toReview(review);
   }
@@ -50,6 +55,14 @@ export class ReviewsService {
       orderBy: { createdAt: "desc" },
     });
     return reviews.map(toReview);
+  }
+
+  private async notifyDietitian(dietitianId: string, rating: number): Promise<void> {
+    const dietitianProfile = await this.prisma.dietitianProfile.findUnique({ where: { id: dietitianId } });
+    if (!dietitianProfile) {
+      return;
+    }
+    await this.notifications.create(dietitianProfile.userId, "NEW_REVIEW", { rating });
   }
 
   private async recalculateAverageRating(dietitianId: string): Promise<void> {
