@@ -1,6 +1,6 @@
 import { createAuthRouter } from "../auth/auth.router";
 import type { AuthService } from "../auth/auth.service";
-import { createUsersRouter } from "../users/users.router";
+import { createAdminUsersRouter, createUsersRouter } from "../users/users.router";
 import type { UsersService } from "../users/users.service";
 import { createAdminFoodsRouter, createFoodsRouter } from "../foods/foods.router";
 import type { FoodsService } from "../foods/foods.service";
@@ -52,6 +52,7 @@ export function createAppRouter(deps: AppRouterDeps) {
     admin: router({
       foods: createAdminFoodsRouter(deps.foodsService),
       dietitians: createAdminDietitiansRouter(deps.dietitiansService),
+      users: createAdminUsersRouter(deps.usersService),
     }),
   });
 }

@@ -38,3 +38,36 @@ export const UpdateProfileInputSchema = z.object({
   avatarUrl: z.string().url().optional(),
 });
 export type UpdateProfileInput = z.infer<typeof UpdateProfileInputSchema>;
+
+// Admin: kullanıcı yönetimi.
+export const AdminUserSummarySchema = z.object({
+  id: z.string().uuid(),
+  email: z.string().email(),
+  role: RoleSchema,
+  firstName: z.string(),
+  lastName: z.string(),
+  isActive: z.boolean(),
+  isEmailVerified: z.boolean(),
+  createdAt: z.string(),
+});
+export type AdminUserSummary = z.infer<typeof AdminUserSummarySchema>;
+
+export const AdminListUsersInputSchema = z.object({
+  role: RoleSchema.optional(),
+  query: z.string().min(1).max(100).optional(),
+  limit: z.coerce.number().int().min(1).max(100).default(50),
+  offset: z.coerce.number().int().min(0).default(0),
+});
+export type AdminListUsersInput = z.infer<typeof AdminListUsersInputSchema>;
+
+export const AdminListUsersResultSchema = z.object({
+  items: z.array(AdminUserSummarySchema),
+  total: z.number().int(),
+});
+export type AdminListUsersResult = z.infer<typeof AdminListUsersResultSchema>;
+
+export const AdminSetUserActiveInputSchema = z.object({
+  id: z.string().uuid(),
+  isActive: z.boolean(),
+});
+export type AdminSetUserActiveInput = z.infer<typeof AdminSetUserActiveInputSchema>;
