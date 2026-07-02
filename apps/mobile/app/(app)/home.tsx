@@ -114,6 +114,10 @@ export default function HomeScreen() {
           <Link href="/(app)/profile" testID="view-profile-link" style={styles.link}>
             Profilim →
           </Link>
+
+          <Link href="/(app)/dietitians" testID="view-dietitians-link" style={styles.link}>
+            Diyetisyenleri Keşfet →
+          </Link>
         </>
       )}
 
