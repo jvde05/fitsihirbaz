@@ -32,6 +32,8 @@ export default function HomeScreen() {
 
   const plansQuery = trpc.dietPlans.list.useQuery({}, { enabled: isClient });
   const appointmentsQuery = trpc.appointments.listForClient.useQuery(undefined, { enabled: isClient });
+  const notificationsQuery = trpc.notifications.list.useQuery();
+  const unreadNotificationCount = notificationsQuery.data?.filter((n) => !n.isRead).length ?? 0;
 
   async function handleLogout() {
     try {
@@ -54,6 +56,10 @@ export default function HomeScreen() {
           Hoş geldin, {user.firstName} ({ROLE_LABELS[user.role] ?? user.role})
         </Text>
       )}
+
+      <Link href="/(app)/notifications" testID="view-notifications-link" style={styles.link}>
+        Bildirimler{unreadNotificationCount > 0 ? ` (${unreadNotificationCount})` : ""} →
+      </Link>
 
       {!isClient && (
         <Text style={styles.notice}>Bu ekran şu an danışan hesapları için hazırlanmıştır.</Text>
