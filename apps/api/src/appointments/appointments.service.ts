@@ -1,6 +1,7 @@
 import { Injectable } from "@nestjs/common";
 import type { Appointment, CreateAppointmentInput, UpdateAppointmentStatusInput } from "@fit-sihirbaz/shared";
 import { PrismaService } from "../prisma/prisma.service";
+import { NotificationsService } from "../notifications/notifications.service";
 import {
   AppointmentAccessDeniedError,
   AppointmentNotFoundError,
@@ -17,7 +18,10 @@ const APPOINTMENT_INCLUDE = {
 
 @Injectable()
 export class AppointmentsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly notifications: NotificationsService,
+  ) {}
 
   async create(clientUserId: string, input: CreateAppointmentInput): Promise<Appointment> {
     const clientProfile = await this.prisma.clientProfile.findUnique({ where: { userId: clientUserId } });
@@ -43,6 +47,12 @@ export class AppointmentsService {
       },
       include: APPOINTMENT_INCLUDE,
     });
+
+    await this.notifications.create(appointment.dietitian.userId, "APPOINTMENT_REQUESTED", {
+      appointmentId: appointment.id,
+      scheduledAt: appointment.scheduledAt.toISOString(),
+    });
+
     return toAppointment(appointment, "CLIENT");
   }
 
@@ -61,6 +71,12 @@ export class AppointmentsService {
       data: { status: input.status },
       include: APPOINTMENT_INCLUDE,
     });
+
+    await this.notifications.create(appointment.client.userId, "APPOINTMENT_STATUS_CHANGED", {
+      appointmentId: appointment.id,
+      status: appointment.status,
+    });
+
     return toAppointment(appointment, "DIETITIAN");
   }
 

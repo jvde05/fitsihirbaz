@@ -20,6 +20,8 @@ import { createMessagesRouter } from "../messages/messages.router";
 import type { MessagesService } from "../messages/messages.service";
 import { createArticlesRouter } from "../articles/articles.router";
 import type { ArticlesService } from "../articles/articles.service";
+import { createNotificationsRouter } from "../notifications/notifications.router";
+import type { NotificationsService } from "../notifications/notifications.service";
 import { router } from "./trpc";
 
 interface AppRouterDeps {
@@ -34,6 +36,7 @@ interface AppRouterDeps {
   appointmentsService: AppointmentsService;
   messagesService: MessagesService;
   articlesService: ArticlesService;
+  notificationsService: NotificationsService;
 }
 
 export function createAppRouter(deps: AppRouterDeps) {
@@ -49,6 +52,7 @@ export function createAppRouter(deps: AppRouterDeps) {
     appointments: createAppointmentsRouter(deps.appointmentsService),
     messages: createMessagesRouter(deps.messagesService),
     articles: createArticlesRouter(deps.articlesService),
+    notifications: createNotificationsRouter(deps.notificationsService),
     admin: router({
       foods: createAdminFoodsRouter(deps.foodsService),
       dietitians: createAdminDietitiansRouter(deps.dietitiansService),

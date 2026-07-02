@@ -1,5 +1,6 @@
 import { MessagesService } from "./messages.service";
 import { PrismaService } from "../prisma/prisma.service";
+import { NotificationsService } from "../notifications/notifications.service";
 import {
   ClientNotLinkedError,
   ConversationAccessDeniedError,
@@ -27,6 +28,7 @@ describe("MessagesService", () => {
     conversation: { findUnique: jest.Mock; create: jest.Mock; findMany: jest.Mock };
     message: { create: jest.Mock; findFirst: jest.Mock; count: jest.Mock; findMany: jest.Mock; updateMany: jest.Mock };
   };
+  let notifications: { create: jest.Mock };
   let service: MessagesService;
 
   beforeEach(() => {
@@ -43,7 +45,8 @@ describe("MessagesService", () => {
         updateMany: jest.fn(),
       },
     };
-    service = new MessagesService(prisma as unknown as PrismaService);
+    notifications = { create: jest.fn() };
+    service = new MessagesService(prisma as unknown as PrismaService, notifications as unknown as NotificationsService);
   });
 
   describe("getOrCreateConversation", () => {
@@ -107,6 +110,26 @@ describe("MessagesService", () => {
 
       const result = await service.send("client-user-1", "conv-1", "merhaba");
       expect(result.content).toBe("merhaba");
+    });
+
+    it("karşı tarafa NEW_MESSAGE bildirimi oluşturur", async () => {
+      prisma.conversation.findUnique.mockResolvedValue(buildConversationRow());
+      prisma.message.create.mockResolvedValue({
+        id: "msg-1",
+        conversationId: "conv-1",
+        senderId: "client-user-1",
+        content: "merhaba",
+        readAt: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      });
+
+      await service.send("client-user-1", "conv-1", "merhaba");
+      expect(notifications.create).toHaveBeenCalledWith(
+        "dyt-user-1",
+        "NEW_MESSAGE",
+        expect.objectContaining({ conversationId: "conv-1" }),
+      );
     });
   });
 

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { trpc } from "@/lib/trpc";
 import { useAuthStore } from "@/lib/auth-store";
+import { NotificationBell } from "./NotificationBell";
 
 const ROLE_LABELS: Record<string, string> = {
   CLIENT: "Danışan",
@@ -37,6 +38,7 @@ export function Navbar() {
           </Link>
           {status === "authenticated" && user ? (
             <div className="flex items-center gap-3">
+              <NotificationBell />
               <span className="text-gray-700">
                 {user.firstName} ({ROLE_LABELS[user.role] ?? user.role})
               </span>

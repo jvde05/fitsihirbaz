@@ -1,6 +1,7 @@
 import { Injectable } from "@nestjs/common";
 import type { Conversation, Message, Role } from "@fit-sihirbaz/shared";
 import { PrismaService } from "../prisma/prisma.service";
+import { NotificationsService } from "../notifications/notifications.service";
 import {
   ClientNotLinkedError,
   ClientProfileNotFoundError,
@@ -17,7 +18,10 @@ const CONVERSATION_INCLUDE = {
 
 @Injectable()
 export class MessagesService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly notifications: NotificationsService,
+  ) {}
 
   async getOrCreateConversation(userId: string, role: Role, counterpartId: string): Promise<Conversation> {
     const { clientId, dietitianId } = await this.resolveParties(userId, role, counterpartId);
@@ -50,6 +54,13 @@ export class MessagesService {
     const message = await this.prisma.message.create({
       data: { conversationId, senderId: userId, content },
     });
+
+    const recipientUserId = conversation.client.userId === userId ? conversation.dietitian.userId : conversation.client.userId;
+    await this.notifications.create(recipientUserId, "NEW_MESSAGE", {
+      conversationId,
+      preview: content.slice(0, 140),
+    });
+
     return toMessage(message);
   }
 

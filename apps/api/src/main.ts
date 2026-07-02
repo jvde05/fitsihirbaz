@@ -16,6 +16,7 @@ import { ProgressService } from "./progress/progress.service";
 import { AppointmentsService } from "./appointments/appointments.service";
 import { MessagesService } from "./messages/messages.service";
 import { ArticlesService } from "./articles/articles.service";
+import { NotificationsService } from "./notifications/notifications.service";
 import { createAppRouter } from "./trpc/app.router";
 import { createContextFactory } from "./trpc/context";
 import type { Env } from "./config/env.validation";
@@ -40,6 +41,7 @@ async function bootstrap() {
     appointmentsService: app.get(AppointmentsService),
     messagesService: app.get(MessagesService),
     articlesService: app.get(ArticlesService),
+    notificationsService: app.get(NotificationsService),
   });
   app.use(
     "/trpc",

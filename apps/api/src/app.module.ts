@@ -13,6 +13,7 @@ import { ProgressModule } from "./progress/progress.module";
 import { AppointmentsModule } from "./appointments/appointments.module";
 import { MessagesModule } from "./messages/messages.module";
 import { ArticlesModule } from "./articles/articles.module";
+import { NotificationsModule } from "./notifications/notifications.module";
 import { validateEnv } from "./config/env.validation";
 
 @Module({
@@ -23,6 +24,7 @@ import { validateEnv } from "./config/env.validation";
       envFilePath: [resolve(__dirname, "../../../.env"), resolve(process.cwd(), ".env")],
     }),
     PrismaModule,
+    NotificationsModule,
     AuthModule,
     UsersModule,
     FoodsModule,

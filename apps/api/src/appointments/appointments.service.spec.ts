@@ -1,5 +1,6 @@
 import { AppointmentsService } from "./appointments.service";
 import { PrismaService } from "../prisma/prisma.service";
+import { NotificationsService } from "../notifications/notifications.service";
 import {
   AppointmentAccessDeniedError,
   AppointmentNotFoundError,
@@ -30,6 +31,7 @@ describe("AppointmentsService", () => {
     clientDietitianLink: { findFirst: jest.Mock };
     appointment: { create: jest.Mock; findUnique: jest.Mock; update: jest.Mock; findMany: jest.Mock };
   };
+  let notifications: { create: jest.Mock };
   let service: AppointmentsService;
 
   beforeEach(() => {
@@ -39,7 +41,8 @@ describe("AppointmentsService", () => {
       clientDietitianLink: { findFirst: jest.fn() },
       appointment: { create: jest.fn(), findUnique: jest.fn(), update: jest.fn(), findMany: jest.fn() },
     };
-    service = new AppointmentsService(prisma as unknown as PrismaService);
+    notifications = { create: jest.fn() };
+    service = new AppointmentsService(prisma as unknown as PrismaService, notifications as unknown as NotificationsService);
   });
 
   describe("create", () => {
@@ -63,6 +66,11 @@ describe("AppointmentsService", () => {
       });
       expect(result.status).toBe("SCHEDULED");
       expect(result.counterpartFirstName).toBe("Ayşe");
+      expect(notifications.create).toHaveBeenCalledWith(
+        "dyt-user-1",
+        "APPOINTMENT_REQUESTED",
+        expect.objectContaining({ appointmentId: "appt-1" }),
+      );
     });
   });
 
@@ -93,6 +101,11 @@ describe("AppointmentsService", () => {
 
       const result = await service.updateStatus("dyt-user-1", { id: "appt-1", status: "COMPLETED" });
       expect(result.status).toBe("COMPLETED");
+      expect(notifications.create).toHaveBeenCalledWith(
+        "client-user-1",
+        "APPOINTMENT_STATUS_CHANGED",
+        expect.objectContaining({ appointmentId: "appt-1" }),
+      );
     });
   });
 
