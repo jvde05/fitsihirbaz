@@ -4,7 +4,7 @@ import { Providers } from "./providers";
 import { Navbar } from "@/components/layout/Navbar";
 
 export const metadata: Metadata = {
-  title: "Fit Sihirbaz",
+  title: { default: "Fit Sihirbaz", template: "%s | Fit Sihirbaz" },
   description: "Diyetisyen-danışan ilişkisini ve beslenme takibini dijitalleştiren platform.",
 };
 
