@@ -4,6 +4,7 @@ import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { AddProgressLogInputSchema, type AddProgressLogInput, type ProgressLog } from "@fit-sihirbaz/shared";
 import { trpc } from "@/lib/trpc";
+import { WeightChart } from "@/components/WeightChart";
 
 function ProgressRow({ log }: { log: ProgressLog }) {
   return (
@@ -66,6 +67,8 @@ export default function ProgressScreen() {
               kg)
             </Text>
           )}
+
+          <WeightChart logs={logsQuery.data ?? []} />
 
           <View style={styles.form}>
             <Text style={styles.label}>Tarih (YYYY-MM-DD)</Text>

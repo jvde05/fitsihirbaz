@@ -5,6 +5,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { AddProgressLogInputSchema, type AddProgressLogInput } from "@fit-sihirbaz/shared";
 import { trpc } from "@/lib/trpc";
+import { WeightChart } from "@/components/WeightChart";
 
 export default function IlerlemePage() {
   const utils = trpc.useUtils();
@@ -46,6 +47,10 @@ export default function IlerlemePage() {
           {(latestWeight - firstWeight).toFixed(1)} kg)
         </div>
       )}
+
+      <div className="mb-6">
+        <WeightChart logs={logs} />
+      </div>
 
       <form
         onSubmit={handleSubmit(onSubmit)}

@@ -90,4 +90,12 @@ export class ArticlesService {
     });
     return articles.map(toArticleSummary);
   }
+
+  async listAll(): Promise<ArticleSummary[]> {
+    const articles = await this.prisma.article.findMany({
+      include: AUTHOR_INCLUDE,
+      orderBy: { createdAt: "desc" },
+    });
+    return articles.map(toArticleSummary);
+  }
 }

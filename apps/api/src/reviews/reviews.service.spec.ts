@@ -1,5 +1,6 @@
 import { ReviewsService } from "./reviews.service";
 import { PrismaService } from "../prisma/prisma.service";
+import { NotificationsService } from "../notifications/notifications.service";
 import { ClientProfileNotFoundError, NoPaidOrderError } from "./reviews.errors";
 
 function buildReviewRow(overrides: Partial<Record<string, unknown>> = {}) {
@@ -21,8 +22,9 @@ describe("ReviewsService", () => {
     clientProfile: { findUnique: jest.Mock };
     order: { findFirst: jest.Mock };
     review: { upsert: jest.Mock; findMany: jest.Mock; aggregate: jest.Mock };
-    dietitianProfile: { update: jest.Mock };
+    dietitianProfile: { update: jest.Mock; findUnique: jest.Mock };
   };
+  let notifications: { create: jest.Mock };
   let service: ReviewsService;
 
   beforeEach(() => {
@@ -30,9 +32,10 @@ describe("ReviewsService", () => {
       clientProfile: { findUnique: jest.fn() },
       order: { findFirst: jest.fn() },
       review: { upsert: jest.fn(), findMany: jest.fn(), aggregate: jest.fn() },
-      dietitianProfile: { update: jest.fn() },
+      dietitianProfile: { update: jest.fn(), findUnique: jest.fn() },
     };
-    service = new ReviewsService(prisma as unknown as PrismaService);
+    notifications = { create: jest.fn() };
+    service = new ReviewsService(prisma as unknown as PrismaService, notifications as unknown as NotificationsService);
   });
 
   describe("create", () => {
@@ -51,11 +54,12 @@ describe("ReviewsService", () => {
       ).rejects.toBeInstanceOf(NoPaidOrderError);
     });
 
-    it("ödenmiş sipariş varsa yorumu upsert eder ve ortalama puanı yeniden hesaplar", async () => {
+    it("ödenmiş sipariş varsa yorumu upsert eder, ortalama puanı yeniden hesaplar ve diyetisyene bildirim gönderir", async () => {
       prisma.clientProfile.findUnique.mockResolvedValue({ id: "client-1" });
       prisma.order.findFirst.mockResolvedValue({ id: "order-1", status: "PAID" });
       prisma.review.upsert.mockResolvedValue(buildReviewRow());
       prisma.review.aggregate.mockResolvedValue({ _avg: { rating: 4.5 } });
+      prisma.dietitianProfile.findUnique.mockResolvedValue({ id: "dietitian-1", userId: "dietitian-user-1" });
 
       const result = await service.create("client-user-1", {
         dietitianId: "dietitian-1",
@@ -74,6 +78,7 @@ describe("ReviewsService", () => {
         where: { id: "dietitian-1" },
         data: { averageRating: 4.5 },
       });
+      expect(notifications.create).toHaveBeenCalledWith("dietitian-user-1", "NEW_REVIEW", { rating: 5 });
     });
   });
 

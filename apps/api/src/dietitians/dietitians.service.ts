@@ -10,12 +10,16 @@ import type {
   UpdateDietitianProfileInput,
 } from "@fit-sihirbaz/shared";
 import { PrismaService } from "../prisma/prisma.service";
+import { NotificationsService } from "../notifications/notifications.service";
 import { DietitianProfileNotFoundError } from "./dietitians.errors";
 import { toClientSummary, toDietitianProfile, toDietitianPublicSummary } from "./dietitians.mapper";
 
 @Injectable()
 export class DietitiansService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly notifications: NotificationsService,
+  ) {}
 
   async getMyProfile(userId: string): Promise<DietitianProfile> {
     const row = await this.prisma.dietitianProfile.findUnique({
@@ -117,6 +121,9 @@ export class DietitiansService {
       data: { verificationStatus: status },
       include: { user: true },
     });
+
+    await this.notifications.create(row.user.id, status === "VERIFIED" ? "DIETITIAN_VERIFIED" : "DIETITIAN_REJECTED", {});
+
     return toDietitianPublicSummary(row);
   }
 }

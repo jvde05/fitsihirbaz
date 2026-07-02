@@ -3,6 +3,7 @@
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { trpc } from "@/lib/trpc";
+import { WeightChart } from "@/components/WeightChart";
 
 const PLAN_STATUS_LABELS: Record<string, string> = {
   DRAFT: "Taslak",
@@ -74,6 +75,11 @@ export default function DanisanDetayPage() {
           </p>
         )}
         {logs.length === 0 && <p className="text-gray-500">Henüz ölçüm kaydı yok.</p>}
+        {logs.length > 0 && (
+          <div className="mb-4">
+            <WeightChart logs={logs} />
+          </div>
+        )}
         {logs.length > 0 && (
           <table className="w-full text-left text-sm">
             <thead>

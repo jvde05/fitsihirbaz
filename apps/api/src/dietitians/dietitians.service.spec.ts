@@ -1,5 +1,6 @@
 import { DietitiansService } from "./dietitians.service";
 import { PrismaService } from "../prisma/prisma.service";
+import { NotificationsService } from "../notifications/notifications.service";
 import { DietitianProfileNotFoundError } from "./dietitians.errors";
 
 function buildDietitianRow(overrides: Partial<Record<string, unknown>> = {}) {
@@ -37,6 +38,7 @@ describe("DietitiansService", () => {
     clientDietitianLink: { findMany: jest.Mock };
     $transaction: jest.Mock;
   };
+  let notifications: { create: jest.Mock };
   let service: DietitiansService;
 
   beforeEach(() => {
@@ -50,7 +52,8 @@ describe("DietitiansService", () => {
       clientDietitianLink: { findMany: jest.fn() },
       $transaction: jest.fn((ops: unknown[]) => Promise.all(ops)),
     };
-    service = new DietitiansService(prisma as unknown as PrismaService);
+    notifications = { create: jest.fn() };
+    service = new DietitiansService(prisma as unknown as PrismaService, notifications as unknown as NotificationsService);
   });
 
   describe("getMyProfile", () => {
@@ -135,12 +138,21 @@ describe("DietitiansService", () => {
       );
     });
 
-    it("verificationStatus alanını günceller", async () => {
+    it("verificationStatus alanını günceller ve diyetisyene bildirim gönderir", async () => {
       prisma.dietitianProfile.findUnique.mockResolvedValue(buildDietitianRow());
       prisma.dietitianProfile.update.mockResolvedValue(buildDietitianRow({ verificationStatus: "VERIFIED" }));
 
       const result = await service.adminVerify("dietitian-1", "VERIFIED");
       expect(result.verificationStatus).toBe("VERIFIED");
+      expect(notifications.create).toHaveBeenCalledWith("user-1", "DIETITIAN_VERIFIED", {});
+    });
+
+    it("reddedilince DIETITIAN_REJECTED bildirimi gönderir", async () => {
+      prisma.dietitianProfile.findUnique.mockResolvedValue(buildDietitianRow());
+      prisma.dietitianProfile.update.mockResolvedValue(buildDietitianRow({ verificationStatus: "REJECTED" }));
+
+      await service.adminVerify("dietitian-1", "REJECTED");
+      expect(notifications.create).toHaveBeenCalledWith("user-1", "DIETITIAN_REJECTED", {});
     });
   });
 });
