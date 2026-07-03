@@ -12,6 +12,7 @@ import {
 import { trpc } from "@/lib/trpc";
 import { useAuthStore } from "@/lib/auth-store";
 import { AvatarUploader } from "@/components/profile/AvatarUploader";
+import { CertificationUploader } from "@/components/profile/CertificationUploader";
 import { QueryErrorNotice } from "@/components/QueryErrorNotice";
 
 export default function DiyetisyenProfilPage() {
@@ -172,6 +173,13 @@ export default function DiyetisyenProfilPage() {
           Kaydet
         </button>
       </form>
+
+      <div className="rounded-md border border-gray-200 p-4">
+        <CertificationUploader
+          certificationUrls={profileQuery.data?.certificationUrls ?? []}
+          onUpdated={() => utils.dietitians.getProfile.invalidate()}
+        />
+      </div>
     </div>
   );
 }

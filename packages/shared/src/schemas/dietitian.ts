@@ -63,3 +63,13 @@ export const AdminVerifyDietitianInputSchema = z.object({
   status: z.enum(["VERIFIED", "REJECTED"]),
 });
 export type AdminVerifyDietitianInput = z.infer<typeof AdminVerifyDietitianInputSchema>;
+
+export const AddCertificationInputSchema = z.object({
+  url: z.string().min(1).max(500),
+});
+export type AddCertificationInput = z.infer<typeof AddCertificationInputSchema>;
+
+export const RemoveCertificationInputSchema = z.object({
+  url: z.string().min(1).max(500),
+});
+export type RemoveCertificationInput = z.infer<typeof RemoveCertificationInputSchema>;

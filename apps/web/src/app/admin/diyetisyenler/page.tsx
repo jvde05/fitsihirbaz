@@ -2,6 +2,7 @@
 
 import { trpc } from "@/lib/trpc";
 import { QueryErrorNotice } from "@/components/QueryErrorNotice";
+import { resolveMediaUrl } from "@/lib/media";
 
 export default function AdminDiyetisyenlerPage() {
   const utils = trpc.useUtils();
@@ -21,8 +22,8 @@ export default function AdminDiyetisyenlerPage() {
 
       <ul className="divide-y divide-gray-200 rounded-md border border-gray-200">
         {dietitiansQuery.data?.map((dietitian) => (
-          <li key={dietitian.id} className="flex items-center justify-between px-4 py-3">
-            <div>
+          <li key={dietitian.id} className="flex items-start justify-between gap-4 px-4 py-3">
+            <div className="min-w-0 flex-1">
               <p className="font-medium text-gray-900">
                 {dietitian.firstName} {dietitian.lastName}{" "}
                 <span
@@ -38,9 +39,32 @@ export default function AdminDiyetisyenlerPage() {
                 </span>
               </p>
               {dietitian.title && <p className="text-sm text-gray-500">{dietitian.title}</p>}
+              <p className="mt-1 text-xs text-gray-500">
+                {dietitian.email} {dietitian.licenseNumber ? `· Lisans No: ${dietitian.licenseNumber}` : "· Lisans no girilmemiş"}
+              </p>
+
+              <div className="mt-2">
+                {dietitian.certificationUrls.length === 0 ? (
+                  <p className="text-xs text-red-600">Hiç sertifika/lisans belgesi yüklenmemiş.</p>
+                ) : (
+                  <div className="flex flex-wrap gap-2">
+                    {dietitian.certificationUrls.map((url) => (
+                      <a
+                        key={url}
+                        href={resolveMediaUrl(url) ?? undefined}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="block h-16 w-16 overflow-hidden rounded-md border border-gray-200"
+                      >
+                        <img src={resolveMediaUrl(url) ?? undefined} alt="" className="h-full w-full object-cover" />
+                      </a>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
             {dietitian.verificationStatus === "PENDING" && (
-              <div className="flex gap-2">
+              <div className="flex shrink-0 gap-2">
                 <button
                   type="button"
                   onClick={() => verifyMutation.mutate({ id: dietitian.id, status: "VERIFIED" })}

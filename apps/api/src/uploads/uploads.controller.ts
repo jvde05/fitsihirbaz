@@ -20,12 +20,14 @@ const UPLOAD_BASE = resolve(__dirname, "../../uploads");
 const ALLOWED_MIME_TYPES = new Set(["image/jpeg", "image/png", "image/webp", "image/gif"]);
 const MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024;
 
-const UPLOAD_FOLDERS = new Set(["avatars", "posts", "progress"]);
+const UPLOAD_FOLDERS = new Set(["avatars", "posts", "progress", "certifications"]);
 
-// ?kind=avatar -> uploads/avatars, ?kind=progress -> uploads/progress, aksi halde (varsayılan) uploads/posts.
+// ?kind=avatar -> uploads/avatars, ?kind=progress -> uploads/progress,
+// ?kind=certification -> uploads/certifications, aksi halde (varsayılan) uploads/posts.
 function resolveUploadFolder(req: Request): string {
   const kind = req.query.kind;
-  const folder = kind === "avatar" ? "avatars" : kind === "progress" ? "progress" : "posts";
+  const folder =
+    kind === "avatar" ? "avatars" : kind === "progress" ? "progress" : kind === "certification" ? "certifications" : "posts";
   return UPLOAD_FOLDERS.has(folder) ? folder : "posts";
 }
 

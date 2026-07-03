@@ -9,6 +9,8 @@ import type {
   DietitianSearchResult,
   UpdateDietitianProfileInput,
 } from "@fit-sihirbaz/shared";
+
+const MAX_CERTIFICATION_COUNT = 10;
 import { PrismaService } from "../prisma/prisma.service";
 import { NotificationsService } from "../notifications/notifications.service";
 import { DietitianProfileNotFoundError } from "./dietitians.errors";
@@ -102,16 +104,18 @@ export class DietitiansService {
     return links.map(toClientSummary);
   }
 
-  async adminList(input: AdminListDietitiansInput): Promise<DietitianPublicSummary[]> {
+  async adminList(input: AdminListDietitiansInput): Promise<DietitianProfile[]> {
     const rows = await this.prisma.dietitianProfile.findMany({
       where: input.status ? { verificationStatus: input.status } : {},
       include: { user: true },
       orderBy: { createdAt: "asc" },
     });
-    return rows.map(toDietitianPublicSummary);
+    // Admin doğrulama kuyruğu lisans no + sertifika belgelerini görmeli, bu yüzden
+    // pazaryeri vitrininde kullanılan public summary değil tam profil döner.
+    return rows.map(toDietitianProfile);
   }
 
-  async adminVerify(dietitianProfileId: string, status: "VERIFIED" | "REJECTED"): Promise<DietitianPublicSummary> {
+  async adminVerify(dietitianProfileId: string, status: "VERIFIED" | "REJECTED"): Promise<DietitianProfile> {
     const existing = await this.prisma.dietitianProfile.findUnique({ where: { id: dietitianProfileId } });
     if (!existing) {
       throw new DietitianProfileNotFoundError();
@@ -124,6 +128,35 @@ export class DietitiansService {
 
     await this.notifications.create(row.user.id, status === "VERIFIED" ? "DIETITIAN_VERIFIED" : "DIETITIAN_REJECTED", {});
 
-    return toDietitianPublicSummary(row);
+    return toDietitianProfile(row);
+  }
+
+  async addCertification(userId: string, url: string): Promise<DietitianProfile> {
+    const existing = await this.prisma.dietitianProfile.findUnique({ where: { userId } });
+    if (!existing) {
+      throw new DietitianProfileNotFoundError();
+    }
+    const certificationUrls = existing.certificationUrls.includes(url)
+      ? existing.certificationUrls
+      : [...existing.certificationUrls, url].slice(0, MAX_CERTIFICATION_COUNT);
+    const row = await this.prisma.dietitianProfile.update({
+      where: { userId },
+      data: { certificationUrls },
+      include: { user: true },
+    });
+    return toDietitianProfile(row);
+  }
+
+  async removeCertification(userId: string, url: string): Promise<DietitianProfile> {
+    const existing = await this.prisma.dietitianProfile.findUnique({ where: { userId } });
+    if (!existing) {
+      throw new DietitianProfileNotFoundError();
+    }
+    const row = await this.prisma.dietitianProfile.update({
+      where: { userId },
+      data: { certificationUrls: existing.certificationUrls.filter((existingUrl) => existingUrl !== url) },
+      include: { user: true },
+    });
+    return toDietitianProfile(row);
   }
 }

@@ -13,7 +13,7 @@ export function resolveMediaUrl(path: string): string {
 export async function uploadImageAsset(
   asset: ImagePicker.ImagePickerAsset,
   accessToken: string | null,
-  kind: "post" | "avatar" | "progress" = "post",
+  kind: "post" | "avatar" | "progress" | "certification" = "post",
 ): Promise<string> {
   const filename = asset.fileName ?? `photo-${Date.now()}.jpg`;
   const mimeType = asset.mimeType ?? "image/jpeg";
