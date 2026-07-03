@@ -20,9 +20,13 @@ const UPLOAD_BASE = resolve(__dirname, "../../uploads");
 const ALLOWED_MIME_TYPES = new Set(["image/jpeg", "image/png", "image/webp", "image/gif"]);
 const MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024;
 
-// ?kind=avatar -> uploads/avatars, aksi halde (varsayılan) uploads/posts.
-function resolveUploadFolder(req: Request): "avatars" | "posts" {
-  return req.query.kind === "avatar" ? "avatars" : "posts";
+const UPLOAD_FOLDERS = new Set(["avatars", "posts", "progress"]);
+
+// ?kind=avatar -> uploads/avatars, ?kind=progress -> uploads/progress, aksi halde (varsayılan) uploads/posts.
+function resolveUploadFolder(req: Request): string {
+  const kind = req.query.kind;
+  const folder = kind === "avatar" ? "avatars" : kind === "progress" ? "progress" : "posts";
+  return UPLOAD_FOLDERS.has(folder) ? folder : "posts";
 }
 
 // Gerçek S3/R2 kimlik bilgileri henüz yok (bkz. .env). Bu endpoint dosyayı local diske

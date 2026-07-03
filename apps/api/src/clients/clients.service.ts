@@ -15,13 +15,16 @@ export class ClientsService {
   constructor(private readonly prisma: PrismaService) {}
 
   async getMyProfile(userId: string): Promise<ClientProfile> {
-    const row = await this.prisma.clientProfile.findUnique({
+    // clientProcedure zaten role === CLIENT olduğunu garanti ediyor; normalde kayıt
+    // sırasında ClientProfile otomatik oluşur ama eski/tutarsız verilerde satır eksik
+    // kalabilir. Hatayı kullanıcıya yansıtmak yerine burada kendiliğinden oluşturup
+    // profil sayfasının kilitlenmesini önlüyoruz.
+    const row = await this.prisma.clientProfile.upsert({
       where: { userId },
+      update: {},
+      create: { userId },
       include: { user: true },
     });
-    if (!row) {
-      throw new ClientProfileNotFoundError();
-    }
     return toClientProfile(row);
   }
 

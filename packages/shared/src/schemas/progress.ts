@@ -20,7 +20,9 @@ export const AddProgressLogInputSchema = z.object({
   bodyFatPercent: optionalCoerced(z.coerce.number().min(0).max(100)),
   waistCm: optionalCoerced(z.coerce.number().positive()),
   hipCm: optionalCoerced(z.coerce.number().positive()),
-  photoUrls: z.array(z.string().url()).max(10).optional(),
+  // Yüklenen dosya sunucumuzdan relatif bir yolla (/uploads/posts/...) servis edildiği için
+  // .url() yerine düz string.
+  photoUrls: z.array(z.string().min(1)).max(10).optional(),
   notes: z.string().max(2000).optional(),
 });
 export type AddProgressLogInput = z.infer<typeof AddProgressLogInputSchema>;
