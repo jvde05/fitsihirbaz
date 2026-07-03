@@ -1,21 +1,11 @@
 import { useState } from "react";
-import {
-  ActivityIndicator,
-  FlatList,
-  Image,
-  Platform,
-  Pressable,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from "react-native";
+import { ActivityIndicator, FlatList, Image, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import { trpc } from "@/lib/trpc";
 import { useAuthStore } from "@/lib/auth-store";
+import { resolveMediaUrl, uploadImageAsset } from "@/lib/uploads";
 import type { Post } from "@fit-sihirbaz/shared";
 
-const API_URL = process.env.EXPO_PUBLIC_API_URL ?? "http://localhost:4000";
 const PAGE_SIZE = 10;
 
 const ROLE_LABELS: Record<string, string> = {
@@ -24,37 +14,8 @@ const ROLE_LABELS: Record<string, string> = {
   ADMIN: "Yönetici",
 };
 
-function resolveImageUrl(path: string) {
-  return path.startsWith("http") ? path : `${API_URL}${path}`;
-}
-
 function formatDateTime(iso: string): string {
   return new Date(iso).toLocaleString("tr-TR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" });
-}
-
-async function uploadPickedImage(asset: ImagePicker.ImagePickerAsset, accessToken: string | null): Promise<string> {
-  const filename = asset.fileName ?? `photo-${Date.now()}.jpg`;
-  const mimeType = asset.mimeType ?? "image/jpeg";
-
-  const formData = new FormData();
-  if (Platform.OS === "web") {
-    const blob = await (await fetch(asset.uri)).blob();
-    formData.append("file", blob, filename);
-  } else {
-    // React Native fetch/FormData, { uri, name, type } şeklinde dosya nesnesi bekler.
-    formData.append("file", { uri: asset.uri, name: filename, type: mimeType } as unknown as Blob);
-  }
-
-  const response = await fetch(`${API_URL}/uploads/image`, {
-    method: "POST",
-    body: formData,
-    headers: accessToken ? { authorization: `Bearer ${accessToken}` } : undefined,
-  });
-  if (!response.ok) {
-    throw new Error("Fotoğraf yüklenemedi");
-  }
-  const data = (await response.json()) as { url: string };
-  return data.url;
 }
 
 function PostComposer({ onCreated }: { onCreated: () => void }) {
@@ -90,7 +51,7 @@ function PostComposer({ onCreated }: { onCreated: () => void }) {
     setError(null);
     try {
       const accessToken = useAuthStore.getState().accessToken;
-      const url = await uploadPickedImage(result.assets[0], accessToken);
+      const url = await uploadImageAsset(result.assets[0], accessToken, "post");
       setImageUrl(url);
     } catch {
       setError("Fotoğraf yüklenemedi");
@@ -118,7 +79,7 @@ function PostComposer({ onCreated }: { onCreated: () => void }) {
       />
       {imageUrl && (
         <View style={styles.composerImageWrap}>
-          <Image source={{ uri: resolveImageUrl(imageUrl) }} style={styles.composerImage} />
+          <Image source={{ uri: resolveMediaUrl(imageUrl) }} style={styles.composerImage} />
           <Pressable testID="remove-image-button" style={styles.removeImageButton} onPress={() => setImageUrl(null)}>
             <Text style={styles.removeImageButtonText}>Kaldır</Text>
           </Pressable>
@@ -216,7 +177,7 @@ function PostCard({ post, onDeleted }: { post: Post; onDeleted: () => void }) {
         )}
       </View>
       <Text style={styles.postContent}>{post.content}</Text>
-      {post.imageUrl && <Image source={{ uri: resolveImageUrl(post.imageUrl) }} style={styles.postImage} />}
+      {post.imageUrl && <Image source={{ uri: resolveMediaUrl(post.imageUrl) }} style={styles.postImage} />}
       <View style={styles.postActions}>
         <Pressable testID={`like-post-${post.id}`} onPress={() => likeMutation.mutate({ postId: post.id })}>
           <Text style={post.isLikedByMe ? styles.likeActive : styles.likeInactive}>
