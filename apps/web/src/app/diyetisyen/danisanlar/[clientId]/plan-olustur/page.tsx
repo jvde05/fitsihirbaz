@@ -7,6 +7,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { CreateDietPlanInputSchema, type CreateDietPlanInput } from "@fit-sihirbaz/shared";
 import { trpc } from "@/lib/trpc";
 import { DietPlanBuilder } from "@/components/diet-plans/DietPlanBuilder";
+import { QueryErrorNotice } from "@/components/QueryErrorNotice";
 
 export default function PlanOlusturPage() {
   const params = useParams<{ clientId: string }>();
@@ -38,6 +39,13 @@ export default function PlanOlusturPage() {
   return (
     <div className="mx-auto max-w-xl">
       <h1 className="mb-6 text-2xl font-semibold text-gray-900">Diyet Planı Oluştur</h1>
+
+      {existingPlansQuery.isError && (
+        <QueryErrorNotice
+          message={existingPlansQuery.error.message}
+          onRetry={() => existingPlansQuery.refetch()}
+        />
+      )}
 
       {existingPlansQuery.data && existingPlansQuery.data.length > 0 && (
         <div className="mb-8">

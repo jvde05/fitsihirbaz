@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { trpc } from "@/lib/trpc";
+import { QueryErrorNotice } from "@/components/QueryErrorNotice";
 
 const PAGE_SIZE = 20;
 
@@ -15,6 +16,9 @@ export default function LiteraturPage() {
       <h1 className="mb-6 text-2xl font-semibold text-gray-900">Literatür</h1>
 
       {articlesQuery.isLoading && <p className="text-gray-500">Yükleniyor...</p>}
+      {articlesQuery.isError && (
+        <QueryErrorNotice message={articlesQuery.error.message} onRetry={() => articlesQuery.refetch()} />
+      )}
       {articlesQuery.data && articlesQuery.data.items.length === 0 && (
         <p className="text-gray-500">Henüz yayınlanmış bir makale yok.</p>
       )}

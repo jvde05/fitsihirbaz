@@ -5,6 +5,7 @@ import Link from "next/link";
 import { trpc } from "@/lib/trpc";
 import { WeightChart } from "@/components/WeightChart";
 import { resolveMediaUrl } from "@/lib/media";
+import { QueryErrorNotice } from "@/components/QueryErrorNotice";
 
 const PLAN_STATUS_LABELS: Record<string, string> = {
   DRAFT: "Taslak",
@@ -43,6 +44,17 @@ export default function DanisanDetayPage() {
           Plan Oluştur / Düzenle
         </Link>
       </div>
+
+      {(clientsQuery.isError || progressQuery.isError || plansQuery.isError) && (
+        <QueryErrorNotice
+          message={(clientsQuery.error ?? progressQuery.error ?? plansQuery.error)?.message ?? "Bilinmeyen hata"}
+          onRetry={() => {
+            clientsQuery.refetch();
+            progressQuery.refetch();
+            plansQuery.refetch();
+          }}
+        />
+      )}
 
       <div className="mb-6">
         <h2 className="mb-2 text-lg font-medium text-gray-900">Diyet Planları</h2>

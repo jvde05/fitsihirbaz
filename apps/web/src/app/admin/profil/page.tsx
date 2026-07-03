@@ -7,6 +7,7 @@ import { UpdateProfileInputSchema, type UpdateProfileInput } from "@fit-sihirbaz
 import { trpc } from "@/lib/trpc";
 import { useAuthStore } from "@/lib/auth-store";
 import { AvatarUploader } from "@/components/profile/AvatarUploader";
+import { QueryErrorNotice } from "@/components/QueryErrorNotice";
 
 export default function AdminProfilPage() {
   const utils = trpc.useUtils();
@@ -36,14 +37,7 @@ export default function AdminProfilPage() {
   }
 
   if (meQuery.isError) {
-    return (
-      <div className="rounded-md border border-red-200 bg-red-50 p-4 text-sm text-red-700">
-        Profil yüklenemedi: {meQuery.error.message}
-        <button type="button" onClick={() => meQuery.refetch()} className="ml-3 font-medium underline">
-          Tekrar dene
-        </button>
-      </div>
-    );
+    return <QueryErrorNotice message={meQuery.error.message} onRetry={() => meQuery.refetch()} />;
   }
 
   return (

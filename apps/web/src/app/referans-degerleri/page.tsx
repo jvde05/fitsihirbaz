@@ -6,6 +6,7 @@ import {
   REFERENCE_SEX_LABELS,
 } from "@fit-sihirbaz/shared";
 import { trpc } from "@/lib/trpc";
+import { QueryErrorNotice } from "@/components/QueryErrorNotice";
 
 function formatAgeRange(ageMinYears: number, ageMaxYears: number | null) {
   if (ageMaxYears === null) {
@@ -27,6 +28,9 @@ export default function ReferansDegerleriPage() {
       </p>
 
       {referenceQuery.isLoading && <p className="text-gray-500">Yükleniyor...</p>}
+      {referenceQuery.isError && (
+        <QueryErrorNotice message={referenceQuery.error.message} onRetry={() => referenceQuery.refetch()} />
+      )}
       {referenceQuery.data && referenceQuery.data.length === 0 && (
         <p className="text-gray-500">Henüz referans değer eklenmemiş.</p>
       )}

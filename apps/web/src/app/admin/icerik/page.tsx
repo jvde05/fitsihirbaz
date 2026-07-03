@@ -1,6 +1,7 @@
 "use client";
 
 import { trpc } from "@/lib/trpc";
+import { QueryErrorNotice } from "@/components/QueryErrorNotice";
 
 export default function AdminIcerikPage() {
   const utils = trpc.useUtils();
@@ -13,6 +14,10 @@ export default function AdminIcerikPage() {
   return (
     <div>
       <h1 className="mb-6 text-2xl font-semibold text-gray-900">İçerik / Literatür Yönetimi</h1>
+
+      {articlesQuery.isError && (
+        <QueryErrorNotice message={articlesQuery.error.message} onRetry={() => articlesQuery.refetch()} />
+      )}
 
       <ul className="divide-y divide-gray-200 rounded-md border border-gray-200">
         {articlesQuery.data?.map((article) => (

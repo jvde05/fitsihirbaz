@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { trpc } from "@/lib/trpc";
+import { QueryErrorNotice } from "@/components/QueryErrorNotice";
 
 const STATUS_LABELS: Record<string, string> = {
   SCHEDULED: "Planlandı",
@@ -82,6 +83,10 @@ export default function DanisanRandevularPage() {
           </button>
           {formError && <p className="w-full text-sm text-red-600">{formError}</p>}
         </form>
+      )}
+
+      {appointmentsQuery.isError && (
+        <QueryErrorNotice message={appointmentsQuery.error.message} onRetry={() => appointmentsQuery.refetch()} />
       )}
 
       <ul className="divide-y divide-gray-200 rounded-md border border-gray-200">

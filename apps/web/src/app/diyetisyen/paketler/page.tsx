@@ -11,6 +11,7 @@ import {
   type UpdatePackageInput,
 } from "@fit-sihirbaz/shared";
 import { trpc } from "@/lib/trpc";
+import { QueryErrorNotice } from "@/components/QueryErrorNotice";
 
 function EditPackageForm({ pkg, onDone }: { pkg: Package; onDone: () => void }) {
   const utils = trpc.useUtils();
@@ -241,6 +242,10 @@ export default function PaketlerPage() {
           {isSubmitting ? "Oluşturuluyor..." : "Paket Oluştur"}
         </button>
       </form>
+
+      {packagesQuery.isError && (
+        <QueryErrorNotice message={packagesQuery.error.message} onRetry={() => packagesQuery.refetch()} />
+      )}
 
       <ul className="divide-y divide-gray-200 rounded-md border border-gray-200">
         {packagesQuery.data?.map((pkg) =>

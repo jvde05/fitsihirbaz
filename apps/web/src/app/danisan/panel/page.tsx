@@ -45,7 +45,8 @@ export default function DanisanPanelPage() {
         <div className="rounded-md border border-gray-200 p-4">
           <p className="text-xs font-semibold uppercase text-gray-500">Aktif Diyet Planı</p>
           {plansQuery.isLoading && <p className="mt-2 text-sm text-gray-400">Yükleniyor...</p>}
-          {!plansQuery.isLoading && !activePlan && (
+          {plansQuery.isError && <p className="mt-2 text-sm text-red-600">Yüklenemedi: {plansQuery.error.message}</p>}
+          {!plansQuery.isLoading && !plansQuery.isError && !activePlan && (
             <p className="mt-2 text-sm text-gray-400">Henüz bir diyet planınız bulunmuyor.</p>
           )}
           {activePlan && (
@@ -64,7 +65,10 @@ export default function DanisanPanelPage() {
         <div className="rounded-md border border-gray-200 p-4">
           <p className="text-xs font-semibold uppercase text-gray-500">Yaklaşan Randevu</p>
           {appointmentsQuery.isLoading && <p className="mt-2 text-sm text-gray-400">Yükleniyor...</p>}
-          {!appointmentsQuery.isLoading && !upcomingAppointment && (
+          {appointmentsQuery.isError && (
+            <p className="mt-2 text-sm text-red-600">Yüklenemedi: {appointmentsQuery.error.message}</p>
+          )}
+          {!appointmentsQuery.isLoading && !appointmentsQuery.isError && !upcomingAppointment && (
             <p className="mt-2 text-sm text-gray-400">Yaklaşan randevunuz bulunmuyor.</p>
           )}
           {upcomingAppointment && (
@@ -83,7 +87,10 @@ export default function DanisanPanelPage() {
         <div className="rounded-md border border-gray-200 p-4">
           <p className="text-xs font-semibold uppercase text-gray-500">Son İlerleme</p>
           {progressQuery.isLoading && <p className="mt-2 text-sm text-gray-400">Yükleniyor...</p>}
-          {!progressQuery.isLoading && !latestProgress && (
+          {progressQuery.isError && (
+            <p className="mt-2 text-sm text-red-600">Yüklenemedi: {progressQuery.error.message}</p>
+          )}
+          {!progressQuery.isLoading && !progressQuery.isError && !latestProgress && (
             <p className="mt-2 text-sm text-gray-400">Henüz ölçüm kaydınız yok.</p>
           )}
           {latestProgress && (

@@ -1,6 +1,7 @@
 "use client";
 
 import { trpc } from "@/lib/trpc";
+import { QueryErrorNotice } from "@/components/QueryErrorNotice";
 
 export default function AdminDiyetisyenlerPage() {
   const utils = trpc.useUtils();
@@ -13,6 +14,10 @@ export default function AdminDiyetisyenlerPage() {
   return (
     <div>
       <h1 className="mb-6 text-2xl font-semibold text-gray-900">Diyetisyen Doğrulama</h1>
+
+      {dietitiansQuery.isError && (
+        <QueryErrorNotice message={dietitiansQuery.error.message} onRetry={() => dietitiansQuery.refetch()} />
+      )}
 
       <ul className="divide-y divide-gray-200 rounded-md border border-gray-200">
         {dietitiansQuery.data?.map((dietitian) => (

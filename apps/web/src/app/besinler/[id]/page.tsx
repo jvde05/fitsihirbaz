@@ -3,6 +3,7 @@
 import { useParams } from "next/navigation";
 import { trpc } from "@/lib/trpc";
 import { RequireAuth } from "@/components/auth/RequireAuth";
+import { QueryErrorNotice } from "@/components/QueryErrorNotice";
 
 function NutrientGroup({ title, values }: { title: string; values: Record<string, number> | null }) {
   if (!values || Object.keys(values).length === 0) {
@@ -29,6 +30,9 @@ function BesinDetayContent() {
 
   if (foodQuery.isLoading) {
     return <p className="text-gray-500">Yükleniyor...</p>;
+  }
+  if (foodQuery.isError) {
+    return <QueryErrorNotice message={foodQuery.error.message} onRetry={() => foodQuery.refetch()} />;
   }
   if (!foodQuery.data) {
     return <p className="text-gray-500">Besin bulunamadı.</p>;

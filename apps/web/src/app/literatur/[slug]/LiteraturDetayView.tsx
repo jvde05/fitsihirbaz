@@ -2,6 +2,7 @@
 
 import { useParams } from "next/navigation";
 import { trpc } from "@/lib/trpc";
+import { QueryErrorNotice } from "@/components/QueryErrorNotice";
 
 export function LiteraturDetayView() {
   const params = useParams<{ slug: string }>();
@@ -9,6 +10,9 @@ export function LiteraturDetayView() {
 
   if (articleQuery.isLoading) {
     return <p className="text-gray-500">Yükleniyor...</p>;
+  }
+  if (articleQuery.isError) {
+    return <QueryErrorNotice message={articleQuery.error.message} onRetry={() => articleQuery.refetch()} />;
   }
   if (!articleQuery.data) {
     return <p className="text-gray-500">Makale bulunamadı.</p>;

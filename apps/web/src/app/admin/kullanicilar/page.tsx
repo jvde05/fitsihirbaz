@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { trpc } from "@/lib/trpc";
 import type { Role } from "@fit-sihirbaz/shared";
+import { QueryErrorNotice } from "@/components/QueryErrorNotice";
 
 const ROLE_LABELS: Record<Role, string> = {
   CLIENT: "Danışan",
@@ -49,6 +50,10 @@ export default function AdminKullanicilarPage() {
           <option value="ADMIN">Yönetici</option>
         </select>
       </div>
+
+      {usersQuery.isError && (
+        <QueryErrorNotice message={usersQuery.error.message} onRetry={() => usersQuery.refetch()} />
+      )}
 
       <ul className="divide-y divide-gray-200 rounded-md border border-gray-200">
         {usersQuery.data?.items.map((user) => (

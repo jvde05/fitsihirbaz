@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { trpc } from "@/lib/trpc";
+import { QueryErrorNotice } from "@/components/QueryErrorNotice";
 
 export default function DanisanlarPage() {
   const utils = trpc.useUtils();
@@ -49,6 +50,9 @@ export default function DanisanlarPage() {
       {error && <p className="mb-4 text-sm text-red-600">{error}</p>}
 
       {clientsQuery.isLoading && <p className="text-gray-500">Yükleniyor...</p>}
+      {clientsQuery.isError && (
+        <QueryErrorNotice message={clientsQuery.error.message} onRetry={() => clientsQuery.refetch()} />
+      )}
       {clientsQuery.data && clientsQuery.data.length === 0 && (
         <p className="text-gray-500">Henüz danışanınız yok. Yukarıdan e-posta ile ekleyebilirsiniz.</p>
       )}

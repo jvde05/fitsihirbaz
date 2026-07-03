@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { trpc } from "@/lib/trpc";
 import { useAuthStore } from "@/lib/auth-store";
+import { QueryErrorNotice } from "@/components/QueryErrorNotice";
 
 export function DiyetisyenProfilView() {
   const params = useParams<{ id: string }>();
@@ -38,6 +39,9 @@ export function DiyetisyenProfilView() {
 
   if (dietitianQuery.isLoading) {
     return <p className="text-gray-500">Yükleniyor...</p>;
+  }
+  if (dietitianQuery.isError) {
+    return <QueryErrorNotice message={dietitianQuery.error.message} onRetry={() => dietitianQuery.refetch()} />;
   }
   if (!dietitianQuery.data) {
     return <p className="text-gray-500">Diyetisyen bulunamadı.</p>;

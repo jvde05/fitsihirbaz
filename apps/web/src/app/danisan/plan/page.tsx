@@ -2,6 +2,7 @@
 
 import { trpc } from "@/lib/trpc";
 import { MEAL_TYPE_LABELS, TotalsBadge } from "@/components/diet-plans/diet-plan-ui";
+import { QueryErrorNotice } from "@/components/QueryErrorNotice";
 
 export default function DanisanPlanPage() {
   const plansQuery = trpc.dietPlans.list.useQuery({});
@@ -12,8 +13,16 @@ export default function DanisanPlanPage() {
     return <p className="text-gray-500">Yükleniyor...</p>;
   }
 
+  if (plansQuery.isError) {
+    return <QueryErrorNotice message={plansQuery.error.message} onRetry={() => plansQuery.refetch()} />;
+  }
+
   if (!activePlanId) {
     return <p className="text-gray-500">Henüz bir diyet planınız bulunmuyor.</p>;
+  }
+
+  if (planQuery.isError) {
+    return <QueryErrorNotice message={planQuery.error.message} onRetry={() => planQuery.refetch()} />;
   }
 
   if (planQuery.isLoading || !planQuery.data) {

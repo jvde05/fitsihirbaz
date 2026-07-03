@@ -6,6 +6,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { FoodCreateInputSchema, type FoodCreateInput } from "@fit-sihirbaz/shared";
 import { trpc } from "@/lib/trpc";
+import { QueryErrorNotice } from "@/components/QueryErrorNotice";
 
 export default function AdminBesinlerPage() {
   const utils = trpc.useUtils();
@@ -144,6 +145,10 @@ export default function AdminBesinlerPage() {
         onChange={(event) => setQuery(event.target.value)}
         className="mb-6 w-full max-w-md rounded-md border border-gray-300 px-3 py-2"
       />
+
+      {searchQuery.isError && (
+        <QueryErrorNotice message={searchQuery.error.message} onRetry={() => searchQuery.refetch()} />
+      )}
 
       <ul className="divide-y divide-gray-200 rounded-md border border-gray-200">
         {searchQuery.data?.items.map((food) => (

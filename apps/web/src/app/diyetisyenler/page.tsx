@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { trpc } from "@/lib/trpc";
+import { QueryErrorNotice } from "@/components/QueryErrorNotice";
 
 const PAGE_SIZE = 20;
 
@@ -27,6 +28,9 @@ export default function DiyetisyenlerPage() {
       />
 
       {searchQuery.isLoading && <p className="text-gray-500">Yükleniyor...</p>}
+      {searchQuery.isError && (
+        <QueryErrorNotice message={searchQuery.error.message} onRetry={() => searchQuery.refetch()} />
+      )}
       {searchQuery.data && searchQuery.data.items.length === 0 && (
         <p className="text-gray-500">Sonuç bulunamadı.</p>
       )}
