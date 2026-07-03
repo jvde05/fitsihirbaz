@@ -1,5 +1,8 @@
 import "reflect-metadata";
+import { mkdirSync } from "node:fs";
+import { resolve } from "node:path";
 import { NestFactory } from "@nestjs/core";
+import { NestExpressApplication } from "@nestjs/platform-express";
 import { ConfigService } from "@nestjs/config";
 import cookieParser from "cookie-parser";
 import { createExpressMiddleware } from "@trpc/server/adapters/express";
@@ -22,12 +25,13 @@ import { MessagesService } from "./messages/messages.service";
 import { ArticlesService } from "./articles/articles.service";
 import { NotificationsService } from "./notifications/notifications.service";
 import { ReferenceIntakesService } from "./reference-intakes/reference-intakes.service";
+import { PostsService } from "./posts/posts.service";
 import { createAppRouter } from "./trpc/app.router";
 import { createContextFactory } from "./trpc/context";
 import type { Env } from "./config/env.validation";
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
   const config = app.get(ConfigService<Env, true>);
 
   app.use(cookieParser());
@@ -37,6 +41,12 @@ async function bootstrap() {
     .map((origin) => origin.trim())
     .filter(Boolean);
   app.enableCors({ origin: allowedOrigins, credentials: true });
+
+  // Akış (posts) fotoğrafları için yerel disk deposu; gerçek S3/R2 gelene kadar
+  // /uploads altından statik servis edilir (bkz. uploads.controller.ts).
+  const uploadsRoot = resolve(__dirname, "../uploads/posts");
+  mkdirSync(uploadsRoot, { recursive: true });
+  app.useStaticAssets(resolve(__dirname, "../uploads"), { prefix: "/uploads" });
 
   const appRouter = createAppRouter({
     authService: app.get(AuthService),
@@ -56,6 +66,7 @@ async function bootstrap() {
     articlesService: app.get(ArticlesService),
     notificationsService: app.get(NotificationsService),
     referenceIntakesService: app.get(ReferenceIntakesService),
+    postsService: app.get(PostsService),
   });
   app.use(
     "/trpc",

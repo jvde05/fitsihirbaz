@@ -32,6 +32,8 @@ import { createNotificationsRouter } from "../notifications/notifications.router
 import type { NotificationsService } from "../notifications/notifications.service";
 import { createAdminReferenceIntakesRouter, createReferenceIntakesRouter } from "../reference-intakes/reference-intakes.router";
 import type { ReferenceIntakesService } from "../reference-intakes/reference-intakes.service";
+import { createPostsRouter } from "../posts/posts.router";
+import type { PostsService } from "../posts/posts.service";
 import { router } from "./trpc";
 
 interface AppRouterDeps {
@@ -52,6 +54,7 @@ interface AppRouterDeps {
   articlesService: ArticlesService;
   notificationsService: NotificationsService;
   referenceIntakesService: ReferenceIntakesService;
+  postsService: PostsService;
 }
 
 export function createAppRouter(deps: AppRouterDeps) {
@@ -73,6 +76,7 @@ export function createAppRouter(deps: AppRouterDeps) {
     articles: createArticlesRouter(deps.articlesService),
     notifications: createNotificationsRouter(deps.notificationsService),
     referenceIntakes: createReferenceIntakesRouter(deps.referenceIntakesService),
+    posts: createPostsRouter(deps.postsService),
     admin: router({
       foods: createAdminFoodsRouter(deps.foodsService),
       dietitians: createAdminDietitiansRouter(deps.dietitiansService),
