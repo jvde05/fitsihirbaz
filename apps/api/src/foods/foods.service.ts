@@ -1,5 +1,5 @@
 import { Injectable } from "@nestjs/common";
-import type { Prisma } from "@fit-sihirbaz/db";
+import { Prisma } from "@fit-sihirbaz/db";
 import type {
   FoodCreateInput,
   FoodDetail,
@@ -11,33 +11,59 @@ import { FoodNotFoundError } from "./foods.errors";
 import { toFoodDetail, toFoodSummary } from "./foods.mapper";
 
 const USER_SUBMITTED_SOURCE_NAME = "Kullanıcı Girişi";
+// word_similarity(query, name) — similarity()'den farklı olarak query'yi name'in tamamına
+// değil en iyi eşleşen alt-diziye (kelimeye) göre kıyaslar; bu yüzden "Tavuk Göğsü (haşlanmış)"
+// gibi çok kelimeli isimlere kısa aramalar da (örn. "tavuk") yüksek skor alır. Eşik 0.3,
+// tek karakterlik yazım hatalarını (silme/ekleme/harf değişimi) genelde yakalar.
+const TRIGRAM_SIMILARITY_THRESHOLD = 0.3;
 
 @Injectable()
 export class FoodsService {
   constructor(private readonly prisma: PrismaService) {}
 
+  // pg_trgm ile typo-toleranslı arama: substring eşleşmesi (ILIKE) veya trigram benzerliği
+  // eşiği üstündeki kayıtlar, benzerlik skoruna göre sıralanıp döner (bkz. migration
+  // add_food_trigram_search — GIN index'ler ve pg_trgm extension'ı orada eklenir).
   async search(input: FoodSearchInput): Promise<FoodSearchResult> {
-    const where: Prisma.FoodItemWhereInput = {
-      OR: [
-        { name: { contains: input.query, mode: "insensitive" } },
-        { nameEn: { contains: input.query, mode: "insensitive" } },
-      ],
-      ...(input.category ? { category: { equals: input.category, mode: "insensitive" } } : {}),
-    };
+    const categoryFilter = input.category
+      ? Prisma.sql`AND category ILIKE ${input.category}`
+      : Prisma.empty;
 
-    const [rows, total] = await this.prisma.$transaction([
-      this.prisma.foodItem.findMany({
-        where,
-        include: { nutrientData: true },
-        orderBy: [{ isVerified: "desc" }, { name: "asc" }],
-        take: input.limit,
-        skip: input.offset,
-      }),
-      this.prisma.foodItem.count({ where }),
-    ]);
+    const rankedRows = await this.prisma.$queryRaw<{ id: string; total: bigint }[]>`
+      SELECT id, count(*) OVER() AS total
+      FROM "FoodItem"
+      WHERE (
+        name ILIKE ${"%" + input.query + "%"}
+        OR "nameEn" ILIKE ${"%" + input.query + "%"}
+        OR word_similarity(${input.query}, name) > ${TRIGRAM_SIMILARITY_THRESHOLD}
+        OR word_similarity(${input.query}, coalesce("nameEn", '')) > ${TRIGRAM_SIMILARITY_THRESHOLD}
+      )
+      ${categoryFilter}
+      ORDER BY
+        GREATEST(word_similarity(${input.query}, name), word_similarity(${input.query}, coalesce("nameEn", ''))) DESC,
+        "isVerified" DESC,
+        name ASC
+      LIMIT ${input.limit}
+      OFFSET ${input.offset}
+    `;
+
+    const total = rankedRows.length > 0 ? Number(rankedRows[0].total) : 0;
+    if (rankedRows.length === 0) {
+      return { items: [], total: 0 };
+    }
+
+    const ids = rankedRows.map((row) => row.id);
+    const rows = await this.prisma.foodItem.findMany({
+      where: { id: { in: ids } },
+      include: { nutrientData: true },
+    });
+    const rowById = new Map(rows.map((row) => [row.id, row]));
+    const orderedRows = ids.map((id) => rowById.get(id)).filter((row): row is NonNullable<typeof row> => row !== undefined);
 
     return {
-      items: rows.filter((row) => row.nutrientData !== null).map((row) => toFoodSummary({ ...row, nutrientData: row.nutrientData! })),
+      items: orderedRows
+        .filter((row) => row.nutrientData !== null)
+        .map((row) => toFoodSummary({ ...row, nutrientData: row.nutrientData! })),
       total,
     };
   }

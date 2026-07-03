@@ -252,6 +252,10 @@ model FoodItem {
 
   @@index([name])
   @@index([category])
+  // pg_trgm tabanlı typo-toleranslı arama için (bkz. foods.service.ts search()).
+  // gin_trgm_ops extension'ı migration'da CREATE EXTENSION ile ayrıca eklenir.
+  @@index([name(ops: raw("gin_trgm_ops"))], type: Gin, name: "FoodItem_name_trgm_idx")
+  @@index([nameEn(ops: raw("gin_trgm_ops"))], type: Gin, name: "FoodItem_nameEn_trgm_idx")
 }
 
 // ─────────────────────────────────────────────────────────────
