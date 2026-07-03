@@ -18,6 +18,7 @@ import {
 } from "@fit-sihirbaz/shared";
 import { trpc } from "@/lib/trpc";
 import { useAuthStore } from "@/lib/auth-store";
+import { AvatarUploader } from "@/components/AvatarUploader";
 
 const GENDER_LABELS: Record<Gender, string> = { MALE: "Erkek", FEMALE: "Kadın", OTHER: "Diğer" };
 const GOAL_LABELS: Record<Goal, string> = {
@@ -68,18 +69,23 @@ function PersonalInfoCard({
   firstName,
   lastName,
   phone,
+  avatarUrl,
 }: {
   firstName: string;
   lastName: string;
   phone: string | null;
+  avatarUrl: string | null;
 }) {
   const utils = trpc.useUtils();
   const [saved, setSaved] = useState(false);
+
+  function invalidateProfile() {
+    utils.clients.getProfile.invalidate();
+    utils.dietitians.getProfile.invalidate();
+  }
+
   const updateUserMutation = trpc.users.updateProfile.useMutation({
-    onSuccess: () => {
-      utils.clients.getProfile.invalidate();
-      utils.dietitians.getProfile.invalidate();
-    },
+    onSuccess: invalidateProfile,
   });
 
   const userForm = useForm<UpdateProfileInput>({
@@ -95,6 +101,8 @@ function PersonalInfoCard({
   return (
     <View style={styles.card}>
       <Text style={styles.cardTitle}>Kişisel Bilgiler</Text>
+
+      <AvatarUploader avatarUrl={avatarUrl} onUpdated={invalidateProfile} />
 
       <Text style={styles.label}>Ad</Text>
       <Controller
@@ -201,6 +209,7 @@ function ClientProfileScreen() {
         firstName={profileQuery.data.firstName}
         lastName={profileQuery.data.lastName}
         phone={profileQuery.data.phone}
+        avatarUrl={profileQuery.data.avatarUrl}
       />
 
       <View style={styles.card}>
@@ -368,6 +377,7 @@ function DietitianProfileScreen() {
         firstName={profileQuery.data.firstName}
         lastName={profileQuery.data.lastName}
         phone={profileQuery.data.phone}
+        avatarUrl={profileQuery.data.avatarUrl}
       />
 
       <View style={styles.card}>
