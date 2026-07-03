@@ -4,6 +4,7 @@ import * as ImagePicker from "expo-image-picker";
 import { trpc } from "@/lib/trpc";
 import { useAuthStore } from "@/lib/auth-store";
 import { resolveMediaUrl, uploadImageAsset } from "@/lib/uploads";
+import { QueryErrorNotice } from "@/components/QueryErrorNotice";
 import type { Post } from "@fit-sihirbaz/shared";
 
 const PAGE_SIZE = 10;
@@ -211,12 +212,15 @@ export default function AkisScreen() {
         <View style={styles.header}>
           <Text style={styles.title}>Akış</Text>
           <PostComposer onCreated={() => feedQuery.refetch()} />
+          {feedQuery.isError && (
+            <QueryErrorNotice message={feedQuery.error.message} onRetry={() => feedQuery.refetch()} />
+          )}
         </View>
       }
       ListEmptyComponent={
         feedQuery.isLoading ? (
           <ActivityIndicator style={styles.loading} />
-        ) : (
+        ) : feedQuery.isError ? null : (
           <Text style={styles.emptyText}>Henüz paylaşım yok. İlk paylaşımı sen yap!</Text>
         )
       }

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { FlatList, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { Link } from "expo-router";
 import { trpc } from "@/lib/trpc";
+import { QueryErrorNotice } from "@/components/QueryErrorNotice";
 import type { DietitianPublicSummary } from "@fit-sihirbaz/shared";
 
 export default function DietitiansScreen() {
@@ -14,7 +15,9 @@ export default function DietitiansScreen() {
       keyExtractor={(item) => item.id}
       contentContainerStyle={styles.listContent}
       ListEmptyComponent={
-        !searchQuery.isLoading ? <Text style={styles.emptyText}>Sonuç bulunamadı.</Text> : null
+        !searchQuery.isLoading && !searchQuery.isError ? (
+          <Text style={styles.emptyText}>Sonuç bulunamadı.</Text>
+        ) : null
       }
       renderItem={({ item }) => (
         <Link href={`/(app)/dietitians/${item.id}`} testID={`dietitian-card-${item.id}`} asChild>
@@ -33,6 +36,9 @@ export default function DietitiansScreen() {
       ListHeaderComponent={
         <View style={styles.header}>
           <Text style={styles.title}>Diyetisyenler</Text>
+          {searchQuery.isError && (
+            <QueryErrorNotice message={searchQuery.error.message} onRetry={() => searchQuery.refetch()} />
+          )}
           <TextInput
             testID="dietitian-search-input"
             style={styles.input}

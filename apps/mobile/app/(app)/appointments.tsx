@@ -2,6 +2,7 @@ import { useState } from "react";
 import { FlatList, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { trpc } from "@/lib/trpc";
 import { useAuthStore } from "@/lib/auth-store";
+import { QueryErrorNotice } from "@/components/QueryErrorNotice";
 import type { Appointment, AppointmentStatus } from "@fit-sihirbaz/shared";
 
 const STATUS_LABELS: Record<string, string> = {
@@ -28,8 +29,17 @@ function DietitianAppointmentsScreen() {
       data={appointmentsQuery.data ?? []}
       keyExtractor={(item) => item.id}
       contentContainerStyle={styles.listContent}
-      ListEmptyComponent={<Text style={styles.emptyText}>Henüz randevunuz yok.</Text>}
-      ListHeaderComponent={<Text style={styles.title}>Randevu Takvimi</Text>}
+      ListEmptyComponent={
+        appointmentsQuery.isError ? null : <Text style={styles.emptyText}>Henüz randevunuz yok.</Text>
+      }
+      ListHeaderComponent={
+        <View style={styles.header}>
+          <Text style={styles.title}>Randevu Takvimi</Text>
+          {appointmentsQuery.isError && (
+            <QueryErrorNotice message={appointmentsQuery.error.message} onRetry={() => appointmentsQuery.refetch()} />
+          )}
+        </View>
+      }
       renderItem={({ item }) => (
         <View style={styles.row}>
           <View style={styles.rowInfo}>
@@ -97,7 +107,9 @@ function ClientAppointmentsScreen() {
       data={appointmentsQuery.data ?? []}
       keyExtractor={(item) => item.id}
       contentContainerStyle={styles.listContent}
-      ListEmptyComponent={<Text style={styles.emptyText}>Henüz randevunuz yok.</Text>}
+      ListEmptyComponent={
+        appointmentsQuery.isError ? null : <Text style={styles.emptyText}>Henüz randevunuz yok.</Text>
+      }
       renderItem={({ item }) => (
         <View style={styles.row}>
           <View style={styles.rowInfo}>
@@ -122,6 +134,10 @@ function ClientAppointmentsScreen() {
       ListHeaderComponent={
         <View style={styles.header}>
           <Text style={styles.title}>Randevularım</Text>
+
+          {appointmentsQuery.isError && (
+            <QueryErrorNotice message={appointmentsQuery.error.message} onRetry={() => appointmentsQuery.refetch()} />
+          )}
 
           {dietitians.length === 0 ? (
             <Text style={styles.emptyText}>

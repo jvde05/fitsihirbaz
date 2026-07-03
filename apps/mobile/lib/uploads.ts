@@ -7,13 +7,13 @@ export function resolveMediaUrl(path: string): string {
   return path.startsWith("http") ? path : `${API_URL}${path}`;
 }
 
-// Akış paylaşımları ve profil fotoğrafları için ortak yükleme yardımcı fonksiyonu.
-// React Native'de FormData { uri, name, type } dosya nesnesi bekler; web'de gerçek bir
-// Blob gerekir — bu yüzden platforma göre ayrım yapılır.
+// Akış paylaşımları, profil fotoğrafları ve ilerleme fotoğrafları için ortak yükleme
+// yardımcı fonksiyonu. React Native'de FormData { uri, name, type } dosya nesnesi bekler;
+// web'de gerçek bir Blob gerekir — bu yüzden platforma göre ayrım yapılır.
 export async function uploadImageAsset(
   asset: ImagePicker.ImagePickerAsset,
   accessToken: string | null,
-  kind: "post" | "avatar" = "post",
+  kind: "post" | "avatar" | "progress" = "post",
 ): Promise<string> {
   const filename = asset.fileName ?? `photo-${Date.now()}.jpg`;
   const mimeType = asset.mimeType ?? "image/jpeg";

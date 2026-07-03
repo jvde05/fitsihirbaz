@@ -1,5 +1,6 @@
 import { FlatList, StyleSheet, Text, View } from "react-native";
 import { trpc } from "@/lib/trpc";
+import { QueryErrorNotice } from "@/components/QueryErrorNotice";
 import type { Order } from "@fit-sihirbaz/shared";
 
 const STATUS_LABELS: Record<string, string> = {
@@ -22,11 +23,16 @@ export default function OrdersScreen() {
       keyExtractor={(item) => item.id}
       contentContainerStyle={styles.listContent}
       ListEmptyComponent={
-        !ordersQuery.isLoading ? <Text style={styles.emptyText}>Henüz siparişiniz yok.</Text> : null
+        !ordersQuery.isLoading && !ordersQuery.isError ? (
+          <Text style={styles.emptyText}>Henüz siparişiniz yok.</Text>
+        ) : null
       }
       ListHeaderComponent={
         <View style={styles.header}>
           <Text style={styles.title}>Siparişlerim</Text>
+          {ordersQuery.isError && (
+            <QueryErrorNotice message={ordersQuery.error.message} onRetry={() => ordersQuery.refetch()} />
+          )}
           <View style={styles.summaryCard}>
             <Text style={styles.summaryLabel}>Toplam Kazanç (Ödenen Siparişler)</Text>
             <Text style={styles.summaryValue}>{totalEarnings.toFixed(2)} TRY</Text>

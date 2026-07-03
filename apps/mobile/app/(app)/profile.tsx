@@ -19,6 +19,7 @@ import {
 import { trpc } from "@/lib/trpc";
 import { useAuthStore } from "@/lib/auth-store";
 import { AvatarUploader } from "@/components/AvatarUploader";
+import { QueryErrorNotice } from "@/components/QueryErrorNotice";
 
 const GENDER_LABELS: Record<Gender, string> = { MALE: "Erkek", FEMALE: "Kadın", OTHER: "Diğer" };
 const GOAL_LABELS: Record<Goal, string> = {
@@ -193,6 +194,14 @@ function ClientProfileScreen() {
 
   const [savedClient, setSavedClient] = useState(false);
 
+  if (profileQuery.isError) {
+    return (
+      <View style={styles.center}>
+        <QueryErrorNotice message={profileQuery.error.message} onRetry={() => profileQuery.refetch()} />
+      </View>
+    );
+  }
+
   if (profileQuery.isLoading || !profileQuery.data) {
     return (
       <View style={styles.center}>
@@ -359,6 +368,14 @@ function DietitianProfileScreen() {
       .filter(Boolean);
     updateDietitianMutation.mutate({ ...values, specialties });
     setSavedDietitian(true);
+  }
+
+  if (profileQuery.isError) {
+    return (
+      <View style={styles.center}>
+        <QueryErrorNotice message={profileQuery.error.message} onRetry={() => profileQuery.refetch()} />
+      </View>
+    );
   }
 
   if (profileQuery.isLoading || !profileQuery.data) {

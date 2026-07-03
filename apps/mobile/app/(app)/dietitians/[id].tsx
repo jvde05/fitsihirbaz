@@ -2,6 +2,7 @@ import { useState } from "react";
 import { ActivityIndicator, Linking, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import { useLocalSearchParams } from "expo-router";
 import { trpc } from "@/lib/trpc";
+import { QueryErrorNotice } from "@/components/QueryErrorNotice";
 
 export default function DietitianProfileScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -44,6 +45,14 @@ export default function DietitianProfileScreen() {
     return (
       <View style={styles.center}>
         <ActivityIndicator />
+      </View>
+    );
+  }
+
+  if (dietitianQuery.isError) {
+    return (
+      <View style={styles.center}>
+        <QueryErrorNotice message={dietitianQuery.error.message} onRetry={() => dietitianQuery.refetch()} />
       </View>
     );
   }
