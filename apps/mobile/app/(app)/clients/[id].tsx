@@ -1,7 +1,9 @@
-import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator, Image, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useLocalSearchParams } from "expo-router";
 import { trpc } from "@/lib/trpc";
 import { WeightChart } from "@/components/WeightChart";
+import { QueryErrorNotice } from "@/components/QueryErrorNotice";
+import { resolveMediaUrl } from "@/lib/uploads";
 
 const PLAN_STATUS_LABELS: Record<string, string> = {
   DRAFT: "Taslak",
@@ -36,6 +38,17 @@ export default function ClientDetailScreen() {
       <Text style={styles.name}>{client ? `${client.firstName} ${client.lastName}` : "Danışan"}</Text>
       {client && <Text style={styles.email}>{client.email}</Text>}
 
+      {(clientsQuery.isError || progressQuery.isError || plansQuery.isError) && (
+        <QueryErrorNotice
+          message={(clientsQuery.error ?? progressQuery.error ?? plansQuery.error)?.message ?? "Bilinmeyen hata"}
+          onRetry={() => {
+            clientsQuery.refetch();
+            progressQuery.refetch();
+            plansQuery.refetch();
+          }}
+        />
+      )}
+
       <Text style={styles.sectionTitle}>Diyet Planları</Text>
       {plansQuery.data?.length === 0 && <Text style={styles.emptyText}>Henüz bir plan oluşturulmadı.</Text>}
       {plansQuery.data?.map((plan) => (
@@ -66,11 +79,24 @@ export default function ClientDetailScreen() {
           .reverse()
           .slice(0, 10)
           .map((log) => (
-            <View key={log.id} style={styles.progressRow}>
-              <Text style={styles.progressDate}>{log.logDate}</Text>
-              <Text style={styles.progressValue}>{log.weightKg ?? "-"} kg</Text>
-              <Text style={styles.progressValue}>Bel {log.waistCm ?? "-"}</Text>
-              <Text style={styles.progressValue}>Kalça {log.hipCm ?? "-"}</Text>
+            <View key={log.id} style={styles.progressRowWrap}>
+              <View style={styles.progressRow}>
+                <Text style={styles.progressDate}>{log.logDate}</Text>
+                <Text style={styles.progressValue}>{log.weightKg ?? "-"} kg</Text>
+                <Text style={styles.progressValue}>
+                  Yağ {log.bodyFatPercent !== null ? `${log.bodyFatPercent}%` : "-"}
+                </Text>
+                <Text style={styles.progressValue}>Bel {log.waistCm ?? "-"}</Text>
+                <Text style={styles.progressValue}>Kalça {log.hipCm ?? "-"}</Text>
+              </View>
+              {log.notes && <Text style={styles.progressNotes}>{log.notes}</Text>}
+              {log.photoUrls.length > 0 && (
+                <View style={styles.progressPhotoRow}>
+                  {log.photoUrls.map((url) => (
+                    <Image key={url} source={{ uri: resolveMediaUrl(url) }} style={styles.progressPhotoThumb} />
+                  ))}
+                </View>
+              )}
             </View>
           ))}
     </ScrollView>
@@ -91,13 +117,14 @@ const styles = StyleSheet.create({
   statusBadge: { backgroundColor: "#f3f4f6", borderRadius: 999, paddingHorizontal: 8, paddingVertical: 2 },
   statusBadgeText: { fontSize: 11, color: "#374151" },
   summaryText: { fontSize: 13, color: "#374151", marginBottom: 8 },
+  progressRowWrap: { paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: "#f3f4f6", gap: 4 },
   progressRow: {
     flexDirection: "row",
     justifyContent: "space-between",
-    paddingVertical: 8,
-    borderBottomWidth: 1,
-    borderBottomColor: "#f3f4f6",
   },
   progressDate: { fontSize: 12, color: "#111827" },
   progressValue: { fontSize: 12, color: "#6b7280" },
+  progressNotes: { fontSize: 11, color: "#9ca3af" },
+  progressPhotoRow: { flexDirection: "row", gap: 6 },
+  progressPhotoThumb: { width: 32, height: 32, borderRadius: 6 },
 });

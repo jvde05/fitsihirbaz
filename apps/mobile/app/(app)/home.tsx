@@ -3,6 +3,7 @@ import { Link, useRouter } from "expo-router";
 import { trpc } from "@/lib/trpc";
 import { useAuthStore } from "@/lib/auth-store";
 import { clearStoredRefreshToken } from "@/lib/secure-store";
+import { QueryErrorNotice } from "@/components/QueryErrorNotice";
 
 const ROLE_LABELS: Record<string, string> = {
   CLIENT: "Danışan",
@@ -90,7 +91,10 @@ export default function HomeScreen() {
           <View style={styles.card}>
             <Text style={styles.cardTitle}>Danışan Sayısı</Text>
             {clientsQuery.isLoading && <ActivityIndicator />}
-            {!clientsQuery.isLoading && (
+            {clientsQuery.isError && (
+              <QueryErrorNotice message={clientsQuery.error.message} onRetry={() => clientsQuery.refetch()} />
+            )}
+            {!clientsQuery.isLoading && !clientsQuery.isError && (
               <Text style={styles.planName} testID="client-count">
                 {clientsQuery.data?.length ?? 0}
               </Text>
@@ -103,7 +107,13 @@ export default function HomeScreen() {
           <View style={styles.card}>
             <Text style={styles.cardTitle}>Bugünkü Randevular</Text>
             {dietitianAppointmentsQuery.isLoading && <ActivityIndicator />}
-            {!dietitianAppointmentsQuery.isLoading && todayAppointments.length === 0 && (
+            {dietitianAppointmentsQuery.isError && (
+              <QueryErrorNotice
+                message={dietitianAppointmentsQuery.error.message}
+                onRetry={() => dietitianAppointmentsQuery.refetch()}
+              />
+            )}
+            {!dietitianAppointmentsQuery.isLoading && !dietitianAppointmentsQuery.isError && todayAppointments.length === 0 && (
               <Text style={styles.emptyText}>Bugün için randevunuz yok.</Text>
             )}
             {todayAppointments.map((appointment) => (
@@ -136,7 +146,10 @@ export default function HomeScreen() {
           <View style={styles.card}>
             <Text style={styles.cardTitle}>Aktif Diyet Planı</Text>
             {plansQuery.isLoading && <ActivityIndicator />}
-            {!plansQuery.isLoading && !activePlan && (
+            {plansQuery.isError && (
+              <QueryErrorNotice message={plansQuery.error.message} onRetry={() => plansQuery.refetch()} />
+            )}
+            {!plansQuery.isLoading && !plansQuery.isError && !activePlan && (
               <Text style={styles.emptyText}>Henüz bir diyet planınız bulunmuyor.</Text>
             )}
             {activePlan && (
@@ -155,7 +168,10 @@ export default function HomeScreen() {
           <View style={styles.card}>
             <Text style={styles.cardTitle}>Yaklaşan Randevu</Text>
             {appointmentsQuery.isLoading && <ActivityIndicator />}
-            {!appointmentsQuery.isLoading && !upcomingAppointment && (
+            {appointmentsQuery.isError && (
+              <QueryErrorNotice message={appointmentsQuery.error.message} onRetry={() => appointmentsQuery.refetch()} />
+            )}
+            {!appointmentsQuery.isLoading && !appointmentsQuery.isError && !upcomingAppointment && (
               <Text style={styles.emptyText}>Yaklaşan randevunuz bulunmuyor.</Text>
             )}
             {upcomingAppointment && (

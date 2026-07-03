@@ -1,6 +1,7 @@
 import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from "react-native";
 import { MEAL_TYPE_LABELS, type NutrientTotals } from "@fit-sihirbaz/shared";
 import { trpc } from "@/lib/trpc";
+import { QueryErrorNotice } from "@/components/QueryErrorNotice";
 
 function TotalsBadge({ totals }: { totals: NutrientTotals }) {
   return (
@@ -23,6 +24,14 @@ export default function PlanScreen() {
     );
   }
 
+  if (plansQuery.isError) {
+    return (
+      <View style={styles.center}>
+        <QueryErrorNotice message={plansQuery.error.message} onRetry={() => plansQuery.refetch()} />
+      </View>
+    );
+  }
+
   if (!activePlanId) {
     return (
       <View style={styles.center}>
@@ -31,7 +40,23 @@ export default function PlanScreen() {
     );
   }
 
-  if (planQuery.isLoading || !planQuery.data) {
+  if (planQuery.isLoading) {
+    return (
+      <View style={styles.center}>
+        <ActivityIndicator />
+      </View>
+    );
+  }
+
+  if (planQuery.isError) {
+    return (
+      <View style={styles.center}>
+        <QueryErrorNotice message={planQuery.error.message} onRetry={() => planQuery.refetch()} />
+      </View>
+    );
+  }
+
+  if (!planQuery.data) {
     return (
       <View style={styles.center}>
         <ActivityIndicator />

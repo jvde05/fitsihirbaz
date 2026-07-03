@@ -2,6 +2,7 @@ import { useState } from "react";
 import { FlatList, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { Link } from "expo-router";
 import { trpc } from "@/lib/trpc";
+import { QueryErrorNotice } from "@/components/QueryErrorNotice";
 import type { ClientSummary } from "@fit-sihirbaz/shared";
 
 export default function ClientsScreen() {
@@ -20,7 +21,9 @@ export default function ClientsScreen() {
       keyExtractor={(item) => item.id}
       contentContainerStyle={styles.listContent}
       ListEmptyComponent={
-        !clientsQuery.isLoading ? <Text style={styles.emptyText}>Henüz danışanınız yok.</Text> : null
+        !clientsQuery.isLoading && !clientsQuery.isError ? (
+          <Text style={styles.emptyText}>Henüz danışanınız yok.</Text>
+        ) : null
       }
       renderItem={({ item }) => (
         <Link href={`/(app)/clients/${item.id}`} testID={`client-card-${item.id}`} asChild>
@@ -35,6 +38,9 @@ export default function ClientsScreen() {
       ListHeaderComponent={
         <View style={styles.header}>
           <Text style={styles.title}>Danışanlarım</Text>
+          {clientsQuery.isError && (
+            <QueryErrorNotice message={clientsQuery.error.message} onRetry={() => clientsQuery.refetch()} />
+          )}
           <TextInput
             testID="client-search-input"
             style={styles.input}
