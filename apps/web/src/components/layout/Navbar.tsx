@@ -4,12 +4,19 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { trpc } from "@/lib/trpc";
 import { useAuthStore } from "@/lib/auth-store";
+import { resolveAvatarUrl } from "@/components/profile/AvatarUploader";
 import { NotificationBell } from "./NotificationBell";
 
 const ROLE_LABELS: Record<string, string> = {
   CLIENT: "Danışan",
   DIETITIAN: "Diyetisyen",
   ADMIN: "Yönetici",
+};
+
+const PROFILE_HREFS: Record<string, string> = {
+  CLIENT: "/danisan/profil",
+  DIETITIAN: "/diyetisyen/profil",
+  ADMIN: "/admin/profil",
 };
 
 export function Navbar() {
@@ -47,9 +54,21 @@ export function Navbar() {
           {status === "authenticated" && user ? (
             <div className="flex items-center gap-3">
               <NotificationBell />
-              <span className="text-gray-700">
+              <Link
+                href={PROFILE_HREFS[user.role] ?? "/"}
+                className="flex items-center gap-2 text-gray-700 hover:text-gray-900"
+              >
+                <span className="h-7 w-7 overflow-hidden rounded-full bg-gray-100">
+                  {resolveAvatarUrl(user.avatarUrl) ? (
+                    <img
+                      src={resolveAvatarUrl(user.avatarUrl) ?? undefined}
+                      alt=""
+                      className="h-full w-full object-cover"
+                    />
+                  ) : null}
+                </span>
                 {user.firstName} ({ROLE_LABELS[user.role] ?? user.role})
-              </span>
+              </Link>
               <button
                 onClick={handleLogout}
                 className="rounded-md border border-gray-300 px-3 py-1.5 text-gray-700 hover:bg-gray-100"
