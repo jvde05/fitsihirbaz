@@ -73,6 +73,10 @@ export default function HomeScreen() {
         </Text>
       )}
 
+      <Link href="/(app)/akis" testID="view-feed-link" style={styles.link}>
+        Akış →
+      </Link>
+
       <Link href="/(app)/notifications" testID="view-notifications-link" style={styles.link}>
         Bildirimler{unreadNotificationCount > 0 ? ` (${unreadNotificationCount})` : ""} →
       </Link>
