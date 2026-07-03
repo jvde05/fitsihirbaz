@@ -19,6 +19,7 @@ import {
 import { trpc } from "@/lib/trpc";
 import { useAuthStore } from "@/lib/auth-store";
 import { AvatarUploader } from "@/components/AvatarUploader";
+import { CertificationUploader } from "@/components/CertificationUploader";
 import { QueryErrorNotice } from "@/components/QueryErrorNotice";
 
 const GENDER_LABELS: Record<Gender, string> = { MALE: "Erkek", FEMALE: "Kadın", OTHER: "Diğer" };
@@ -481,6 +482,13 @@ function DietitianProfileScreen() {
         >
           <Text style={styles.buttonText}>Kaydet</Text>
         </Pressable>
+      </View>
+
+      <View style={styles.card}>
+        <CertificationUploader
+          certificationUrls={profileQuery.data.certificationUrls}
+          onUpdated={() => utils.dietitians.getProfile.invalidate()}
+        />
       </View>
     </ScrollView>
   );

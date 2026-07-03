@@ -155,4 +155,82 @@ describe("DietitiansService", () => {
       expect(notifications.create).toHaveBeenCalledWith("user-1", "DIETITIAN_REJECTED", {});
     });
   });
+
+  describe("adminList", () => {
+    it("admin doğrulama kuyruğu için lisans no ve sertifikaları da içeren tam profili döner", async () => {
+      prisma.dietitianProfile.findMany.mockResolvedValue([
+        buildDietitianRow({ certificationUrls: ["/uploads/certifications/a.jpg"] }),
+      ]);
+
+      const result = await service.adminList({});
+      expect(result[0].licenseNumber).toBe("12345");
+      expect(result[0].certificationUrls).toEqual(["/uploads/certifications/a.jpg"]);
+    });
+  });
+
+  describe("addCertification", () => {
+    it("diyetisyen yoksa DietitianProfileNotFoundError fırlatır", async () => {
+      prisma.dietitianProfile.findUnique.mockResolvedValue(null);
+      await expect(service.addCertification("user-1", "/uploads/certifications/a.jpg")).rejects.toBeInstanceOf(
+        DietitianProfileNotFoundError,
+      );
+    });
+
+    it("yeni sertifika URL'ini listeye ekler", async () => {
+      prisma.dietitianProfile.findUnique.mockResolvedValue(buildDietitianRow({ certificationUrls: [] }));
+      prisma.dietitianProfile.update.mockResolvedValue(
+        buildDietitianRow({ certificationUrls: ["/uploads/certifications/a.jpg"] }),
+      );
+
+      const result = await service.addCertification("user-1", "/uploads/certifications/a.jpg");
+      expect(prisma.dietitianProfile.update).toHaveBeenCalledWith({
+        where: { userId: "user-1" },
+        data: { certificationUrls: ["/uploads/certifications/a.jpg"] },
+        include: { user: true },
+      });
+      expect(result.certificationUrls).toEqual(["/uploads/certifications/a.jpg"]);
+    });
+
+    it("aynı URL zaten varsa tekrar eklemez", async () => {
+      prisma.dietitianProfile.findUnique.mockResolvedValue(
+        buildDietitianRow({ certificationUrls: ["/uploads/certifications/a.jpg"] }),
+      );
+      prisma.dietitianProfile.update.mockResolvedValue(
+        buildDietitianRow({ certificationUrls: ["/uploads/certifications/a.jpg"] }),
+      );
+
+      await service.addCertification("user-1", "/uploads/certifications/a.jpg");
+      expect(prisma.dietitianProfile.update).toHaveBeenCalledWith({
+        where: { userId: "user-1" },
+        data: { certificationUrls: ["/uploads/certifications/a.jpg"] },
+        include: { user: true },
+      });
+    });
+  });
+
+  describe("removeCertification", () => {
+    it("diyetisyen yoksa DietitianProfileNotFoundError fırlatır", async () => {
+      prisma.dietitianProfile.findUnique.mockResolvedValue(null);
+      await expect(service.removeCertification("user-1", "/uploads/certifications/a.jpg")).rejects.toBeInstanceOf(
+        DietitianProfileNotFoundError,
+      );
+    });
+
+    it("belirtilen URL'i listeden çıkarır", async () => {
+      prisma.dietitianProfile.findUnique.mockResolvedValue(
+        buildDietitianRow({ certificationUrls: ["/uploads/certifications/a.jpg", "/uploads/certifications/b.jpg"] }),
+      );
+      prisma.dietitianProfile.update.mockResolvedValue(
+        buildDietitianRow({ certificationUrls: ["/uploads/certifications/b.jpg"] }),
+      );
+
+      const result = await service.removeCertification("user-1", "/uploads/certifications/a.jpg");
+      expect(prisma.dietitianProfile.update).toHaveBeenCalledWith({
+        where: { userId: "user-1" },
+        data: { certificationUrls: ["/uploads/certifications/b.jpg"] },
+        include: { user: true },
+      });
+      expect(result.certificationUrls).toEqual(["/uploads/certifications/b.jpg"]);
+    });
+  });
 });
