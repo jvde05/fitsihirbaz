@@ -6,6 +6,7 @@ import { trpc } from "@/lib/trpc";
 import { RequireAuth } from "@/components/auth/RequireAuth";
 import { resolveMediaUrl } from "@/lib/media";
 import { uploadImage } from "@/lib/uploads";
+import { QueryErrorNotice } from "@/components/QueryErrorNotice";
 
 const PAGE_SIZE = 10;
 
@@ -216,6 +217,9 @@ function AkisContent() {
       <PostComposer onCreated={() => feedQuery.refetch()} />
 
       {feedQuery.isLoading && <p className="text-gray-500">Yükleniyor...</p>}
+      {feedQuery.isError && (
+        <QueryErrorNotice message={feedQuery.error.message} onRetry={() => feedQuery.refetch()} />
+      )}
       {feedQuery.data && feedQuery.data.items.length === 0 && (
         <p className="text-gray-500">Henüz paylaşım yok. İlk paylaşımı sen yap!</p>
       )}

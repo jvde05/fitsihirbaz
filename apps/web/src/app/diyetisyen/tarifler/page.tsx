@@ -7,6 +7,7 @@ import type { z } from "zod";
 import { RecipeCreateInputSchema, type RecipeIngredientInput } from "@fit-sihirbaz/shared";
 import { trpc } from "@/lib/trpc";
 import { IngredientPicker } from "@/components/recipes/IngredientPicker";
+import { QueryErrorNotice } from "@/components/QueryErrorNotice";
 
 const RecipeMetaFormSchema = RecipeCreateInputSchema.omit({ ingredients: true });
 type RecipeMetaForm = z.infer<typeof RecipeMetaFormSchema>;
@@ -141,6 +142,10 @@ export default function TariflerPage() {
           {isSubmitting ? "Oluşturuluyor..." : "Tarif Oluştur"}
         </button>
       </form>
+
+      {recipesQuery.isError && (
+        <QueryErrorNotice message={recipesQuery.error.message} onRetry={() => recipesQuery.refetch()} />
+      )}
 
       <ul className="divide-y divide-gray-200 rounded-md border border-gray-200">
         {recipesQuery.data?.map((recipe) => (

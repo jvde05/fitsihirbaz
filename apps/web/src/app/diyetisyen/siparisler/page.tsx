@@ -1,6 +1,7 @@
 "use client";
 
 import { trpc } from "@/lib/trpc";
+import { QueryErrorNotice } from "@/components/QueryErrorNotice";
 
 const STATUS_LABELS: Record<string, string> = {
   PENDING: "Bekliyor",
@@ -26,7 +27,12 @@ export default function SiparislerPage() {
       </div>
 
       {ordersQuery.isLoading && <p className="text-gray-500">Yükleniyor...</p>}
-      {orders.length === 0 && !ordersQuery.isLoading && <p className="text-gray-500">Henüz siparişiniz yok.</p>}
+      {ordersQuery.isError && (
+        <QueryErrorNotice message={ordersQuery.error.message} onRetry={() => ordersQuery.refetch()} />
+      )}
+      {orders.length === 0 && !ordersQuery.isLoading && !ordersQuery.isError && (
+        <p className="text-gray-500">Henüz siparişiniz yok.</p>
+      )}
 
       <ul className="divide-y divide-gray-200 rounded-md border border-gray-200">
         {orders.map((order) => (

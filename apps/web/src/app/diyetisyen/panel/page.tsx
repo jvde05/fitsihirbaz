@@ -22,9 +22,9 @@ export default function DiyetisyenPanelPage() {
       <div className="grid gap-4 sm:grid-cols-3">
         <div className="rounded-md border border-gray-200 p-4">
           <p className="text-xs font-semibold uppercase text-gray-500">Danışan Sayısı</p>
-          {clientsQuery.isLoading ? (
-            <p className="mt-2 text-sm text-gray-400">Yükleniyor...</p>
-          ) : (
+          {clientsQuery.isLoading && <p className="mt-2 text-sm text-gray-400">Yükleniyor...</p>}
+          {clientsQuery.isError && <p className="mt-2 text-sm text-red-600">Yüklenemedi</p>}
+          {!clientsQuery.isLoading && !clientsQuery.isError && (
             <p className="mt-2 text-2xl font-semibold text-gray-900">{clientCount}</p>
           )}
           <Link href="/diyetisyen/danisanlar" className="mt-2 inline-block text-sm font-medium text-brand-700 hover:underline">
@@ -34,9 +34,9 @@ export default function DiyetisyenPanelPage() {
 
         <div className="rounded-md border border-gray-200 p-4">
           <p className="text-xs font-semibold uppercase text-gray-500">Bekleyen Randevular</p>
-          {appointmentsQuery.isLoading ? (
-            <p className="mt-2 text-sm text-gray-400">Yükleniyor...</p>
-          ) : (
+          {appointmentsQuery.isLoading && <p className="mt-2 text-sm text-gray-400">Yükleniyor...</p>}
+          {appointmentsQuery.isError && <p className="mt-2 text-sm text-red-600">Yüklenemedi</p>}
+          {!appointmentsQuery.isLoading && !appointmentsQuery.isError && (
             <p className="mt-2 text-2xl font-semibold text-gray-900">{pendingAppointments.length}</p>
           )}
           <Link href="/diyetisyen/randevular" className="mt-2 inline-block text-sm font-medium text-brand-700 hover:underline">
@@ -46,9 +46,9 @@ export default function DiyetisyenPanelPage() {
 
         <div className="rounded-md border border-gray-200 p-4">
           <p className="text-xs font-semibold uppercase text-gray-500">Toplam Kazanç</p>
-          {ordersQuery.isLoading ? (
-            <p className="mt-2 text-sm text-gray-400">Yükleniyor...</p>
-          ) : (
+          {ordersQuery.isLoading && <p className="mt-2 text-sm text-gray-400">Yükleniyor...</p>}
+          {ordersQuery.isError && <p className="mt-2 text-sm text-red-600">Yüklenemedi</p>}
+          {!ordersQuery.isLoading && !ordersQuery.isError && (
             <p className="mt-2 text-2xl font-semibold text-gray-900">{totalEarnings.toFixed(2)} TRY</p>
           )}
           <Link href="/diyetisyen/siparisler" className="mt-2 inline-block text-sm font-medium text-brand-700 hover:underline">

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { trpc } from "@/lib/trpc";
+import { QueryErrorNotice } from "@/components/QueryErrorNotice";
 
 export default function OdemeSimulasyonPage() {
   const params = useParams<{ paymentId: string }>();
@@ -31,6 +32,9 @@ export default function OdemeSimulasyonPage() {
 
   if (checkoutQuery.isLoading) {
     return <p className="text-gray-500">Yükleniyor...</p>;
+  }
+  if (checkoutQuery.isError) {
+    return <QueryErrorNotice message={checkoutQuery.error.message} onRetry={() => checkoutQuery.refetch()} />;
   }
   if (!checkoutQuery.data) {
     return <p className="text-gray-500">Ödeme bulunamadı.</p>;

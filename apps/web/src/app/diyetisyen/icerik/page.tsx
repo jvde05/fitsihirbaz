@@ -5,6 +5,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { CreateArticleInputSchema, type CreateArticleInput } from "@fit-sihirbaz/shared";
 import { trpc } from "@/lib/trpc";
+import { QueryErrorNotice } from "@/components/QueryErrorNotice";
 
 export default function IcerikPage() {
   const utils = trpc.useUtils();
@@ -85,6 +86,10 @@ export default function IcerikPage() {
           {isSubmitting ? "Kaydediliyor..." : "Taslak Olarak Kaydet"}
         </button>
       </form>
+
+      {articlesQuery.isError && (
+        <QueryErrorNotice message={articlesQuery.error.message} onRetry={() => articlesQuery.refetch()} />
+      )}
 
       <ul className="divide-y divide-gray-200 rounded-md border border-gray-200">
         {articlesQuery.data?.map((article) => (

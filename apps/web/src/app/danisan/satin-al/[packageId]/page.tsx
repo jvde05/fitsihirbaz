@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { trpc } from "@/lib/trpc";
+import { QueryErrorNotice } from "@/components/QueryErrorNotice";
 
 export default function SatinAlPage() {
   const params = useParams<{ packageId: string }>();
@@ -31,6 +32,9 @@ export default function SatinAlPage() {
 
   if (packageQuery.isLoading) {
     return <p className="text-gray-500">Yükleniyor...</p>;
+  }
+  if (packageQuery.isError) {
+    return <QueryErrorNotice message={packageQuery.error.message} onRetry={() => packageQuery.refetch()} />;
   }
   if (!packageQuery.data) {
     return <p className="text-gray-500">Paket bulunamadı.</p>;

@@ -2,6 +2,7 @@
 
 import { trpc } from "@/lib/trpc";
 import type { AppointmentStatus } from "@fit-sihirbaz/shared";
+import { QueryErrorNotice } from "@/components/QueryErrorNotice";
 
 const STATUS_LABELS: Record<string, string> = {
   SCHEDULED: "Planlandı",
@@ -25,6 +26,10 @@ export default function DiyetisyenRandevularPage() {
   return (
     <div>
       <h1 className="mb-6 text-2xl font-semibold text-gray-900">Randevu Takvimi</h1>
+
+      {appointmentsQuery.isError && (
+        <QueryErrorNotice message={appointmentsQuery.error.message} onRetry={() => appointmentsQuery.refetch()} />
+      )}
 
       <ul className="divide-y divide-gray-200 rounded-md border border-gray-200">
         {appointmentsQuery.data?.map((appointment) => (

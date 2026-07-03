@@ -12,6 +12,7 @@ import {
   type UpsertReferenceIntakeInput,
 } from "@fit-sihirbaz/shared";
 import { trpc } from "@/lib/trpc";
+import { QueryErrorNotice } from "@/components/QueryErrorNotice";
 
 const EMPTY_FORM: UpsertReferenceIntakeInput = {
   nutrient: "",
@@ -227,6 +228,10 @@ export default function AdminReferansDegerleriPage() {
           </button>
         </div>
       </form>
+
+      {listQuery.isError && (
+        <QueryErrorNotice message={listQuery.error.message} onRetry={() => listQuery.refetch()} />
+      )}
 
       <ul className="divide-y divide-gray-200 rounded-md border border-gray-200">
         {listQuery.data?.map((item) => (
