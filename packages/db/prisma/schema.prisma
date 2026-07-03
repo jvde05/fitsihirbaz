@@ -590,3 +590,40 @@ model Notification {
 
   @@index([userId])
 }
+
+// ─────────────────────────────────────────────────────────────
+// 23. ReferenceIntake
+// ─────────────────────────────────────────────────────────────
+
+enum ReferenceSex {
+  MALE
+  FEMALE
+  ALL
+}
+
+enum ReferenceLifeStage {
+  NONE
+  PREGNANCY
+  LACTATION
+}
+
+// Yaş/cinsiyet/yaşam evresine göre günlük referans besin öğesi alım değeri (TÜBER/DRI benzeri
+// tablo). isVerifiedSource=false olan kayıtlar resmi TÜBER kaynağıyla henüz teyit edilmemiş,
+// yer tutucu (placeholder) değerlerdir — admin panelinden gerçek kaynakla güncellenmelidir.
+model ReferenceIntake {
+  id               String             @id @default(uuid())
+  nutrient         String
+  unit             String
+  ageMinYears      Int
+  ageMaxYears      Int?
+  sex              ReferenceSex
+  lifeStage        ReferenceLifeStage @default(NONE)
+  value            Decimal
+  sourceLabel      String
+  isVerifiedSource Boolean            @default(false)
+  notes            String?
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+
+  @@index([nutrient])
+}

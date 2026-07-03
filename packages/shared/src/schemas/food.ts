@@ -33,6 +33,8 @@ export type FoodSearchResult = z.infer<typeof FoodSearchResultSchema>;
 export const FoodDetailSchema = FoodSummarySchema.extend({
   sourceId: z.string().uuid(),
   sourceName: z.string(),
+  sourceCitation: z.string(),
+  sourceUrl: z.string().nullable(),
   fiber: z.number().nullable(),
   sugar: z.number().nullable(),
   glycemicIndex: z.number().int().nullable(),

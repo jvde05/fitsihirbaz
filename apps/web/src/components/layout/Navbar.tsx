@@ -36,6 +36,9 @@ export function Navbar() {
           <Link href="/literatur" className="text-gray-600 hover:text-gray-900">
             Literatür
           </Link>
+          <Link href="/referans-degerleri" className="text-gray-600 hover:text-gray-900">
+            Referans Değerleri
+          </Link>
           {status === "authenticated" && user ? (
             <div className="flex items-center gap-3">
               <NotificationBell />

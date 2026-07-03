@@ -365,8 +365,54 @@ async function main() {
     });
   }
 
+  // ─────────────────────────────────────────────────────────────
+  // Referans besin alım değerleri (TÜBER/DRI benzeri) — YER TUTUCU VERİ
+  // Bu değerler genel kabul görmüş uluslararası ortalamalardır, resmi TÜBER (Türkiye
+  // Beslenme Rehberi) kaynağıyla teyit edilmemiştir (isVerifiedSource=false). Sadece
+  // yetişkin enerji/makro değerleriyle sınırlı tutuldu; admin panelinden gerçek
+  // kaynaklarla güncellenene kadar kesin klinik referans olarak kullanılmamalıdır.
+  // ─────────────────────────────────────────────────────────────
+
+  const UNVERIFIED_SOURCE_LABEL =
+    "Genel uluslararası ortalama değer — TÜBER ile doğrulanmadı, resmi kaynakla teyit edilmeli";
+
+  async function seedReferenceIntake(data: {
+    nutrient: string;
+    unit: string;
+    ageMinYears: number;
+    ageMaxYears: number | null;
+    sex: "MALE" | "FEMALE" | "ALL";
+    value: number;
+  }) {
+    const existing = await prisma.referenceIntake.findFirst({
+      where: {
+        nutrient: data.nutrient,
+        ageMinYears: data.ageMinYears,
+        sex: data.sex,
+        lifeStage: "NONE",
+      },
+    });
+    if (existing) return existing;
+    return prisma.referenceIntake.create({
+      data: {
+        ...data,
+        lifeStage: "NONE",
+        sourceLabel: UNVERIFIED_SOURCE_LABEL,
+        isVerifiedSource: false,
+      },
+    });
+  }
+
+  await seedReferenceIntake({ nutrient: "ENERGY", unit: "kcal", ageMinYears: 19, ageMaxYears: 50, sex: "MALE", value: 2500 });
+  await seedReferenceIntake({ nutrient: "ENERGY", unit: "kcal", ageMinYears: 19, ageMaxYears: 50, sex: "FEMALE", value: 2000 });
+  await seedReferenceIntake({ nutrient: "PROTEIN", unit: "g", ageMinYears: 19, ageMaxYears: null, sex: "ALL", value: 56 });
+  await seedReferenceIntake({ nutrient: "CARBS", unit: "g", ageMinYears: 19, ageMaxYears: null, sex: "ALL", value: 130 });
+  await seedReferenceIntake({ nutrient: "FAT", unit: "g", ageMinYears: 19, ageMaxYears: null, sex: "ALL", value: 70 });
+  await seedReferenceIntake({ nutrient: "FIBER", unit: "g", ageMinYears: 19, ageMaxYears: null, sex: "MALE", value: 38 });
+  await seedReferenceIntake({ nutrient: "FIBER", unit: "g", ageMinYears: 19, ageMaxYears: null, sex: "FEMALE", value: 25 });
+
   console.log(
-    "Seed tamamlandı: 1 FoodSource, 8 FoodItem, 1 admin, 3 diyetisyen, 3 danışan, 3 paket, 2 ödenmiş sipariş, 2 yorum, 1 randevu.",
+    "Seed tamamlandı: 1 FoodSource, 8 FoodItem, 1 admin, 3 diyetisyen, 3 danışan, 3 paket, 2 ödenmiş sipariş, 2 yorum, 1 randevu, 7 referans alım değeri (yer tutucu).",
   );
   console.log("Demo şifre (tüm diyetisyen/danışan hesapları için): Demo1234");
 }
