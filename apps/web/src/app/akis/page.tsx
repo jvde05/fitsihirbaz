@@ -3,10 +3,10 @@
 import { useState } from "react";
 import type { Post } from "@fit-sihirbaz/shared";
 import { trpc } from "@/lib/trpc";
-import { useAuthStore } from "@/lib/auth-store";
 import { RequireAuth } from "@/components/auth/RequireAuth";
+import { resolveMediaUrl } from "@/lib/media";
+import { uploadImage } from "@/lib/uploads";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
 const PAGE_SIZE = 10;
 
 const ROLE_LABELS: Record<string, string> = {
@@ -14,10 +14,6 @@ const ROLE_LABELS: Record<string, string> = {
   DIETITIAN: "Diyetisyen",
   ADMIN: "Yönetici",
 };
-
-function resolveImageUrl(path: string) {
-  return path.startsWith("http") ? path : `${API_URL}${path}`;
-}
 
 function PostComposer({ onCreated }: { onCreated: () => void }) {
   const [content, setContent] = useState("");
@@ -44,20 +40,8 @@ function PostComposer({ onCreated }: { onCreated: () => void }) {
     setUploading(true);
     setError(null);
     try {
-      const formData = new FormData();
-      formData.append("file", file);
-      const accessToken = useAuthStore.getState().accessToken;
-      const response = await fetch(`${API_URL}/uploads/image`, {
-        method: "POST",
-        body: formData,
-        credentials: "include",
-        headers: accessToken ? { authorization: `Bearer ${accessToken}` } : undefined,
-      });
-      if (!response.ok) {
-        throw new Error("Fotoğraf yüklenemedi");
-      }
-      const data = (await response.json()) as { url: string };
-      setImageUrl(data.url);
+      const url = await uploadImage(file, "post");
+      setImageUrl(url);
     } catch {
       setError("Fotoğraf yüklenemedi. Desteklenen türler: jpeg/png/webp/gif, maks 5MB.");
     } finally {
@@ -84,7 +68,7 @@ function PostComposer({ onCreated }: { onCreated: () => void }) {
       />
       {imageUrl && (
         <div className="relative mt-2 inline-block">
-          <img src={resolveImageUrl(imageUrl)} alt="" className="max-h-64 rounded-md object-cover" />
+          <img src={resolveMediaUrl(imageUrl) ?? undefined} alt="" className="max-h-64 rounded-md object-cover" />
           <button
             type="button"
             onClick={() => setImageUrl(null)}
@@ -199,7 +183,7 @@ function PostCard({ post, onDeleted }: { post: Post; onDeleted: () => void }) {
       <p className="mt-3 whitespace-pre-wrap text-sm text-gray-800">{post.content}</p>
       {post.imageUrl && (
         <img
-          src={resolveImageUrl(post.imageUrl)}
+          src={resolveMediaUrl(post.imageUrl) ?? undefined}
           alt=""
           className="mt-3 max-h-96 w-full rounded-md object-cover"
         />

@@ -3,15 +3,10 @@
 import { useState } from "react";
 import { trpc } from "@/lib/trpc";
 import { useAuthStore } from "@/lib/auth-store";
+import { resolveMediaUrl } from "@/lib/media";
+import { uploadImage } from "@/lib/uploads";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
-
-export function resolveAvatarUrl(path: string | null | undefined): string | null {
-  if (!path) {
-    return null;
-  }
-  return path.startsWith("http") ? path : `${API_URL}${path}`;
-}
+export { resolveMediaUrl as resolveAvatarUrl } from "@/lib/media";
 
 // Danışan/diyetisyen/admin profil sayfalarının ortak profil fotoğrafı bileşeni:
 // fotoğraf seç → /uploads/image?kind=avatar'a yükle → users.updateProfile ile kaydet.
@@ -37,20 +32,8 @@ export function AvatarUploader({ avatarUrl, onUpdated }: { avatarUrl: string | n
     setUploading(true);
     setError(null);
     try {
-      const formData = new FormData();
-      formData.append("file", file);
-      const accessToken = useAuthStore.getState().accessToken;
-      const response = await fetch(`${API_URL}/uploads/image?kind=avatar`, {
-        method: "POST",
-        body: formData,
-        credentials: "include",
-        headers: accessToken ? { authorization: `Bearer ${accessToken}` } : undefined,
-      });
-      if (!response.ok) {
-        throw new Error("Fotoğraf yüklenemedi");
-      }
-      const data = (await response.json()) as { url: string };
-      await updateMutation.mutateAsync({ avatarUrl: data.url });
+      const url = await uploadImage(file, "avatar");
+      await updateMutation.mutateAsync({ avatarUrl: url });
     } catch {
       setError("Fotoğraf yüklenemedi. Desteklenen türler: jpeg/png/webp/gif, maks 5MB.");
     } finally {
@@ -58,7 +41,7 @@ export function AvatarUploader({ avatarUrl, onUpdated }: { avatarUrl: string | n
     }
   }
 
-  const resolvedUrl = resolveAvatarUrl(avatarUrl);
+  const resolvedUrl = resolveMediaUrl(avatarUrl);
 
   return (
     <div className="flex items-center gap-4">

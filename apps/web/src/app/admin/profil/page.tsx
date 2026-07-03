@@ -35,6 +35,17 @@ export default function AdminProfilPage() {
     return <p className="text-gray-500">Yükleniyor...</p>;
   }
 
+  if (meQuery.isError) {
+    return (
+      <div className="rounded-md border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+        Profil yüklenemedi: {meQuery.error.message}
+        <button type="button" onClick={() => meQuery.refetch()} className="ml-3 font-medium underline">
+          Tekrar dene
+        </button>
+      </div>
+    );
+  }
+
   return (
     <div className="mx-auto max-w-xl space-y-8">
       <h1 className="text-2xl font-semibold text-gray-900">Profilim</h1>

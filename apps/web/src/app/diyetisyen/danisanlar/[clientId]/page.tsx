@@ -4,6 +4,7 @@ import { useParams } from "next/navigation";
 import Link from "next/link";
 import { trpc } from "@/lib/trpc";
 import { WeightChart } from "@/components/WeightChart";
+import { resolveMediaUrl } from "@/lib/media";
 
 const PLAN_STATUS_LABELS: Record<string, string> = {
   DRAFT: "Taslak",
@@ -86,8 +87,11 @@ export default function DanisanDetayPage() {
               <tr className="border-b border-gray-200 text-gray-500">
                 <th className="py-2">Tarih</th>
                 <th className="py-2">Kilo</th>
+                <th className="py-2">Yağ Oranı</th>
                 <th className="py-2">Bel</th>
                 <th className="py-2">Kalça</th>
+                <th className="py-2">Notlar</th>
+                <th className="py-2">Fotoğraflar</th>
               </tr>
             </thead>
             <tbody>
@@ -95,8 +99,27 @@ export default function DanisanDetayPage() {
                 <tr key={log.id} className="border-b border-gray-100">
                   <td className="py-2">{log.logDate}</td>
                   <td className="py-2">{log.weightKg ?? "-"}</td>
+                  <td className="py-2">{log.bodyFatPercent !== null ? `${log.bodyFatPercent}%` : "-"}</td>
                   <td className="py-2">{log.waistCm ?? "-"}</td>
                   <td className="py-2">{log.hipCm ?? "-"}</td>
+                  <td className="py-2 max-w-xs truncate" title={log.notes ?? undefined}>
+                    {log.notes ?? "-"}
+                  </td>
+                  <td className="py-2">
+                    {log.photoUrls.length > 0 && (
+                      <div className="flex gap-1">
+                        {log.photoUrls.map((url) => (
+                          <a key={url} href={resolveMediaUrl(url) ?? "#"} target="_blank" rel="noreferrer">
+                            <img
+                              src={resolveMediaUrl(url) ?? undefined}
+                              alt=""
+                              className="h-10 w-10 rounded object-cover"
+                            />
+                          </a>
+                        ))}
+                      </div>
+                    )}
+                  </td>
                 </tr>
               ))}
             </tbody>

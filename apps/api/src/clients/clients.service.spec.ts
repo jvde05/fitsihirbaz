@@ -1,11 +1,6 @@
 import { ClientsService } from "./clients.service";
 import { PrismaService } from "../prisma/prisma.service";
-import {
-  AlreadyLinkedError,
-  ClientProfileNotFoundError,
-  ClientUserNotFoundError,
-  DietitianNotFoundError,
-} from "./clients.errors";
+import { AlreadyLinkedError, ClientUserNotFoundError, DietitianNotFoundError } from "./clients.errors";
 
 function buildClientRow(overrides: Partial<Record<string, unknown>> = {}) {
   return {
@@ -34,7 +29,7 @@ function buildClientRow(overrides: Partial<Record<string, unknown>> = {}) {
 
 describe("ClientsService", () => {
   let prisma: {
-    clientProfile: { findUnique: jest.Mock; update: jest.Mock };
+    clientProfile: { findUnique: jest.Mock; update: jest.Mock; upsert: jest.Mock };
     dietitianProfile: { findUnique: jest.Mock };
     user: { findUnique: jest.Mock };
     clientDietitianLink: { findFirst: jest.Mock; create: jest.Mock; findMany: jest.Mock };
@@ -43,7 +38,7 @@ describe("ClientsService", () => {
 
   beforeEach(() => {
     prisma = {
-      clientProfile: { findUnique: jest.fn(), update: jest.fn() },
+      clientProfile: { findUnique: jest.fn(), update: jest.fn(), upsert: jest.fn() },
       dietitianProfile: { findUnique: jest.fn() },
       user: { findUnique: jest.fn() },
       clientDietitianLink: { findFirst: jest.fn(), create: jest.fn(), findMany: jest.fn() },
@@ -52,13 +47,17 @@ describe("ClientsService", () => {
   });
 
   describe("getMyProfile", () => {
-    it("profil yoksa ClientProfileNotFoundError fırlatır", async () => {
-      prisma.clientProfile.findUnique.mockResolvedValue(null);
-      await expect(service.getMyProfile("user-1")).rejects.toBeInstanceOf(ClientProfileNotFoundError);
+    it("profil yoksa kendiliğinden oluşturur (kilitlenme yerine self-heal)", async () => {
+      prisma.clientProfile.upsert.mockResolvedValue(buildClientRow());
+      const result = await service.getMyProfile("user-1");
+      expect(prisma.clientProfile.upsert).toHaveBeenCalledWith(
+        expect.objectContaining({ where: { userId: "user-1" }, create: { userId: "user-1" } }),
+      );
+      expect(result.email).toBe("client@example.com");
     });
 
     it("boy alanını sayıya çevirerek profili döner", async () => {
-      prisma.clientProfile.findUnique.mockResolvedValue(buildClientRow());
+      prisma.clientProfile.upsert.mockResolvedValue(buildClientRow());
       const result = await service.getMyProfile("user-1");
       expect(result.heightCm).toBe(165.5);
       expect(result.email).toBe("client@example.com");
