@@ -1,4 +1,5 @@
 import { randomUUID } from "node:crypto";
+import { mkdirSync } from "node:fs";
 import { extname, resolve } from "node:path";
 import {
   BadRequestException,
@@ -15,9 +16,14 @@ import type { Request } from "express";
 import { TokenService } from "../auth/token.service";
 import { resolveAuthedUser } from "../auth/resolve-authed-user";
 
-const UPLOAD_ROOT = resolve(__dirname, "../../uploads/posts");
+const UPLOAD_BASE = resolve(__dirname, "../../uploads");
 const ALLOWED_MIME_TYPES = new Set(["image/jpeg", "image/png", "image/webp", "image/gif"]);
 const MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024;
+
+// ?kind=avatar -> uploads/avatars, aksi halde (varsayılan) uploads/posts.
+function resolveUploadFolder(req: Request): "avatars" | "posts" {
+  return req.query.kind === "avatar" ? "avatars" : "posts";
+}
 
 // Gerçek S3/R2 kimlik bilgileri henüz yok (bkz. .env). Bu endpoint dosyayı local diske
 // yazar ve statik olarak /uploads altından servis eder (main.ts). İleride gerçek bir
@@ -31,7 +37,11 @@ export class UploadsController {
   @UseInterceptors(
     FileInterceptor("file", {
       storage: diskStorage({
-        destination: UPLOAD_ROOT,
+        destination: (req, _file, callback) => {
+          const dir = resolve(UPLOAD_BASE, resolveUploadFolder(req as Request));
+          mkdirSync(dir, { recursive: true });
+          callback(null, dir);
+        },
         filename: (_req, file, callback) => {
           callback(null, `${randomUUID()}${extname(file.originalname).toLowerCase()}`);
         },
@@ -50,6 +60,6 @@ export class UploadsController {
     if (!file) {
       throw new BadRequestException("Desteklenmeyen dosya türü veya dosya eksik (jpeg/png/webp/gif, maks 5MB)");
     }
-    return { url: `/uploads/posts/${file.filename}` };
+    return { url: `/uploads/${resolveUploadFolder(req)}/${file.filename}` };
   }
 }

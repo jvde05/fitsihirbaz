@@ -10,6 +10,8 @@ import {
   type UpdateProfileInput,
 } from "@fit-sihirbaz/shared";
 import { trpc } from "@/lib/trpc";
+import { useAuthStore } from "@/lib/auth-store";
+import { AvatarUploader } from "@/components/profile/AvatarUploader";
 
 export default function DiyetisyenProfilPage() {
   const utils = trpc.useUtils();
@@ -17,7 +19,10 @@ export default function DiyetisyenProfilPage() {
   const [specialtiesInput, setSpecialtiesInput] = useState("");
 
   const updateUserMutation = trpc.users.updateProfile.useMutation({
-    onSuccess: () => utils.dietitians.getProfile.invalidate(),
+    onSuccess: (user) => {
+      useAuthStore.setState({ user });
+      utils.dietitians.getProfile.invalidate();
+    },
   });
   const updateDietitianMutation = trpc.dietitians.updateProfile.useMutation({
     onSuccess: () => utils.dietitians.getProfile.invalidate(),
@@ -60,6 +65,13 @@ export default function DiyetisyenProfilPage() {
   return (
     <div className="mx-auto max-w-xl space-y-8">
       <h1 className="text-2xl font-semibold text-gray-900">Profilim</h1>
+
+      <div className="rounded-md border border-gray-200 p-4">
+        <AvatarUploader
+          avatarUrl={profileQuery.data?.avatarUrl ?? null}
+          onUpdated={() => utils.dietitians.getProfile.invalidate()}
+        />
+      </div>
 
       <form
         onSubmit={userForm.handleSubmit((values) => updateUserMutation.mutate(values))}

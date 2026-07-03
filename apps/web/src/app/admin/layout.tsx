@@ -23,6 +23,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           <Link href="/admin/referans-degerleri" className="font-medium text-brand-700 hover:underline">
             Referans Değerleri
           </Link>
+          <Link href="/admin/profil" className="font-medium text-brand-700 hover:underline">
+            Profilim
+          </Link>
         </nav>
         {children}
       </div>

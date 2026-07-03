@@ -42,11 +42,12 @@ async function bootstrap() {
     .filter(Boolean);
   app.enableCors({ origin: allowedOrigins, credentials: true });
 
-  // Akış (posts) fotoğrafları için yerel disk deposu; gerçek S3/R2 gelene kadar
-  // /uploads altından statik servis edilir (bkz. uploads.controller.ts).
-  const uploadsRoot = resolve(__dirname, "../uploads/posts");
+  // Akış paylaşımı ve profil fotoğrafları için yerel disk deposu; gerçek S3/R2 gelene
+  // kadar /uploads altından statik servis edilir (alt klasörler uploads.controller.ts'te
+  // istek anında oluşturulur — burada sadece üst dizin, statik servis için var olmalı).
+  const uploadsRoot = resolve(__dirname, "../uploads");
   mkdirSync(uploadsRoot, { recursive: true });
-  app.useStaticAssets(resolve(__dirname, "../uploads"), { prefix: "/uploads" });
+  app.useStaticAssets(uploadsRoot, { prefix: "/uploads" });
 
   const appRouter = createAppRouter({
     authService: app.get(AuthService),

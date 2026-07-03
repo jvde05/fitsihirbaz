@@ -14,7 +14,9 @@ export const PublicUserSchema = z.object({
   firstName: z.string(),
   lastName: z.string(),
   phone: z.string().nullable().optional(),
-  avatarUrl: z.string().url().nullable().optional(),
+  // Yüklenen dosya sunucumuzdan relatif bir yolla (/uploads/avatars/...) servis edildiği için
+  // .url() yerine düz string — mutlak URL'ler (ileride gerçek S3/R2) de burada geçerli olur.
+  avatarUrl: z.string().nullable().optional(),
   isEmailVerified: z.boolean(),
 });
 export type PublicUser = z.infer<typeof PublicUserSchema>;
@@ -35,7 +37,7 @@ export const UpdateProfileInputSchema = z.object({
   firstName: z.string().min(1).max(100).optional(),
   lastName: z.string().min(1).max(100).optional(),
   phone: optionalPhoneSchema,
-  avatarUrl: z.string().url().optional(),
+  avatarUrl: z.string().min(1).optional(),
 });
 export type UpdateProfileInput = z.infer<typeof UpdateProfileInputSchema>;
 
