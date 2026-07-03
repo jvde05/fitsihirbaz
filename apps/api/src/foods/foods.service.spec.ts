@@ -40,9 +40,9 @@ function buildFoodItemRow(overrides: Partial<Record<string, unknown>> = {}) {
 
 describe("FoodsService", () => {
   let prisma: {
-    foodItem: { findMany: jest.Mock; count: jest.Mock; findUnique: jest.Mock; create: jest.Mock; update: jest.Mock };
+    foodItem: { findMany: jest.Mock; findUnique: jest.Mock; create: jest.Mock; update: jest.Mock };
     foodSource: { findFirst: jest.Mock; create: jest.Mock };
-    $transaction: jest.Mock;
+    $queryRaw: jest.Mock;
   };
   let service: FoodsService;
 
@@ -50,7 +50,6 @@ describe("FoodsService", () => {
     prisma = {
       foodItem: {
         findMany: jest.fn(),
-        count: jest.fn(),
         findUnique: jest.fn(),
         create: jest.fn(),
         update: jest.fn(),
@@ -59,15 +58,15 @@ describe("FoodsService", () => {
         findFirst: jest.fn(),
         create: jest.fn(),
       },
-      $transaction: jest.fn((ops: unknown[]) => Promise.all(ops)),
+      $queryRaw: jest.fn(),
     };
     service = new FoodsService(prisma as unknown as PrismaService);
   });
 
   describe("search", () => {
     it("besinleri eşleşen sayı ile birlikte döner", async () => {
+      prisma.$queryRaw.mockResolvedValue([{ id: "food-1", total: BigInt(1) }]);
       prisma.foodItem.findMany.mockResolvedValue([buildFoodItemRow()]);
-      prisma.foodItem.count.mockResolvedValue(1);
 
       const result = await service.search({ query: "elma", limit: 20, offset: 0 });
 
@@ -77,11 +76,34 @@ describe("FoodsService", () => {
     });
 
     it("nutrientData'sı olmayan satırları filtreler", async () => {
+      prisma.$queryRaw.mockResolvedValue([{ id: "food-1", total: BigInt(1) }]);
       prisma.foodItem.findMany.mockResolvedValue([buildFoodItemRow({ nutrientData: null })]);
-      prisma.foodItem.count.mockResolvedValue(1);
 
       const result = await service.search({ query: "elma", limit: 20, offset: 0 });
       expect(result.items).toHaveLength(0);
+    });
+
+    it("hiç eşleşme yoksa boş sonuç döner ve foodItem.findMany çağrılmaz", async () => {
+      prisma.$queryRaw.mockResolvedValue([]);
+
+      const result = await service.search({ query: "yokolan besin", limit: 20, offset: 0 });
+      expect(result).toEqual({ items: [], total: 0 });
+      expect(prisma.foodItem.findMany).not.toHaveBeenCalled();
+    });
+
+    it("trigram sırasını (rankedRows id sırası) korur", async () => {
+      prisma.$queryRaw.mockResolvedValue([
+        { id: "food-2", total: BigInt(2) },
+        { id: "food-1", total: BigInt(2) },
+      ]);
+      // Prisma findMany sırayı garanti etmez; servis id sırasına göre yeniden sıralamalı.
+      prisma.foodItem.findMany.mockResolvedValue([
+        buildFoodItemRow({ id: "food-1", name: "Elma" }),
+        buildFoodItemRow({ id: "food-2", name: "Elmas Salatası" }),
+      ]);
+
+      const result = await service.search({ query: "elma", limit: 20, offset: 0 });
+      expect(result.items.map((item) => item.id)).toEqual(["food-2", "food-1"]);
     });
   });
 
