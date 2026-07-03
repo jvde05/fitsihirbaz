@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { FoodCreateInputSchema, type FoodCreateInput } from "@fit-sihirbaz/shared";
@@ -148,7 +149,9 @@ export default function AdminBesinlerPage() {
         {searchQuery.data?.items.map((food) => (
           <li key={food.id} className="flex items-center justify-between px-4 py-3">
             <div>
-              <p className="font-medium text-gray-900">{food.name}</p>
+              <Link href={`/besinler/${food.id}`} className="font-medium text-gray-900 hover:underline">
+                {food.name}
+              </Link>
               <p className="text-sm text-gray-500">
                 {food.category} · {food.calories} kcal/100g
               </p>

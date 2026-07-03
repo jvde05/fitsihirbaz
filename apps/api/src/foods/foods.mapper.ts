@@ -30,6 +30,8 @@ export function toFoodDetail(foodItem: FoodItemWithNutrientsAndSource): FoodDeta
     ...toFoodSummary(foodItem),
     sourceId: foodItem.sourceId,
     sourceName: foodItem.source.name,
+    sourceCitation: foodItem.source.citation,
+    sourceUrl: foodItem.source.url,
     fiber: toNullableNumber(nutrientData.fiber),
     sugar: toNullableNumber(nutrientData.sugar),
     glycemicIndex: nutrientData.glycemicIndex ?? null,

@@ -15,3 +15,4 @@ export * from "./appointment";
 export * from "./message";
 export * from "./article";
 export * from "./notification";
+export * from "./reference-intake";

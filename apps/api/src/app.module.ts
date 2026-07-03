@@ -18,6 +18,7 @@ import { AppointmentsModule } from "./appointments/appointments.module";
 import { MessagesModule } from "./messages/messages.module";
 import { ArticlesModule } from "./articles/articles.module";
 import { NotificationsModule } from "./notifications/notifications.module";
+import { ReferenceIntakesModule } from "./reference-intakes/reference-intakes.module";
 import { JobsModule } from "./jobs/jobs.module";
 import { validateEnv } from "./config/env.validation";
 
@@ -46,6 +47,7 @@ import { validateEnv } from "./config/env.validation";
     AppointmentsModule,
     MessagesModule,
     ArticlesModule,
+    ReferenceIntakesModule,
   ],
 })
 export class AppModule {}

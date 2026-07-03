@@ -21,6 +21,7 @@ import { AppointmentsService } from "./appointments/appointments.service";
 import { MessagesService } from "./messages/messages.service";
 import { ArticlesService } from "./articles/articles.service";
 import { NotificationsService } from "./notifications/notifications.service";
+import { ReferenceIntakesService } from "./reference-intakes/reference-intakes.service";
 import { createAppRouter } from "./trpc/app.router";
 import { createContextFactory } from "./trpc/context";
 import type { Env } from "./config/env.validation";
@@ -54,6 +55,7 @@ async function bootstrap() {
     messagesService: app.get(MessagesService),
     articlesService: app.get(ArticlesService),
     notificationsService: app.get(NotificationsService),
+    referenceIntakesService: app.get(ReferenceIntakesService),
   });
   app.use(
     "/trpc",
