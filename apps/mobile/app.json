@@ -24,7 +24,13 @@
     },
     "plugins": [
       "expo-router",
-      "expo-secure-store"
+      "expo-secure-store",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Akış'ta paylaşmak için fotoğraflarınıza erişim izni gerekir."
+        }
+      ]
     ]
   }
 }
