@@ -27,6 +27,9 @@ pnpm-debug.log*
 # prisma
 packages/db/prisma/dev.db*
 
+# yerel dosya yükleme deposu (üretimde S3/R2'ye taşınacak)
+apps/api/uploads/
+
 # misc
 .DS_Store
 *.tsbuildinfo

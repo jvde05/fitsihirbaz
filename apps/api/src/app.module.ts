@@ -19,6 +19,8 @@ import { MessagesModule } from "./messages/messages.module";
 import { ArticlesModule } from "./articles/articles.module";
 import { NotificationsModule } from "./notifications/notifications.module";
 import { ReferenceIntakesModule } from "./reference-intakes/reference-intakes.module";
+import { UploadsModule } from "./uploads/uploads.module";
+import { PostsModule } from "./posts/posts.module";
 import { JobsModule } from "./jobs/jobs.module";
 import { validateEnv } from "./config/env.validation";
 
@@ -48,6 +50,8 @@ import { validateEnv } from "./config/env.validation";
     MessagesModule,
     ArticlesModule,
     ReferenceIntakesModule,
+    UploadsModule,
+    PostsModule,
   ],
 })
 export class AppModule {}

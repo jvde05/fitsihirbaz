@@ -30,6 +30,11 @@ export function Navbar() {
           Fit Sihirbaz
         </Link>
         <div className="flex items-center gap-4 text-sm">
+          {status === "authenticated" && (
+            <Link href="/akis" className="text-gray-600 hover:text-gray-900">
+              Akış
+            </Link>
+          )}
           <Link href="/diyetisyenler" className="text-gray-600 hover:text-gray-900">
             Diyetisyenler
           </Link>
