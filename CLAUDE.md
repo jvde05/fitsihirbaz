@@ -53,19 +53,27 @@ fit-sihirbaz/
 | Auth | JWT (access + refresh token) | Basit, ölçeklenebilir, mobil uyumlu |
 | Ödeme | iyzico Pazaryeri veya PayTR (marketplace/split payment) | Türkiye'de diyetisyene otomatik ödeme aktarımı + platform komisyonu desteği hazır geliyor |
 | Dosya depolama | S3 uyumlu (AWS S3 / Cloudflare R2) | İlerleme fotoğrafları, diyetisyen sertifikaları |
-| Arama | Meilisearch veya Typesense | 20.000+ besin içinde hızlı, Türkçe karakter/typo-tolerant arama |
+| Arama | Postgres `pg_trgm` (trigram + `word_similarity`) | 20.000+ besin içinde hızlı, typo-tolerant arama; Meilisearch/Typesense'e geçiş ileride trafik/ölçek gerektirirse değerlendirilir |
 | Job queue | BullMQ + Redis | Randevu hatırlatma, bildirim gönderimi |
-| Bildirim | Expo Push Notifications (mobil) + e-posta (Resend/SendGrid) | |
+| Bildirim | Expo Push Notifications (mobil) + DB tabanlı bildirim listesi (e-posta entegrasyonu henüz yok) | |
+
+> **Not (ödeme):** Gerçek iyzico/PayTR anahtarları henüz yok. Şu an `MockPaymentProvider` kullanılıyor — gerçek bir checkout/webhook/state machine akışı çalışıyor ama sağlayıcı tarafı simüle ediliyor. `PaymentProvider` interface'i sayesinde gerçek sağlayıcıya geçiş tek bir implementasyon değişikliği (bkz. `apps/api/src/payments/payments.provider.ts`).
+>
+> **Not (dosya depolama):** S3/R2 kimlik bilgileri henüz yok. Yüklemeler (avatar, ilerleme fotoğrafı, sertifika, akış paylaşımı) şu an `apps/api/uploads/` altında local diske yazılıyor, `/uploads/...` relatif yol olarak dönüyor. `apps/api/src/uploads/uploads.controller.ts`'in disk yazma kısmı ileride S3 SDK çağrısıyla değiştirilecek, geri kalan (auth kontrolü, dönen URL şekli) aynı kalacak.
 
 ## 5. Faz Planı
 
-| Faz | Kapsam |
-|---|---|
-| **Faz 0** | Monorepo iskeleti, Prisma şeması, auth (kayıt/giriş/roller) |
-| **Faz 1 (MVP)** | Besin veritabanı + arama, diyetisyen dashboard, danışan ekleme/yönetme, manuel diyet planı oluşturma, web app |
-| **Faz 2** | Pazaryeri: paket tanımlama, iyzico/PayTR entegrasyonu, mobil app (önce danışan tarafı) |
-| **Faz 3** | Randevu takvimi, mesajlaşma, ilerleme grafikleri, literatür/içerik kütüphanesi |
-| **Faz 4** | Mobilde diyetisyen dashboard, offline destek, push notification, admin paneli |
+| Faz | Kapsam | Durum |
+|---|---|---|
+| **Faz 0** | Monorepo iskeleti, Prisma şeması, auth (kayıt/giriş/roller) | ✅ Tamamlandı |
+| **Faz 1 (MVP)** | Besin veritabanı + arama, diyetisyen dashboard, danışan ekleme/yönetme, manuel diyet planı oluşturma, web app | ✅ Tamamlandı |
+| **Faz 2** | Pazaryeri: paket tanımlama, ödeme entegrasyonu (mock provider), mobil app (danışan tarafı) | ✅ Tamamlandı |
+| **Faz 3** | Randevu takvimi, mesajlaşma, ilerleme grafikleri, literatür/içerik kütüphanesi | ✅ Tamamlandı |
+| **Faz 4** | Mobilde diyetisyen dashboard, push notification, admin paneli | ✅ Tamamlandı |
+
+Orijinal faz planının kapsamı dışında, geliştirme sürecinde ek olarak eklenen özellikler: besin kaynakça/referans alım değerleri (TÜBER/DRI — **doğrulanmamış yer tutucu veri**, gerçek resmi kaynak gelene kadar "Doğrulanmamış" etiketiyle gösteriliyor), tarifler (recipes) modülü, LinkedIn-benzeri akış (posts/feed — beğeni/yorum), profil fotoğrafı + diyetisyen sertifika/lisans belgesi yükleme, admin kullanıcı yönetimi, mobil onboarding ekranı.
+
+Sıradaki olası iş: gerçek bir ödeme sağlayıcısına (iyzico/PayTR) geçiş — **bu, kural 5 gereği önce plan modunda onay gerektirir**, mock provider'ın yerine geçecek şekilde tek bir `PaymentProvider` implementasyonu yazılacak.
 
 ## 6. Kod Standartları ve Kurallar (Claude Code için)
 
