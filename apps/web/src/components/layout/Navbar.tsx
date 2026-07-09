@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import { trpc } from "@/lib/trpc";
 import { useAuthStore } from "@/lib/auth-store";
 import { resolveAvatarUrl } from "@/components/profile/AvatarUploader";
+import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { NotificationBell } from "./NotificationBell";
 
 const ROLE_LABELS: Record<string, string> = {
@@ -30,63 +32,59 @@ export function Navbar() {
     router.push("/");
   }
 
+  const avatarUrl = user ? resolveAvatarUrl(user.avatarUrl) : null;
+
   return (
-    <header className="border-b border-gray-200 bg-white">
-      <nav className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3">
-        <Link href="/" className="text-lg font-semibold text-brand-700">
+    <header className="sticky top-0 z-20 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <nav className="mx-auto flex h-16 max-w-5xl items-center justify-between px-4">
+        <Link href="/" className="text-lg font-semibold tracking-tight text-primary">
           Fit Sihirbaz
         </Link>
-        <div className="flex items-center gap-4 text-sm">
+        <div className="flex items-center gap-1 text-sm">
           {status === "authenticated" && (
-            <Link href="/akis" className="text-gray-600 hover:text-gray-900">
-              Akış
-            </Link>
+            <Button asChild variant="ghost" size="sm">
+              <Link href="/akis">Akış</Link>
+            </Button>
           )}
-          <Link href="/diyetisyenler" className="text-gray-600 hover:text-gray-900">
-            Diyetisyenler
-          </Link>
-          <Link href="/literatur" className="text-gray-600 hover:text-gray-900">
-            Literatür
-          </Link>
-          <Link href="/referans-degerleri" className="text-gray-600 hover:text-gray-900">
-            Referans Değerleri
-          </Link>
+          <Button asChild variant="ghost" size="sm">
+            <Link href="/diyetisyenler">Diyetisyenler</Link>
+          </Button>
+          <Button asChild variant="ghost" size="sm">
+            <Link href="/literatur">Literatür</Link>
+          </Button>
+          <Button asChild variant="ghost" size="sm">
+            <Link href="/referans-degerleri">Referans Değerleri</Link>
+          </Button>
+
           {status === "authenticated" && user ? (
-            <div className="flex items-center gap-3">
+            <div className="ml-2 flex items-center gap-3 border-l pl-3">
               <NotificationBell />
               <Link
                 href={PROFILE_HREFS[user.role] ?? "/"}
-                className="flex items-center gap-2 text-gray-700 hover:text-gray-900"
+                className="flex items-center gap-2 text-foreground/80 hover:text-foreground"
               >
-                <span className="h-7 w-7 overflow-hidden rounded-full bg-gray-100">
-                  {resolveAvatarUrl(user.avatarUrl) ? (
-                    <img
-                      src={resolveAvatarUrl(user.avatarUrl) ?? undefined}
-                      alt=""
-                      className="h-full w-full object-cover"
-                    />
-                  ) : null}
+                <Avatar className="h-7 w-7">
+                  {avatarUrl && <AvatarImage src={avatarUrl} alt="" />}
+                  <AvatarFallback className="text-xs">
+                    {user.firstName?.[0]?.toUpperCase() ?? "?"}
+                  </AvatarFallback>
+                </Avatar>
+                <span className="hidden sm:inline">
+                  {user.firstName} ({ROLE_LABELS[user.role] ?? user.role})
                 </span>
-                {user.firstName} ({ROLE_LABELS[user.role] ?? user.role})
               </Link>
-              <button
-                onClick={handleLogout}
-                className="rounded-md border border-gray-300 px-3 py-1.5 text-gray-700 hover:bg-gray-100"
-              >
+              <Button variant="outline" size="sm" onClick={handleLogout}>
                 Çıkış Yap
-              </button>
+              </Button>
             </div>
           ) : (
-            <div className="flex items-center gap-3">
-              <Link href="/giris" className="text-gray-600 hover:text-gray-900">
-                Giriş
-              </Link>
-              <Link
-                href="/kayit"
-                className="rounded-md bg-brand-600 px-3 py-1.5 text-white hover:bg-brand-700"
-              >
-                Kayıt Ol
-              </Link>
+            <div className="ml-2 flex items-center gap-2 border-l pl-3">
+              <Button asChild variant="ghost" size="sm">
+                <Link href="/giris">Giriş</Link>
+              </Button>
+              <Button asChild size="sm">
+                <Link href="/kayit">Kayıt Ol</Link>
+              </Button>
             </div>
           )}
         </div>

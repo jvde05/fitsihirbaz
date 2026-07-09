@@ -13,6 +13,14 @@ import {
 } from "@fit-sihirbaz/shared";
 import { trpc } from "@/lib/trpc";
 import { QueryErrorNotice } from "@/components/QueryErrorNotice";
+import { EmptyState } from "@/components/EmptyState";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const EMPTY_FORM: UpsertReferenceIntakeInput = {
   nutrient: "",
@@ -46,6 +54,8 @@ export default function AdminReferansDegerleriPage() {
     register,
     handleSubmit,
     reset,
+    watch,
+    setValue,
     formState: { errors, isSubmitting },
   } = useForm<UpsertReferenceIntakeInput>({
     resolver: zodResolver(UpsertReferenceIntakeInputSchema),
@@ -75,157 +85,101 @@ export default function AdminReferansDegerleriPage() {
 
   return (
     <div>
-      <h1 className="mb-2 text-2xl font-semibold text-gray-900">Referans Alım Değerleri Yönetimi</h1>
-      <p className="mb-6 max-w-2xl text-sm text-gray-500">
+      <h1 className="mb-2 text-2xl font-semibold text-foreground">Referans Alım Değerleri Yönetimi</h1>
+      <p className="mb-6 max-w-2xl text-sm text-muted-foreground">
         Yaş/cinsiyet/yaşam evresine göre günlük referans besin öğesi alım değerlerini yönetin. Resmi TÜBER
         kaynağıyla teyit edilmemiş değerlerde &quot;Doğrulanmış kaynak&quot; kutucuğunu işaretlemeyin —
         kullanıcı arayüzünde bu değerler otomatik olarak &quot;Doğrulanmamış&quot; etiketiyle gösterilir.
       </p>
 
-      <form
-        onSubmit={handleSubmit(onSubmit)}
-        className="mb-8 flex flex-col gap-3 rounded-md border border-gray-200 p-4"
-      >
-        <h2 className="text-sm font-semibold text-gray-700">Referans Değer Ekle / Düzenle</h2>
+      <form onSubmit={handleSubmit(onSubmit)} className="mb-8 flex flex-col gap-3 rounded-md border p-4">
+        <h2 className="text-sm font-semibold text-foreground">Referans Değer Ekle / Düzenle</h2>
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-          <div>
-            <label className="block text-sm font-medium text-gray-700" htmlFor="ri-nutrient">
-              Besin Öğesi Kodu
-            </label>
-            <input
-              id="ri-nutrient"
-              placeholder="ör. ENERGY, PROTEIN"
-              className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2"
-              {...register("nutrient")}
-            />
-            {errors.nutrient && <p className="mt-1 text-sm text-red-600">{errors.nutrient.message}</p>}
+          <div className="space-y-1.5">
+            <Label htmlFor="ri-nutrient">Besin Öğesi Kodu</Label>
+            <Input id="ri-nutrient" placeholder="ör. ENERGY, PROTEIN" {...register("nutrient")} />
+            {errors.nutrient && <p className="text-sm text-destructive">{errors.nutrient.message}</p>}
           </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700" htmlFor="ri-unit">
-              Birim
-            </label>
-            <input
-              id="ri-unit"
-              placeholder="ör. kcal, g, mg"
-              className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2"
-              {...register("unit")}
-            />
-            {errors.unit && <p className="mt-1 text-sm text-red-600">{errors.unit.message}</p>}
+          <div className="space-y-1.5">
+            <Label htmlFor="ri-unit">Birim</Label>
+            <Input id="ri-unit" placeholder="ör. kcal, g, mg" {...register("unit")} />
+            {errors.unit && <p className="text-sm text-destructive">{errors.unit.message}</p>}
           </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700" htmlFor="ri-value">
-              Değer
-            </label>
-            <input
-              id="ri-value"
-              type="number"
-              step="0.1"
-              className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2"
-              {...register("value")}
-            />
-            {errors.value && <p className="mt-1 text-sm text-red-600">{errors.value.message}</p>}
+          <div className="space-y-1.5">
+            <Label htmlFor="ri-value">Değer</Label>
+            <Input id="ri-value" type="number" step="0.1" {...register("value")} />
+            {errors.value && <p className="text-sm text-destructive">{errors.value.message}</p>}
           </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700" htmlFor="ri-age-min">
-              Min Yaş
-            </label>
-            <input
-              id="ri-age-min"
-              type="number"
-              className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2"
-              {...register("ageMinYears")}
-            />
-            {errors.ageMinYears && <p className="mt-1 text-sm text-red-600">{errors.ageMinYears.message}</p>}
+          <div className="space-y-1.5">
+            <Label htmlFor="ri-age-min">Min Yaş</Label>
+            <Input id="ri-age-min" type="number" {...register("ageMinYears")} />
+            {errors.ageMinYears && <p className="text-sm text-destructive">{errors.ageMinYears.message}</p>}
           </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700" htmlFor="ri-age-max">
-              Max Yaş (boş = üst sınır yok)
-            </label>
-            <input
-              id="ri-age-max"
-              type="number"
-              className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2"
-              {...register("ageMaxYears")}
-            />
+          <div className="space-y-1.5">
+            <Label htmlFor="ri-age-max">Max Yaş (boş = üst sınır yok)</Label>
+            <Input id="ri-age-max" type="number" {...register("ageMaxYears")} />
           </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700" htmlFor="ri-sex">
-              Cinsiyet
-            </label>
-            <select
-              id="ri-sex"
-              className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2"
-              {...register("sex")}
+          <div className="space-y-1.5">
+            <Label>Cinsiyet</Label>
+            <Select value={watch("sex")} onValueChange={(value) => setValue("sex", value as UpsertReferenceIntakeInput["sex"])}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {Object.entries(REFERENCE_SEX_LABELS).map(([value, label]) => (
+                  <SelectItem key={value} value={value}>
+                    {label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-1.5">
+            <Label>Yaşam Evresi</Label>
+            <Select
+              value={watch("lifeStage")}
+              onValueChange={(value) => setValue("lifeStage", value as UpsertReferenceIntakeInput["lifeStage"])}
             >
-              {Object.entries(REFERENCE_SEX_LABELS).map(([value, label]) => (
-                <option key={value} value={value}>
-                  {label}
-                </option>
-              ))}
-            </select>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {Object.entries(REFERENCE_LIFE_STAGE_LABELS).map(([value, label]) => (
+                  <SelectItem key={value} value={value}>
+                    {label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700" htmlFor="ri-life-stage">
-              Yaşam Evresi
-            </label>
-            <select
-              id="ri-life-stage"
-              className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2"
-              {...register("lifeStage")}
-            >
-              {Object.entries(REFERENCE_LIFE_STAGE_LABELS).map(([value, label]) => (
-                <option key={value} value={value}>
-                  {label}
-                </option>
-              ))}
-            </select>
+          <div className="col-span-2 space-y-1.5 sm:col-span-3">
+            <Label htmlFor="ri-source">Kaynak Açıklaması</Label>
+            <Input id="ri-source" placeholder="ör. Türkiye Beslenme Rehberi (TÜBER) 2022, s. 45" {...register("sourceLabel")} />
+            {errors.sourceLabel && <p className="text-sm text-destructive">{errors.sourceLabel.message}</p>}
           </div>
-          <div className="col-span-2 sm:col-span-3">
-            <label className="block text-sm font-medium text-gray-700" htmlFor="ri-source">
-              Kaynak Açıklaması
-            </label>
-            <input
-              id="ri-source"
-              placeholder="ör. Türkiye Beslenme Rehberi (TÜBER) 2022, s. 45"
-              className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2"
-              {...register("sourceLabel")}
-            />
-            {errors.sourceLabel && <p className="mt-1 text-sm text-red-600">{errors.sourceLabel.message}</p>}
-          </div>
-          <div className="col-span-2 sm:col-span-3">
-            <label className="block text-sm font-medium text-gray-700" htmlFor="ri-notes">
-              Not (opsiyonel)
-            </label>
-            <textarea
-              id="ri-notes"
-              rows={2}
-              className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2"
-              {...register("notes")}
-            />
+          <div className="col-span-2 space-y-1.5 sm:col-span-3">
+            <Label htmlFor="ri-notes">Not (opsiyonel)</Label>
+            <Textarea id="ri-notes" rows={2} {...register("notes")} />
           </div>
           <div className="flex items-center gap-2">
-            <input id="ri-verified" type="checkbox" className="h-4 w-4" {...register("isVerifiedSource")} />
-            <label className="text-sm text-gray-700" htmlFor="ri-verified">
+            <Checkbox
+              id="ri-verified"
+              checked={watch("isVerifiedSource")}
+              onCheckedChange={(checked) => setValue("isVerifiedSource", checked === true)}
+            />
+            <Label htmlFor="ri-verified" className="font-normal">
               Doğrulanmış kaynak (resmi TÜBER kaynağıyla teyit edildi)
-            </label>
+            </Label>
           </div>
         </div>
-        {formError && <p className="text-sm text-red-600">{formError}</p>}
+        {formError && <p className="text-sm text-destructive">{formError}</p>}
         <div className="flex gap-2">
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            className="self-start rounded-md bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-700 disabled:opacity-60"
-          >
+          <Button type="submit" disabled={isSubmitting}>
             {isSubmitting ? "Kaydediliyor..." : "Kaydet"}
-          </button>
-          <button
-            type="button"
-            onClick={() => reset(EMPTY_FORM)}
-            className="self-start rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100"
-          >
+          </Button>
+          <Button type="button" variant="outline" onClick={() => reset(EMPTY_FORM)}>
             Formu Temizle
-          </button>
+          </Button>
         </div>
       </form>
 
@@ -233,48 +187,43 @@ export default function AdminReferansDegerleriPage() {
         <QueryErrorNotice message={listQuery.error.message} onRetry={() => listQuery.refetch()} />
       )}
 
-      <ul className="divide-y divide-gray-200 rounded-md border border-gray-200">
+      <ul className="divide-y rounded-md border">
         {listQuery.data?.map((item) => (
           <li key={item.id} className="flex items-center justify-between px-4 py-3">
             <div>
-              <p className="font-medium text-gray-900">
-                {REFERENCE_NUTRIENT_LABELS[item.nutrient] ?? item.nutrient}
-                <span
-                  className={`ml-2 rounded-full px-2 py-0.5 text-xs ${
-                    item.isVerifiedSource ? "bg-brand-100 text-brand-700" : "bg-yellow-100 text-yellow-800"
-                  }`}
-                >
+              <div className="flex items-center gap-2">
+                <p className="font-medium text-foreground">
+                  {REFERENCE_NUTRIENT_LABELS[item.nutrient] ?? item.nutrient}
+                </p>
+                <Badge variant={item.isVerifiedSource ? "success" : "warning"}>
                   {item.isVerifiedSource ? "Doğrulanmış" : "Doğrulanmamış"}
-                </span>
-              </p>
-              <p className="text-sm text-gray-500">
+                </Badge>
+              </div>
+              <p className="text-sm text-muted-foreground">
                 {item.ageMinYears}
                 {item.ageMaxYears !== null ? `-${item.ageMaxYears}` : "+"} yaş ·{" "}
                 {REFERENCE_SEX_LABELS[item.sex]} · {REFERENCE_LIFE_STAGE_LABELS[item.lifeStage]} · {item.value}{" "}
                 {item.unit}
               </p>
-              <p className="text-xs text-gray-400">{item.sourceLabel}</p>
+              <p className="text-xs text-muted-foreground/80">{item.sourceLabel}</p>
             </div>
             <div className="flex gap-2">
-              <button
-                type="button"
-                onClick={() => startEdit(item)}
-                className="rounded-md border border-gray-300 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-100"
-              >
+              <Button variant="outline" size="sm" onClick={() => startEdit(item)}>
                 Düzenle
-              </button>
-              <button
-                type="button"
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                className="border-destructive/40 text-destructive hover:bg-destructive/10"
                 onClick={() => deleteMutation.mutate({ id: item.id })}
-                className="rounded-md border border-red-300 px-3 py-1.5 text-sm font-medium text-red-700 hover:bg-red-50"
               >
                 Sil
-              </button>
+              </Button>
             </div>
           </li>
         ))}
       </ul>
-      {listQuery.data?.length === 0 && <p className="mt-4 text-gray-500">Henüz referans değer eklenmemiş.</p>}
+      {listQuery.data?.length === 0 && <EmptyState title="Henüz referans değer eklenmemiş" />}
     </div>
   );
 }

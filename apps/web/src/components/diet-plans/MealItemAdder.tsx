@@ -3,6 +3,9 @@
 import { useState } from "react";
 import { trpc } from "@/lib/trpc";
 import type { MeasurementUnit } from "@fit-sihirbaz/shared";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const UNIT_LABELS: Record<MeasurementUnit, string> = {
   GRAM: "gram",
@@ -67,40 +70,41 @@ export function MealItemAdder({ mealId, onAdded }: { mealId: string; onAdded: ()
       : (recipeSearchQuery.data ?? []);
 
   return (
-    <div className="mt-2 rounded-md border border-dashed border-gray-300 p-3">
-      <div className="mb-2 flex gap-2 text-xs">
-        <button
+    <div className="mt-2 rounded-md border border-dashed p-3">
+      <div className="mb-2 flex gap-2">
+        <Button
           type="button"
+          size="sm"
+          variant={mode === "FOOD" ? "default" : "secondary"}
           onClick={() => switchMode("FOOD")}
           data-testid="meal-item-mode-food"
-          className={`rounded-md px-2 py-1 ${mode === "FOOD" ? "bg-brand-600 text-white" : "bg-gray-100 text-gray-600"}`}
         >
           Besin
-        </button>
-        <button
+        </Button>
+        <Button
           type="button"
+          size="sm"
+          variant={mode === "RECIPE" ? "default" : "secondary"}
           onClick={() => switchMode("RECIPE")}
           data-testid="meal-item-mode-recipe"
-          className={`rounded-md px-2 py-1 ${mode === "RECIPE" ? "bg-brand-600 text-white" : "bg-gray-100 text-gray-600"}`}
         >
           Tarif
-        </button>
+        </Button>
       </div>
 
       {!selectedId ? (
         <div>
-          <input
+          <Input
             type="text"
             placeholder={mode === "FOOD" ? "Besin ara (örn. elma)" : "Tarif ara (örn. çorba)"}
             value={query}
             onChange={(event) => setQuery(event.target.value)}
-            className="w-full rounded-md border border-gray-300 px-2 py-1.5 text-sm"
           />
           {mode === "FOOD" ? (
             <>
-              {foodSearchQuery.isFetching && <p className="mt-1 text-xs text-gray-400">Aranıyor...</p>}
+              {foodSearchQuery.isFetching && <p className="mt-1 text-xs text-muted-foreground">Aranıyor...</p>}
               {foodSearchQuery.data && foodSearchQuery.data.items.length > 0 && (
-                <ul className="mt-2 max-h-40 divide-y divide-gray-100 overflow-y-auto rounded-md border border-gray-200 text-sm">
+                <ul className="mt-2 max-h-40 divide-y overflow-y-auto rounded-md border text-sm">
                   {foodSearchQuery.data.items.map((food) => (
                     <li key={food.id}>
                       <button
@@ -110,23 +114,23 @@ export function MealItemAdder({ mealId, onAdded }: { mealId: string; onAdded: ()
                           setSelectedName(food.name);
                         }}
                         data-testid="food-search-result"
-                        className="flex w-full justify-between px-2 py-1.5 text-left hover:bg-gray-50"
+                        className="flex w-full justify-between px-2 py-1.5 text-left hover:bg-muted"
                       >
                         <span>{food.name}</span>
-                        <span className="text-gray-400">{food.calories} kcal/100g</span>
+                        <span className="text-muted-foreground">{food.calories} kcal/100g</span>
                       </button>
                     </li>
                   ))}
                 </ul>
               )}
               {query.trim().length > 1 && foodSearchQuery.data?.items.length === 0 && (
-                <p className="mt-1 text-xs text-gray-400">Sonuç bulunamadı.</p>
+                <p className="mt-1 text-xs text-muted-foreground">Sonuç bulunamadı.</p>
               )}
             </>
           ) : (
             <>
               {recipeResults.length > 0 && (
-                <ul className="mt-2 max-h-40 divide-y divide-gray-100 overflow-y-auto rounded-md border border-gray-200 text-sm">
+                <ul className="mt-2 max-h-40 divide-y overflow-y-auto rounded-md border text-sm">
                   {recipeResults.map((recipe) => (
                     <li key={recipe.id}>
                       <button
@@ -136,63 +140,64 @@ export function MealItemAdder({ mealId, onAdded }: { mealId: string; onAdded: ()
                           setSelectedName(recipe.name);
                         }}
                         data-testid="recipe-search-result"
-                        className="flex w-full justify-between px-2 py-1.5 text-left hover:bg-gray-50"
+                        className="flex w-full justify-between px-2 py-1.5 text-left hover:bg-muted"
                       >
                         <span>{recipe.name}</span>
-                        <span className="text-gray-400">{recipe.totalsPerServing.calories} kcal/porsiyon</span>
+                        <span className="text-muted-foreground">{recipe.totalsPerServing.calories} kcal/porsiyon</span>
                       </button>
                     </li>
                   ))}
                 </ul>
               )}
               {recipeSearchQuery.data?.length === 0 && (
-                <p className="mt-1 text-xs text-gray-400">Henüz erişebileceğiniz bir tarif yok.</p>
+                <p className="mt-1 text-xs text-muted-foreground">Henüz erişebileceğiniz bir tarif yok.</p>
               )}
             </>
           )}
         </div>
       ) : (
         <div className="flex flex-wrap items-center gap-2 text-sm">
-          <span className="font-medium">{selectedName}</span>
-          <input
+          <span className="font-medium text-foreground">{selectedName}</span>
+          <Input
             type="number"
             min="0"
             step="0.1"
             value={quantity}
             onChange={(event) => setQuantity(event.target.value)}
             data-testid="meal-item-quantity"
-            className="w-20 rounded-md border border-gray-300 px-2 py-1"
+            className="w-20"
           />
           {mode === "FOOD" ? (
-            <select
-              value={unit}
-              onChange={(event) => setUnit(event.target.value as MeasurementUnit)}
-              className="rounded-md border border-gray-300 px-2 py-1"
-            >
-              {Object.entries(UNIT_LABELS).map(([value, label]) => (
-                <option key={value} value={value}>
-                  {label}
-                </option>
-              ))}
-            </select>
+            <Select value={unit} onValueChange={(value) => setUnit(value as MeasurementUnit)}>
+              <SelectTrigger className="w-28">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {Object.entries(UNIT_LABELS).map(([value, label]) => (
+                  <SelectItem key={value} value={value}>
+                    {label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           ) : (
-            <span className="text-gray-500">porsiyon</span>
+            <span className="text-muted-foreground">porsiyon</span>
           )}
-          <button
+          <Button
             type="button"
+            size="sm"
             onClick={handleAdd}
             disabled={addItemMutation.isLoading}
             data-testid="meal-item-add-button"
-            className="rounded-md bg-brand-600 px-3 py-1 text-white hover:bg-brand-700 disabled:opacity-60"
           >
             {addItemMutation.isLoading ? "Ekleniyor..." : "Ekle"}
-          </button>
-          <button type="button" onClick={() => setSelectedId(null)} className="text-gray-500 hover:underline">
+          </Button>
+          <button type="button" onClick={() => setSelectedId(null)} className="text-sm text-muted-foreground hover:underline">
             Vazgeç
           </button>
         </div>
       )}
-      {error && <p className="mt-1 text-xs text-red-600">{error}</p>}
+      {error && <p className="mt-1 text-xs text-destructive">{error}</p>}
     </div>
   );
 }

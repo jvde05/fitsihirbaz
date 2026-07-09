@@ -5,6 +5,11 @@ import { trpc } from "@/lib/trpc";
 import type { MealType } from "@fit-sihirbaz/shared";
 import { MealItemAdder } from "./MealItemAdder";
 import { MEAL_TYPE_LABELS, TotalsBadge } from "./diet-plan-ui";
+import { Card } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export function DietPlanBuilder({ planId }: { planId: string }) {
   const utils = trpc.useUtils();
@@ -31,81 +36,80 @@ export function DietPlanBuilder({ planId }: { planId: string }) {
   const [pendingMealType, setPendingMealType] = useState<MealType>("BREAKFAST");
 
   if (planQuery.isLoading || !planQuery.data) {
-    return <p className="text-gray-500">Plan yükleniyor...</p>;
+    return <p className="text-muted-foreground">Plan yükleniyor...</p>;
   }
   const plan = planQuery.data;
 
   return (
     <div>
-      <div className="mb-6 rounded-md border border-gray-200 bg-white p-4">
+      <Card className="mb-6 p-4">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-lg font-semibold">{plan.title}</h2>
-            <p className="text-sm text-gray-500">
+            <h2 className="text-lg font-semibold text-foreground">{plan.title}</h2>
+            <p className="text-sm text-muted-foreground">
               {plan.startDate}
               {plan.endDate ? ` – ${plan.endDate}` : ""} · Hedef: {plan.targetCalories ?? "-"} kcal
             </p>
           </div>
           <div className="text-right">
-            <p className="text-sm font-medium text-gray-900">Plan Toplamı</p>
+            <p className="text-sm font-medium text-foreground">Plan Toplamı</p>
             <TotalsBadge totals={plan.totals} />
           </div>
         </div>
-      </div>
+      </Card>
 
-      <div className="mb-6 flex flex-wrap items-end gap-2 rounded-md border border-gray-200 bg-gray-50 p-4">
-        <div>
-          <label className="block text-xs font-medium text-gray-600">Farklı kaloriye ayarla</label>
-          <input
+      <Card className="mb-6 flex flex-wrap items-end gap-2 bg-muted/30 p-4">
+        <div className="space-y-1">
+          <Label className="text-xs">Farklı kaloriye ayarla</Label>
+          <Input
             type="number"
             min="1"
             value={newCalorieTarget}
             onChange={(event) => setNewCalorieTarget(event.target.value)}
             placeholder="örn. 1600"
-            className="mt-1 w-32 rounded-md border border-gray-300 px-2 py-1.5 text-sm"
+            className="w-32"
           />
         </div>
-        <button
-          type="button"
+        <Button
+          variant="secondary"
           disabled={!newCalorieTarget || duplicateMutation.isLoading}
           onClick={() =>
             duplicateMutation.mutate({ dietPlanId: planId, newTargetCalories: Number(newCalorieTarget) })
           }
-          className="rounded-md bg-gray-800 px-3 py-1.5 text-sm font-medium text-white hover:bg-gray-900 disabled:opacity-60"
         >
           {duplicateMutation.isLoading ? "Oluşturuluyor..." : "Yeni Plan Oluştur"}
-        </button>
-        {duplicateError && <p className="text-sm text-red-600">{duplicateError}</p>}
+        </Button>
+        {duplicateError && <p className="text-sm text-destructive">{duplicateError}</p>}
         {duplicateResultId && (
-          <p className="text-sm text-brand-700">
+          <p className="text-sm text-primary">
             Yeni plan oluşturuldu (id: {duplicateResultId}) — bu sayfayı yeni plan için tekrar açabilirsiniz.
           </p>
         )}
-      </div>
+      </Card>
 
       {plan.days.map((day) => (
-        <div key={day.id} className="mb-4 rounded-md border border-gray-200 p-4">
+        <Card key={day.id} className="mb-4 p-4">
           <div className="mb-2 flex items-center justify-between">
-            <h3 className="font-medium">Gün {day.dayNumber}</h3>
+            <h3 className="font-medium text-foreground">Gün {day.dayNumber}</h3>
             <TotalsBadge totals={day.totals} />
           </div>
 
           {day.meals.map((meal) => (
-            <div key={meal.id} className="mb-3 rounded-md bg-gray-50 p-3">
+            <div key={meal.id} className="mb-3 rounded-md bg-muted/50 p-3">
               <div className="mb-1 flex items-center justify-between">
-                <p className="text-sm font-medium">
+                <p className="text-sm font-medium text-foreground">
                   {MEAL_TYPE_LABELS[meal.mealType]}
                   {meal.plannedTime ? ` · ${meal.plannedTime}` : ""}
                 </p>
                 <TotalsBadge totals={meal.totals} />
               </div>
-              <ul className="space-y-1 text-sm text-gray-700">
+              <ul className="space-y-1 text-sm text-foreground/90">
                 {meal.items.map((item) => (
                   <li key={item.id} className="flex justify-between">
                     <span>
                       {item.itemName} — {item.quantity} {item.unit}
                     </span>
-                    <span className="text-gray-400">{item.calories} kcal</span>
+                    <span className="text-muted-foreground">{item.calories} kcal</span>
                   </li>
                 ))}
               </ul>
@@ -115,51 +119,50 @@ export function DietPlanBuilder({ planId }: { planId: string }) {
 
           {pendingMealDayId === day.id ? (
             <div className="flex items-center gap-2">
-              <select
-                value={pendingMealType}
-                onChange={(event) => setPendingMealType(event.target.value as MealType)}
-                className="rounded-md border border-gray-300 px-2 py-1 text-sm"
-              >
-                {Object.entries(MEAL_TYPE_LABELS).map(([value, label]) => (
-                  <option key={value} value={value}>
-                    {label}
-                  </option>
-                ))}
-              </select>
-              <button
-                type="button"
+              <Select value={pendingMealType} onValueChange={(value) => setPendingMealType(value as MealType)}>
+                <SelectTrigger className="w-40">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {Object.entries(MEAL_TYPE_LABELS).map(([value, label]) => (
+                    <SelectItem key={value} value={value}>
+                      {label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Button
+                size="sm"
+                data-testid="confirm-add-meal-button"
                 onClick={() => {
                   addMealMutation.mutate({ dietPlanDayId: day.id, mealType: pendingMealType });
                   setPendingMealDayId(null);
                 }}
-                data-testid="confirm-add-meal-button"
-                className="rounded-md bg-brand-600 px-3 py-1 text-sm text-white hover:bg-brand-700"
               >
                 Ekle
-              </button>
+              </Button>
             </div>
           ) : (
             <button
               type="button"
               onClick={() => setPendingMealDayId(day.id)}
               data-testid="add-meal-button"
-              className="text-sm font-medium text-brand-700 hover:underline"
+              className="text-sm font-medium text-primary hover:underline"
             >
               + Öğün Ekle
             </button>
           )}
-        </div>
+        </Card>
       ))}
 
-      <button
-        type="button"
+      <Button
+        variant="outline"
         disabled={addDayMutation.isLoading}
-        onClick={() => addDayMutation.mutate({ dietPlanId: planId, dayNumber: plan.days.length + 1 })}
         data-testid="add-day-button"
-        className="rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100"
+        onClick={() => addDayMutation.mutate({ dietPlanId: planId, dayNumber: plan.days.length + 1 })}
       >
         + Gün Ekle
-      </button>
+      </Button>
     </div>
   );
 }

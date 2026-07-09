@@ -7,6 +7,9 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { LoginInputSchema, type LoginInput } from "@fit-sihirbaz/shared";
 import { trpc } from "@/lib/trpc";
 import { useAuthStore } from "@/lib/auth-store";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 export function LoginForm() {
   const router = useRouter();
@@ -34,40 +37,20 @@ export function LoginForm() {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
-      <div>
-        <label className="block text-sm font-medium text-gray-700" htmlFor="email">
-          E-posta
-        </label>
-        <input
-          id="email"
-          type="email"
-          autoComplete="email"
-          className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2"
-          {...register("email")}
-        />
-        {errors.email && <p className="mt-1 text-sm text-red-600">{errors.email.message}</p>}
+      <div className="space-y-1.5">
+        <Label htmlFor="email">E-posta</Label>
+        <Input id="email" type="email" autoComplete="email" {...register("email")} />
+        {errors.email && <p className="text-sm text-destructive">{errors.email.message}</p>}
       </div>
-      <div>
-        <label className="block text-sm font-medium text-gray-700" htmlFor="password">
-          Şifre
-        </label>
-        <input
-          id="password"
-          type="password"
-          autoComplete="current-password"
-          className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2"
-          {...register("password")}
-        />
-        {errors.password && <p className="mt-1 text-sm text-red-600">{errors.password.message}</p>}
+      <div className="space-y-1.5">
+        <Label htmlFor="password">Şifre</Label>
+        <Input id="password" type="password" autoComplete="current-password" {...register("password")} />
+        {errors.password && <p className="text-sm text-destructive">{errors.password.message}</p>}
       </div>
-      {serverError && <p className="text-sm text-red-600">{serverError}</p>}
-      <button
-        type="submit"
-        disabled={isSubmitting}
-        className="rounded-md bg-brand-600 px-4 py-2 font-medium text-white hover:bg-brand-700 disabled:opacity-60"
-      >
+      {serverError && <p className="text-sm text-destructive">{serverError}</p>}
+      <Button type="submit" disabled={isSubmitting} className="w-full">
         {isSubmitting ? "Giriş yapılıyor..." : "Giriş Yap"}
-      </button>
+      </Button>
     </form>
   );
 }

@@ -13,6 +13,14 @@ import { trpc } from "@/lib/trpc";
 import { useAuthStore } from "@/lib/auth-store";
 import { AvatarUploader } from "@/components/profile/AvatarUploader";
 import { QueryErrorNotice } from "@/components/QueryErrorNotice";
+import { Card } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+
+const nativeSelectClass =
+  "mt-1 h-9 w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring";
 
 export default function DanisanProfilPage() {
   const utils = trpc.useUtils();
@@ -52,7 +60,7 @@ export default function DanisanProfilPage() {
   }, [profileQuery.data]);
 
   if (profileQuery.isLoading) {
-    return <p className="text-gray-500">Yükleniyor...</p>;
+    return <p className="text-muted-foreground">Yükleniyor...</p>;
   }
 
   if (profileQuery.isError) {
@@ -61,73 +69,53 @@ export default function DanisanProfilPage() {
 
   return (
     <div className="mx-auto max-w-xl space-y-8">
-      <h1 className="text-2xl font-semibold text-gray-900">Profilim</h1>
+      <h1 className="text-2xl font-semibold text-foreground">Profilim</h1>
 
-      <div className="rounded-md border border-gray-200 p-4">
+      <Card className="p-4">
         <AvatarUploader
           avatarUrl={profileQuery.data?.avatarUrl ?? null}
           onUpdated={() => utils.clients.getProfile.invalidate()}
         />
-      </div>
+      </Card>
 
       <form
         onSubmit={userForm.handleSubmit((values) => updateUserMutation.mutate(values))}
-        className="flex flex-col gap-3 rounded-md border border-gray-200 p-4"
+        className="flex flex-col gap-3 rounded-md border p-4"
       >
-        <h2 className="text-sm font-semibold text-gray-700">Kişisel Bilgiler</h2>
+        <h2 className="text-sm font-semibold text-foreground">Kişisel Bilgiler</h2>
         <div className="grid grid-cols-2 gap-3">
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Ad</label>
-            <input
-              className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2"
-              {...userForm.register("firstName")}
-            />
+          <div className="space-y-1.5">
+            <Label>Ad</Label>
+            <Input {...userForm.register("firstName")} />
           </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Soyad</label>
-            <input
-              className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2"
-              {...userForm.register("lastName")}
-            />
+          <div className="space-y-1.5">
+            <Label>Soyad</Label>
+            <Input {...userForm.register("lastName")} />
           </div>
         </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700">Telefon</label>
-          <input
-            className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2"
-            {...userForm.register("phone")}
-          />
+        <div className="space-y-1.5">
+          <Label>Telefon</Label>
+          <Input {...userForm.register("phone")} />
         </div>
-        {updateUserMutation.isSuccess && <p className="text-sm text-brand-700">Kaydedildi.</p>}
-        <button
-          type="submit"
-          disabled={userForm.formState.isSubmitting}
-          className="self-start rounded-md bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-700 disabled:opacity-60"
-        >
+        {updateUserMutation.isSuccess && <p className="text-sm text-primary">Kaydedildi.</p>}
+        <Button type="submit" disabled={userForm.formState.isSubmitting} className="self-start">
           Kaydet
-        </button>
+        </Button>
       </form>
 
       <form
         onSubmit={clientForm.handleSubmit((values) => updateClientMutation.mutate(values))}
-        className="flex flex-col gap-3 rounded-md border border-gray-200 p-4"
+        className="flex flex-col gap-3 rounded-md border p-4"
       >
-        <h2 className="text-sm font-semibold text-gray-700">Sağlık Bilgileri</h2>
+        <h2 className="text-sm font-semibold text-foreground">Sağlık Bilgileri</h2>
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="block text-sm font-medium text-gray-700">Doğum Tarihi</label>
-            <input
-              type="date"
-              className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2"
-              {...clientForm.register("birthDate")}
-            />
+            <Label>Doğum Tarihi</Label>
+            <Input type="date" {...clientForm.register("birthDate")} />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700">Cinsiyet</label>
-            <select
-              className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2"
-              {...clientForm.register("gender")}
-            >
+            <Label>Cinsiyet</Label>
+            <select className={nativeSelectClass} {...clientForm.register("gender")}>
               <option value="">Seçiniz</option>
               <option value="MALE">Erkek</option>
               <option value="FEMALE">Kadın</option>
@@ -135,19 +123,12 @@ export default function DanisanProfilPage() {
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700">Boy (cm)</label>
-            <input
-              type="number"
-              className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2"
-              {...clientForm.register("heightCm")}
-            />
+            <Label>Boy (cm)</Label>
+            <Input type="number" {...clientForm.register("heightCm")} />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700">Hedef</label>
-            <select
-              className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2"
-              {...clientForm.register("goal")}
-            >
+            <Label>Hedef</Label>
+            <select className={nativeSelectClass} {...clientForm.register("goal")}>
               <option value="">Seçiniz</option>
               <option value="WEIGHT_LOSS">Kilo Verme</option>
               <option value="WEIGHT_GAIN">Kilo Alma</option>
@@ -157,11 +138,8 @@ export default function DanisanProfilPage() {
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700">Aktivite Seviyesi</label>
-            <select
-              className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2"
-              {...clientForm.register("activityLevel")}
-            >
+            <Label>Aktivite Seviyesi</Label>
+            <select className={nativeSelectClass} {...clientForm.register("activityLevel")}>
               <option value="">Seçiniz</option>
               <option value="SEDENTARY">Hareketsiz</option>
               <option value="LIGHT">Hafif</option>
@@ -171,22 +149,14 @@ export default function DanisanProfilPage() {
             </select>
           </div>
         </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700">Sağlık Notları</label>
-          <textarea
-            rows={3}
-            className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2"
-            {...clientForm.register("medicalNotes")}
-          />
+        <div className="space-y-1.5">
+          <Label>Sağlık Notları</Label>
+          <Textarea rows={3} {...clientForm.register("medicalNotes")} />
         </div>
-        {updateClientMutation.isSuccess && <p className="text-sm text-brand-700">Kaydedildi.</p>}
-        <button
-          type="submit"
-          disabled={clientForm.formState.isSubmitting}
-          className="self-start rounded-md bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-700 disabled:opacity-60"
-        >
+        {updateClientMutation.isSuccess && <p className="text-sm text-primary">Kaydedildi.</p>}
+        <Button type="submit" disabled={clientForm.formState.isSubmitting} className="self-start">
           Kaydet
-        </button>
+        </Button>
       </form>
     </div>
   );

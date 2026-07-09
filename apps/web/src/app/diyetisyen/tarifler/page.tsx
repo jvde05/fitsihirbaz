@@ -1,13 +1,20 @@
 "use client";
 
 import { useState } from "react";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import type { z } from "zod";
 import { RecipeCreateInputSchema, type RecipeIngredientInput } from "@fit-sihirbaz/shared";
 import { trpc } from "@/lib/trpc";
 import { IngredientPicker } from "@/components/recipes/IngredientPicker";
 import { QueryErrorNotice } from "@/components/QueryErrorNotice";
+import { EmptyState } from "@/components/EmptyState";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
 
 const RecipeMetaFormSchema = RecipeCreateInputSchema.omit({ ingredients: true });
 type RecipeMetaForm = z.infer<typeof RecipeMetaFormSchema>;
@@ -30,6 +37,7 @@ export default function TariflerPage() {
 
   const {
     register,
+    control,
     handleSubmit,
     reset,
     formState: { errors, isSubmitting },
@@ -52,67 +60,45 @@ export default function TariflerPage() {
 
   return (
     <div>
-      <h1 className="mb-6 text-2xl font-semibold text-gray-900">Tariflerim</h1>
+      <h1 className="mb-6 text-2xl font-semibold text-foreground">Tariflerim</h1>
 
-      <form onSubmit={handleSubmit(onSubmit)} className="mb-8 flex flex-col gap-3 rounded-md border border-gray-200 p-4">
-        <h2 className="text-sm font-semibold text-gray-700">Yeni Tarif</h2>
+      <form onSubmit={handleSubmit(onSubmit)} className="mb-8 flex flex-col gap-3 rounded-md border p-4">
+        <h2 className="text-sm font-semibold text-foreground">Yeni Tarif</h2>
         <div className="grid grid-cols-2 gap-3">
-          <div>
-            <label className="block text-sm font-medium text-gray-700" htmlFor="name">
-              Tarif Adı
-            </label>
-            <input
-              id="name"
-              className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2"
-              {...register("name")}
-            />
-            {errors.name && <p className="mt-1 text-sm text-red-600">{errors.name.message}</p>}
+          <div className="space-y-1.5">
+            <Label htmlFor="name">Tarif Adı</Label>
+            <Input id="name" {...register("name")} />
+            {errors.name && <p className="text-sm text-destructive">{errors.name.message}</p>}
           </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700" htmlFor="servings">
-              Porsiyon Sayısı
-            </label>
-            <input
-              id="servings"
-              type="number"
-              min="1"
-              className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2"
-              {...register("servings")}
-            />
-            {errors.servings && <p className="mt-1 text-sm text-red-600">{errors.servings.message}</p>}
+          <div className="space-y-1.5">
+            <Label htmlFor="servings">Porsiyon Sayısı</Label>
+            <Input id="servings" type="number" min="1" {...register("servings")} />
+            {errors.servings && <p className="text-sm text-destructive">{errors.servings.message}</p>}
           </div>
         </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700" htmlFor="description">
-            Açıklama (opsiyonel)
-          </label>
-          <textarea
-            id="description"
-            rows={2}
-            className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2"
-            {...register("description")}
-          />
+        <div className="space-y-1.5">
+          <Label htmlFor="description">Açıklama (opsiyonel)</Label>
+          <Textarea id="description" rows={2} {...register("description")} />
         </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700" htmlFor="instructions">
-            Hazırlanışı (opsiyonel)
-          </label>
-          <textarea
-            id="instructions"
-            rows={3}
-            className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2"
-            {...register("instructions")}
-          />
+        <div className="space-y-1.5">
+          <Label htmlFor="instructions">Hazırlanışı (opsiyonel)</Label>
+          <Textarea id="instructions" rows={3} {...register("instructions")} />
         </div>
-        <label className="flex items-center gap-2 text-sm text-gray-700">
-          <input type="checkbox" {...register("isPublic")} />
-          Literatür/pazaryeri kütüphanesinde herkese açık göster
-        </label>
+        <Controller
+          control={control}
+          name="isPublic"
+          render={({ field }) => (
+            <label className="flex items-center gap-2 text-sm text-foreground">
+              <Checkbox checked={field.value} onCheckedChange={(checked) => field.onChange(checked === true)} />
+              Literatür/pazaryeri kütüphanesinde herkese açık göster
+            </label>
+          )}
+        />
 
         <div>
-          <h3 className="mb-2 text-sm font-medium text-gray-700">Malzemeler</h3>
+          <h3 className="mb-2 text-sm font-medium text-foreground">Malzemeler</h3>
           {ingredients.length > 0 && (
-            <ul className="mb-2 divide-y divide-gray-100 rounded-md border border-gray-200 text-sm" data-testid="ingredient-list">
+            <ul className="mb-2 divide-y rounded-md border text-sm" data-testid="ingredient-list">
               {ingredients.map((ingredient, index) => (
                 <li key={`${ingredient.foodItemId}-${index}`} className="flex items-center justify-between px-3 py-1.5">
                   <span>
@@ -121,7 +107,7 @@ export default function TariflerPage() {
                   <button
                     type="button"
                     onClick={() => setIngredients((prev) => prev.filter((_, i) => i !== index))}
-                    className="text-xs text-red-600 hover:underline"
+                    className="text-xs text-destructive hover:underline"
                   >
                     Kaldır
                   </button>
@@ -132,38 +118,35 @@ export default function TariflerPage() {
           <IngredientPicker onAdd={(ingredient) => setIngredients((prev) => [...prev, ingredient])} />
         </div>
 
-        {formError && <p className="text-sm text-red-600">{formError}</p>}
-        <button
-          type="submit"
-          disabled={isSubmitting}
-          data-testid="create-recipe-button"
-          className="self-start rounded-md bg-brand-600 px-4 py-2 font-medium text-white hover:bg-brand-700 disabled:opacity-60"
-        >
+        {formError && <p className="text-sm text-destructive">{formError}</p>}
+        <Button type="submit" disabled={isSubmitting} data-testid="create-recipe-button" className="self-start">
           {isSubmitting ? "Oluşturuluyor..." : "Tarif Oluştur"}
-        </button>
+        </Button>
       </form>
 
       {recipesQuery.isError && (
         <QueryErrorNotice message={recipesQuery.error.message} onRetry={() => recipesQuery.refetch()} />
       )}
 
-      <ul className="divide-y divide-gray-200 rounded-md border border-gray-200">
+      <ul className="divide-y rounded-md border">
         {recipesQuery.data?.map((recipe) => (
           <li key={recipe.id} className="px-4 py-3">
-            <p className="font-medium text-gray-900">
-              {recipe.name}{" "}
-              <span className={`ml-2 rounded-full px-2 py-0.5 text-xs ${recipe.isPublic ? "bg-brand-100 text-brand-700" : "bg-gray-100 text-gray-500"}`}>
+            <div className="flex items-center gap-2">
+              <p className="font-medium text-foreground">{recipe.name}</p>
+              <Badge variant={recipe.isPublic ? "success" : "secondary"}>
                 {recipe.isPublic ? "Herkese Açık" : "Özel"}
-              </span>
-            </p>
-            <p className="text-sm text-gray-500">
+              </Badge>
+            </div>
+            <p className="text-sm text-muted-foreground">
               {recipe.servings} porsiyon · porsiyon başı {recipe.totalsPerServing.calories} kcal, P
               {recipe.totalsPerServing.protein}g / K{recipe.totalsPerServing.carbs}g / Y{recipe.totalsPerServing.fat}g
             </p>
           </li>
         ))}
         {recipesQuery.data?.length === 0 && (
-          <li className="px-4 py-6 text-center text-sm text-gray-400">Henüz tarif eklemediniz.</li>
+          <li className="px-4 py-6">
+            <EmptyState title="Henüz tarif eklemediniz" />
+          </li>
         )}
       </ul>
     </div>

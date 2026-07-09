@@ -3,11 +3,19 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { X } from "lucide-react";
 import { AddProgressLogInputSchema, type AddProgressLogInput } from "@fit-sihirbaz/shared";
 import { trpc } from "@/lib/trpc";
 import { WeightChart } from "@/components/WeightChart";
 import { resolveMediaUrl } from "@/lib/media";
 import { uploadImage } from "@/lib/uploads";
+import { EmptyState } from "@/components/EmptyState";
+import { Card } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 export default function IlerlemePage() {
   const utils = trpc.useUtils();
@@ -62,104 +70,55 @@ export default function IlerlemePage() {
 
   return (
     <div>
-      <h1 className="mb-6 text-2xl font-semibold text-gray-900">İlerleme</h1>
-      <p className="mb-6 max-w-2xl text-sm text-gray-500">
+      <h1 className="mb-6 text-2xl font-semibold text-foreground">İlerleme</h1>
+      <p className="mb-6 max-w-2xl text-sm text-muted-foreground">
         Ölçümlerinizi ve isterseniz ilerleme fotoğraflarınızı buradan kaydedin. Kaydettiğiniz veriler
         otomatik olarak bağlı olduğunuz diyetisyeninizle paylaşılır.
       </p>
 
       {firstWeight !== null && latestWeight !== null && (
-        <div className="mb-6 rounded-md border border-gray-200 bg-white p-4 text-sm text-gray-700">
+        <Card className="mb-6 p-4 text-sm text-foreground/90">
           İlk ölçüm: {firstWeight} kg → Son ölçüm: {latestWeight} kg (
           {(latestWeight - firstWeight).toFixed(1)} kg)
-        </div>
+        </Card>
       )}
 
       <div className="mb-6">
         <WeightChart logs={logs} />
       </div>
 
-      <form
-        onSubmit={handleSubmit(onSubmit)}
-        className="mb-8 flex flex-col gap-3 rounded-md border border-gray-200 p-4"
-      >
+      <form onSubmit={handleSubmit(onSubmit)} className="mb-8 flex flex-col gap-3 rounded-md border p-4">
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700" htmlFor="logDate">
-              Tarih
-            </label>
-            <input
-              id="logDate"
-              type="date"
-              className="mt-1 w-full rounded-md border border-gray-300 px-2 py-1.5"
-              {...register("logDate")}
-            />
-            {errors.logDate && <p className="mt-1 text-xs text-red-600">{errors.logDate.message}</p>}
+          <div className="space-y-1.5">
+            <Label htmlFor="logDate">Tarih</Label>
+            <Input id="logDate" type="date" {...register("logDate")} />
+            {errors.logDate && <p className="text-xs text-destructive">{errors.logDate.message}</p>}
           </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700" htmlFor="weightKg">
-              Kilo (kg)
-            </label>
-            <input
-              id="weightKg"
-              type="number"
-              step="0.1"
-              className="mt-1 w-full rounded-md border border-gray-300 px-2 py-1.5"
-              {...register("weightKg")}
-            />
+          <div className="space-y-1.5">
+            <Label htmlFor="weightKg">Kilo (kg)</Label>
+            <Input id="weightKg" type="number" step="0.1" {...register("weightKg")} />
           </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700" htmlFor="bodyFatPercent">
-              Vücut Yağ Oranı (%)
-            </label>
-            <input
-              id="bodyFatPercent"
-              type="number"
-              step="0.1"
-              className="mt-1 w-full rounded-md border border-gray-300 px-2 py-1.5"
-              {...register("bodyFatPercent")}
-            />
+          <div className="space-y-1.5">
+            <Label htmlFor="bodyFatPercent">Vücut Yağ Oranı (%)</Label>
+            <Input id="bodyFatPercent" type="number" step="0.1" {...register("bodyFatPercent")} />
           </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700" htmlFor="waistCm">
-              Bel (cm)
-            </label>
-            <input
-              id="waistCm"
-              type="number"
-              step="0.1"
-              className="mt-1 w-full rounded-md border border-gray-300 px-2 py-1.5"
-              {...register("waistCm")}
-            />
+          <div className="space-y-1.5">
+            <Label htmlFor="waistCm">Bel (cm)</Label>
+            <Input id="waistCm" type="number" step="0.1" {...register("waistCm")} />
           </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700" htmlFor="hipCm">
-              Kalça (cm)
-            </label>
-            <input
-              id="hipCm"
-              type="number"
-              step="0.1"
-              className="mt-1 w-full rounded-md border border-gray-300 px-2 py-1.5"
-              {...register("hipCm")}
-            />
+          <div className="space-y-1.5">
+            <Label htmlFor="hipCm">Kalça (cm)</Label>
+            <Input id="hipCm" type="number" step="0.1" {...register("hipCm")} />
           </div>
         </div>
 
-        <div>
-          <label className="block text-sm font-medium text-gray-700" htmlFor="notes">
-            Notlar
-          </label>
-          <textarea
-            id="notes"
-            rows={2}
-            className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2"
-            {...register("notes")}
-          />
+        <div className="space-y-1.5">
+          <Label htmlFor="notes">Notlar</Label>
+          <Textarea id="notes" rows={2} {...register("notes")} />
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700">İlerleme Fotoğrafları (opsiyonel)</label>
+          <Label>İlerleme Fotoğrafları (opsiyonel)</Label>
           <div className="mt-2 flex flex-wrap items-center gap-3">
             {photoUrls.map((url) => (
               <div key={url} className="relative">
@@ -167,13 +126,13 @@ export default function IlerlemePage() {
                 <button
                   type="button"
                   onClick={() => setPhotoUrls((current) => current.filter((u) => u !== url))}
-                  className="absolute -right-1 -top-1 rounded-full bg-black/60 px-1.5 py-0.5 text-xs text-white hover:bg-black/80"
+                  className="absolute -right-1 -top-1 rounded-full bg-black/60 p-1 text-white hover:bg-black/80"
                 >
-                  ×
+                  <X className="h-3 w-3" />
                 </button>
               </div>
             ))}
-            <label className="cursor-pointer text-sm text-brand-700 hover:underline">
+            <label className="cursor-pointer text-sm text-primary hover:underline">
               {uploadingPhoto ? "Yükleniyor..." : "Fotoğraf Ekle"}
               <input
                 type="file"
@@ -187,51 +146,49 @@ export default function IlerlemePage() {
           </div>
         </div>
 
-        {formError && <p className="text-sm text-red-600">{formError}</p>}
-        <button
-          type="submit"
-          disabled={isSubmitting || uploadingPhoto}
-          className="self-start rounded-md bg-brand-600 px-4 py-2 font-medium text-white hover:bg-brand-700 disabled:opacity-60"
-        >
+        {formError && <p className="text-sm text-destructive">{formError}</p>}
+        <Button type="submit" disabled={isSubmitting || uploadingPhoto} className="self-start">
           {isSubmitting ? "Kaydediliyor..." : "Ölçüm Ekle"}
-        </button>
+        </Button>
       </form>
 
-      <table className="w-full text-left text-sm">
-        <thead>
-          <tr className="border-b border-gray-200 text-gray-500">
-            <th className="py-2">Tarih</th>
-            <th className="py-2">Kilo</th>
-            <th className="py-2">Yağ Oranı</th>
-            <th className="py-2">Bel</th>
-            <th className="py-2">Kalça</th>
-            <th className="py-2">Fotoğraflar</th>
-          </tr>
-        </thead>
-        <tbody>
-          {[...logs].reverse().map((log) => (
-            <tr key={log.id} className="border-b border-gray-100">
-              <td className="py-2">{log.logDate}</td>
-              <td className="py-2">{log.weightKg ?? "-"}</td>
-              <td className="py-2">{log.bodyFatPercent !== null ? `${log.bodyFatPercent}%` : "-"}</td>
-              <td className="py-2">{log.waistCm ?? "-"}</td>
-              <td className="py-2">{log.hipCm ?? "-"}</td>
-              <td className="py-2">
-                {log.photoUrls.length > 0 && (
-                  <div className="flex gap-1">
-                    {log.photoUrls.map((url) => (
-                      <a key={url} href={resolveMediaUrl(url) ?? "#"} target="_blank" rel="noreferrer">
-                        <img src={resolveMediaUrl(url) ?? undefined} alt="" className="h-10 w-10 rounded object-cover" />
-                      </a>
-                    ))}
-                  </div>
-                )}
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-      {logs.length === 0 && <p className="text-gray-500">Henüz ölçüm kaydı yok.</p>}
+      {logs.length > 0 && (
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Tarih</TableHead>
+              <TableHead>Kilo</TableHead>
+              <TableHead>Yağ Oranı</TableHead>
+              <TableHead>Bel</TableHead>
+              <TableHead>Kalça</TableHead>
+              <TableHead>Fotoğraflar</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {[...logs].reverse().map((log) => (
+              <TableRow key={log.id}>
+                <TableCell>{log.logDate}</TableCell>
+                <TableCell>{log.weightKg ?? "-"}</TableCell>
+                <TableCell>{log.bodyFatPercent !== null ? `${log.bodyFatPercent}%` : "-"}</TableCell>
+                <TableCell>{log.waistCm ?? "-"}</TableCell>
+                <TableCell>{log.hipCm ?? "-"}</TableCell>
+                <TableCell>
+                  {log.photoUrls.length > 0 && (
+                    <div className="flex gap-1">
+                      {log.photoUrls.map((url) => (
+                        <a key={url} href={resolveMediaUrl(url) ?? "#"} target="_blank" rel="noreferrer">
+                          <img src={resolveMediaUrl(url) ?? undefined} alt="" className="h-10 w-10 rounded object-cover" />
+                        </a>
+                      ))}
+                    </div>
+                  )}
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      )}
+      {logs.length === 0 && <EmptyState title="Henüz ölçüm kaydı yok" />}
     </div>
   );
 }

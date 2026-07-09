@@ -3,6 +3,11 @@
 import { useState } from "react";
 import { trpc } from "@/lib/trpc";
 import { QueryErrorNotice } from "@/components/QueryErrorNotice";
+import { EmptyState } from "@/components/EmptyState";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const STATUS_LABELS: Record<string, string> = {
   SCHEDULED: "Planlandı",
@@ -42,46 +47,41 @@ export default function DanisanRandevularPage() {
 
   return (
     <div>
-      <h1 className="mb-6 text-2xl font-semibold text-gray-900">Randevularım</h1>
+      <h1 className="mb-6 text-2xl font-semibold text-foreground">Randevularım</h1>
 
       {dietitians.length === 0 ? (
-        <p className="mb-6 text-gray-500">Randevu talep edebilmek için önce bir diyetisyene bağlı olmalısınız.</p>
+        <p className="mb-6 text-muted-foreground">Randevu talep edebilmek için önce bir diyetisyene bağlı olmalısınız.</p>
       ) : (
-        <form onSubmit={handleSubmit} className="mb-8 flex flex-wrap items-end gap-3 rounded-md border border-gray-200 p-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Diyetisyen</label>
-            <select
-              required
-              value={dietitianId}
-              onChange={(event) => setDietitianId(event.target.value)}
-              className="mt-1 rounded-md border border-gray-300 px-2 py-1.5"
-            >
-              <option value="">Seçin</option>
-              {dietitians.map((dietitian) => (
-                <option key={dietitian.id} value={dietitian.id}>
-                  {dietitian.firstName} {dietitian.lastName}
-                </option>
-              ))}
-            </select>
+        <form onSubmit={handleSubmit} className="mb-8 flex flex-wrap items-end gap-3 rounded-md border p-4">
+          <div className="space-y-1.5">
+            <Label>Diyetisyen</Label>
+            <Select required value={dietitianId} onValueChange={setDietitianId}>
+              <SelectTrigger className="w-48">
+                <SelectValue placeholder="Seçin" />
+              </SelectTrigger>
+              <SelectContent>
+                {dietitians.map((dietitian) => (
+                  <SelectItem key={dietitian.id} value={dietitian.id}>
+                    {dietitian.firstName} {dietitian.lastName}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Tarih/Saat</label>
-            <input
+          <div className="space-y-1.5">
+            <Label>Tarih/Saat</Label>
+            <Input
               required
               type="datetime-local"
               value={scheduledAt}
               onChange={(event) => setScheduledAt(event.target.value)}
-              className="mt-1 rounded-md border border-gray-300 px-2 py-1.5"
+              className="w-56"
             />
           </div>
-          <button
-            type="submit"
-            disabled={createMutation.isLoading}
-            className="rounded-md bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-700 disabled:opacity-60"
-          >
+          <Button type="submit" disabled={createMutation.isLoading}>
             {createMutation.isLoading ? "Talep ediliyor..." : "Randevu Talep Et"}
-          </button>
-          {formError && <p className="w-full text-sm text-red-600">{formError}</p>}
+          </Button>
+          {formError && <p className="w-full text-sm text-destructive">{formError}</p>}
         </form>
       )}
 
@@ -89,30 +89,26 @@ export default function DanisanRandevularPage() {
         <QueryErrorNotice message={appointmentsQuery.error.message} onRetry={() => appointmentsQuery.refetch()} />
       )}
 
-      <ul className="divide-y divide-gray-200 rounded-md border border-gray-200">
+      <ul className="divide-y rounded-md border">
         {appointmentsQuery.data?.map((appointment) => (
           <li key={appointment.id} className="flex items-center justify-between px-4 py-3">
             <div>
-              <p className="font-medium text-gray-900">
+              <p className="font-medium text-foreground">
                 {appointment.counterpartFirstName} {appointment.counterpartLastName}
               </p>
-              <p className="text-sm text-gray-500">
+              <p className="text-sm text-muted-foreground">
                 {new Date(appointment.scheduledAt).toLocaleString("tr-TR")} · {STATUS_LABELS[appointment.status]}
               </p>
             </div>
             {appointment.status === "SCHEDULED" && (
-              <button
-                type="button"
-                onClick={() => cancelMutation.mutate({ id: appointment.id })}
-                className="rounded-md border border-gray-300 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-100"
-              >
+              <Button variant="outline" size="sm" onClick={() => cancelMutation.mutate({ id: appointment.id })}>
                 İptal Et
-              </button>
+              </Button>
             )}
           </li>
         ))}
       </ul>
-      {appointmentsQuery.data?.length === 0 && <p className="text-gray-500">Henüz randevunuz yok.</p>}
+      {appointmentsQuery.data?.length === 0 && <EmptyState title="Henüz randevunuz yok" />}
     </div>
   );
 }

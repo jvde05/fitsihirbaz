@@ -2,8 +2,15 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { Star, Users } from "lucide-react";
 import { trpc } from "@/lib/trpc";
 import { QueryErrorNotice } from "@/components/QueryErrorNotice";
+import { EmptyState } from "@/components/EmptyState";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const PAGE_SIZE = 20;
 
@@ -14,9 +21,9 @@ export default function DiyetisyenlerPage() {
 
   return (
     <div>
-      <h1 className="mb-6 text-2xl font-semibold text-gray-900">Diyetisyenler</h1>
+      <h1 className="mb-6 text-2xl font-semibold text-foreground">Diyetisyenler</h1>
 
-      <input
+      <Input
         type="text"
         placeholder="İsim veya uzmanlık ara..."
         value={query}
@@ -24,51 +31,50 @@ export default function DiyetisyenlerPage() {
           setQuery(event.target.value);
           setLimit(PAGE_SIZE);
         }}
-        className="mb-6 w-full max-w-md rounded-md border border-gray-300 px-3 py-2"
+        className="mb-6 max-w-md"
       />
 
-      {searchQuery.isLoading && <p className="text-gray-500">Yükleniyor...</p>}
+      {searchQuery.isLoading && (
+        <div className="grid gap-4 sm:grid-cols-2">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <Skeleton key={i} className="h-28 rounded-lg" />
+          ))}
+        </div>
+      )}
       {searchQuery.isError && (
         <QueryErrorNotice message={searchQuery.error.message} onRetry={() => searchQuery.refetch()} />
       )}
       {searchQuery.data && searchQuery.data.items.length === 0 && (
-        <p className="text-gray-500">Sonuç bulunamadı.</p>
+        <EmptyState icon={Users} title="Sonuç bulunamadı" description="Farklı bir isim veya uzmanlık deneyin." />
       )}
 
       <div className="grid gap-4 sm:grid-cols-2">
         {searchQuery.data?.items.map((dietitian) => (
-          <Link
-            key={dietitian.id}
-            href={`/diyetisyenler/${dietitian.id}`}
-            className="rounded-md border border-gray-200 p-4 hover:border-brand-500 hover:shadow-sm"
-          >
-            <p className="font-medium text-gray-900">
-              {dietitian.firstName} {dietitian.lastName}
-              {dietitian.verificationStatus === "VERIFIED" && (
-                <span className="ml-2 rounded-full bg-brand-100 px-2 py-0.5 text-xs text-brand-700">
-                  Onaylı
-                </span>
+          <Link key={dietitian.id} href={`/diyetisyenler/${dietitian.id}`}>
+            <Card className="p-4 transition-shadow hover:shadow-md">
+              <div className="flex items-center gap-2 font-medium text-foreground">
+                {dietitian.firstName} {dietitian.lastName}
+                {dietitian.verificationStatus === "VERIFIED" && <Badge variant="success">Onaylı</Badge>}
+              </div>
+              {dietitian.title && <p className="text-sm text-muted-foreground">{dietitian.title}</p>}
+              {dietitian.specialties.length > 0 && (
+                <p className="mt-1 text-xs text-muted-foreground/80">{dietitian.specialties.join(", ")}</p>
               )}
-            </p>
-            {dietitian.title && <p className="text-sm text-gray-500">{dietitian.title}</p>}
-            {dietitian.specialties.length > 0 && (
-              <p className="mt-1 text-xs text-gray-400">{dietitian.specialties.join(", ")}</p>
-            )}
-            {dietitian.averageRating !== null && (
-              <p className="mt-2 text-sm text-gray-600">★ {dietitian.averageRating.toFixed(1)}</p>
-            )}
+              {dietitian.averageRating !== null && (
+                <p className="mt-2 flex items-center gap-1 text-sm text-muted-foreground">
+                  <Star className="h-3.5 w-3.5 fill-warning text-warning" />
+                  {dietitian.averageRating.toFixed(1)}
+                </p>
+              )}
+            </Card>
           </Link>
         ))}
       </div>
 
       {searchQuery.data && searchQuery.data.items.length < searchQuery.data.total && (
-        <button
-          type="button"
-          onClick={() => setLimit((current) => current + PAGE_SIZE)}
-          className="mt-6 rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100"
-        >
+        <Button variant="outline" className="mt-6" onClick={() => setLimit((current) => current + PAGE_SIZE)}>
           Daha Fazla Yükle
-        </button>
+        </Button>
       )}
     </div>
   );

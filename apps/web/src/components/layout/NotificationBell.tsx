@@ -1,7 +1,10 @@
 "use client";
 
 import { useState } from "react";
+import { Bell } from "lucide-react";
 import { trpc } from "@/lib/trpc";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import type { Notification } from "@fit-sihirbaz/shared";
 
 const POLL_INTERVAL_MS = 10000;
@@ -50,29 +53,31 @@ export function NotificationBell() {
 
   return (
     <div className="relative">
-      <button
+      <Button
         type="button"
+        variant="outline"
+        size="icon"
+        className="relative h-8 w-8"
         onClick={() => setOpen((v) => !v)}
-        className="relative rounded-md border border-gray-300 px-2.5 py-1.5 text-gray-700 hover:bg-gray-100"
         aria-label="Bildirimler"
       >
-        🔔
+        <Bell className="h-4 w-4" />
         {unreadCount > 0 && (
-          <span className="absolute -right-1 -top-1 rounded-full bg-red-600 px-1.5 py-0.5 text-[10px] leading-none text-white">
+          <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-destructive px-1 text-[10px] leading-none text-destructive-foreground">
             {unreadCount}
           </span>
         )}
-      </button>
+      </Button>
 
       {open && (
-        <div className="absolute right-0 z-10 mt-2 w-80 rounded-md border border-gray-200 bg-white shadow-lg">
-          <div className="flex items-center justify-between border-b border-gray-100 px-3 py-2">
-            <span className="text-sm font-medium text-gray-700">Bildirimler</span>
+        <div className="absolute right-0 z-10 mt-2 w-80 rounded-md border bg-popover text-popover-foreground shadow-lg">
+          <div className="flex items-center justify-between border-b px-3 py-2">
+            <span className="text-sm font-medium">Bildirimler</span>
             {unreadCount > 0 && (
               <button
                 type="button"
                 onClick={() => markAllAsReadMutation.mutate()}
-                className="text-xs text-brand-700 hover:underline"
+                className="text-xs text-primary hover:underline"
               >
                 Tümünü okundu işaretle
               </button>
@@ -84,16 +89,17 @@ export function NotificationBell() {
                 <button
                   type="button"
                   onClick={() => !notification.isRead && markAsReadMutation.mutate({ id: notification.id })}
-                  className={`block w-full px-3 py-2 text-left text-sm hover:bg-gray-50 ${
-                    notification.isRead ? "text-gray-400" : "font-medium text-gray-900"
-                  }`}
+                  className={cn(
+                    "block w-full px-3 py-2 text-left text-sm hover:bg-muted",
+                    notification.isRead ? "text-muted-foreground" : "font-medium",
+                  )}
                 >
                   {describeNotification(notification)}
                 </button>
               </li>
             ))}
             {notifications.length === 0 && (
-              <li className="px-3 py-4 text-center text-sm text-gray-400">Bildirim yok.</li>
+              <li className="px-3 py-4 text-center text-sm text-muted-foreground">Bildirim yok.</li>
             )}
           </ul>
         </div>

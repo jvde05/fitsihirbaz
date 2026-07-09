@@ -9,7 +9,7 @@ export default function DiyetisyenMesajlarPage() {
 
   return (
     <div>
-      <h1 className="mb-6 text-2xl font-semibold text-gray-900">Mesajlar</h1>
+      <h1 className="mb-6 text-2xl font-semibold text-foreground">Mesajlar</h1>
       {clientsQuery.isError && (
         <QueryErrorNotice message={clientsQuery.error.message} onRetry={() => clientsQuery.refetch()} />
       )}

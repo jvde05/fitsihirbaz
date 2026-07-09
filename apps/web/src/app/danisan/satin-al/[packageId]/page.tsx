@@ -4,6 +4,8 @@ import { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { trpc } from "@/lib/trpc";
 import { QueryErrorNotice } from "@/components/QueryErrorNotice";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 
 export default function SatinAlPage() {
   const params = useParams<{ packageId: string }>();
@@ -31,13 +33,13 @@ export default function SatinAlPage() {
   }
 
   if (packageQuery.isLoading) {
-    return <p className="text-gray-500">Yükleniyor...</p>;
+    return <p className="text-muted-foreground">Yükleniyor...</p>;
   }
   if (packageQuery.isError) {
     return <QueryErrorNotice message={packageQuery.error.message} onRetry={() => packageQuery.refetch()} />;
   }
   if (!packageQuery.data) {
-    return <p className="text-gray-500">Paket bulunamadı.</p>;
+    return <p className="text-muted-foreground">Paket bulunamadı.</p>;
   }
 
   const pkg = packageQuery.data;
@@ -45,32 +47,27 @@ export default function SatinAlPage() {
 
   return (
     <div className="mx-auto max-w-lg">
-      <h1 className="mb-6 text-2xl font-semibold text-gray-900">Satın Alma Onayı</h1>
+      <h1 className="mb-6 text-2xl font-semibold text-foreground">Satın Alma Onayı</h1>
 
-      <div className="rounded-md border border-gray-200 p-4">
-        <p className="font-medium text-gray-900">{pkg.title}</p>
-        <p className="text-sm text-gray-500">
+      <Card className="p-4">
+        <p className="font-medium text-foreground">{pkg.title}</p>
+        <p className="text-sm text-muted-foreground">
           {pkg.dietitianFirstName} {pkg.dietitianLastName}
           {pkg.dietitianTitle ? ` · ${pkg.dietitianTitle}` : ""}
         </p>
-        <p className="mt-2 text-sm text-gray-600">
+        <p className="mt-2 text-sm text-foreground/90">
           {pkg.durationDays} gün{pkg.sessionCount ? ` · ${pkg.sessionCount} görüşme` : ""}
         </p>
-        {pkg.description && <p className="mt-2 text-sm text-gray-600">{pkg.description}</p>}
-        <p className="mt-4 text-xl font-semibold text-gray-900">
+        {pkg.description && <p className="mt-2 text-sm text-foreground/90">{pkg.description}</p>}
+        <p className="mt-4 text-xl font-semibold text-foreground">
           {pkg.price} {pkg.currency}
         </p>
-      </div>
+      </Card>
 
-      <button
-        type="button"
-        onClick={handlePurchase}
-        disabled={isSubmitting}
-        className="mt-6 w-full rounded-md bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-700 disabled:opacity-60"
-      >
+      <Button className="mt-6 w-full" disabled={isSubmitting} onClick={handlePurchase}>
         {isSubmitting ? "Yönlendiriliyor..." : "Satın Al"}
-      </button>
-      {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
+      </Button>
+      {error && <p className="mt-3 text-sm text-destructive">{error}</p>}
     </div>
   );
 }

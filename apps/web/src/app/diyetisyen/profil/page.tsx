@@ -14,6 +14,11 @@ import { useAuthStore } from "@/lib/auth-store";
 import { AvatarUploader } from "@/components/profile/AvatarUploader";
 import { CertificationUploader } from "@/components/profile/CertificationUploader";
 import { QueryErrorNotice } from "@/components/QueryErrorNotice";
+import { Card } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
 
 export default function DiyetisyenProfilPage() {
   const utils = trpc.useUtils();
@@ -61,7 +66,7 @@ export default function DiyetisyenProfilPage() {
   }
 
   if (profileQuery.isLoading) {
-    return <p className="text-gray-500">Yükleniyor...</p>;
+    return <p className="text-muted-foreground">Yükleniyor...</p>;
   }
 
   if (profileQuery.isError) {
@@ -70,116 +75,83 @@ export default function DiyetisyenProfilPage() {
 
   return (
     <div className="mx-auto max-w-xl space-y-8">
-      <h1 className="text-2xl font-semibold text-gray-900">Profilim</h1>
+      <h1 className="text-2xl font-semibold text-foreground">Profilim</h1>
 
-      <div className="rounded-md border border-gray-200 p-4">
+      <Card className="p-4">
         <AvatarUploader
           avatarUrl={profileQuery.data?.avatarUrl ?? null}
           onUpdated={() => utils.dietitians.getProfile.invalidate()}
         />
-      </div>
+      </Card>
 
       <form
         onSubmit={userForm.handleSubmit((values) => updateUserMutation.mutate(values))}
-        className="flex flex-col gap-3 rounded-md border border-gray-200 p-4"
+        className="flex flex-col gap-3 rounded-md border p-4"
       >
-        <h2 className="text-sm font-semibold text-gray-700">Kişisel Bilgiler</h2>
+        <h2 className="text-sm font-semibold text-foreground">Kişisel Bilgiler</h2>
         <div className="grid grid-cols-2 gap-3">
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Ad</label>
-            <input
-              className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2"
-              {...userForm.register("firstName")}
-            />
+          <div className="space-y-1.5">
+            <Label>Ad</Label>
+            <Input {...userForm.register("firstName")} />
           </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Soyad</label>
-            <input
-              className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2"
-              {...userForm.register("lastName")}
-            />
+          <div className="space-y-1.5">
+            <Label>Soyad</Label>
+            <Input {...userForm.register("lastName")} />
           </div>
         </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700">Telefon</label>
-          <input
-            className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2"
-            {...userForm.register("phone")}
-          />
+        <div className="space-y-1.5">
+          <Label>Telefon</Label>
+          <Input {...userForm.register("phone")} />
         </div>
-        {updateUserMutation.isSuccess && <p className="text-sm text-brand-700">Kaydedildi.</p>}
-        <button
-          type="submit"
-          disabled={userForm.formState.isSubmitting}
-          className="self-start rounded-md bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-700 disabled:opacity-60"
-        >
+        {updateUserMutation.isSuccess && <p className="text-sm text-primary">Kaydedildi.</p>}
+        <Button type="submit" disabled={userForm.formState.isSubmitting} className="self-start">
           Kaydet
-        </button>
+        </Button>
       </form>
 
       <form
         onSubmit={dietitianForm.handleSubmit(handleDietitianSubmit)}
-        className="flex flex-col gap-3 rounded-md border border-gray-200 p-4"
+        className="flex flex-col gap-3 rounded-md border p-4"
       >
-        <h2 className="text-sm font-semibold text-gray-700">Uzmanlık Bilgileri</h2>
-        <div>
-          <label className="block text-sm font-medium text-gray-700">Unvan</label>
-          <input
-            className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2"
-            placeholder="örn. Uzm. Dyt."
-            {...dietitianForm.register("title")}
-          />
+        <h2 className="text-sm font-semibold text-foreground">Uzmanlık Bilgileri</h2>
+        <div className="space-y-1.5">
+          <Label>Unvan</Label>
+          <Input placeholder="örn. Uzm. Dyt." {...dietitianForm.register("title")} />
         </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700">Biyografi</label>
-          <textarea
-            rows={4}
-            className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2"
-            {...dietitianForm.register("bio")}
-          />
+        <div className="space-y-1.5">
+          <Label>Biyografi</Label>
+          <Textarea rows={4} {...dietitianForm.register("bio")} />
         </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700">Uzmanlık Alanları (virgülle ayırın)</label>
-          <input
+        <div className="space-y-1.5">
+          <Label>Uzmanlık Alanları (virgülle ayırın)</Label>
+          <Input
             value={specialtiesInput}
             onChange={(event) => setSpecialtiesInput(event.target.value)}
             placeholder="örn. Spor Beslenmesi, Diyabet"
-            className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2"
           />
         </div>
         <div className="grid grid-cols-2 gap-3">
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Deneyim (yıl)</label>
-            <input
-              type="number"
-              className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2"
-              {...dietitianForm.register("yearsOfExperience")}
-            />
+          <div className="space-y-1.5">
+            <Label>Deneyim (yıl)</Label>
+            <Input type="number" {...dietitianForm.register("yearsOfExperience")} />
           </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Lisans No</label>
-            <input
-              className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2"
-              {...dietitianForm.register("licenseNumber")}
-            />
+          <div className="space-y-1.5">
+            <Label>Lisans No</Label>
+            <Input {...dietitianForm.register("licenseNumber")} />
           </div>
         </div>
-        {updateDietitianMutation.isSuccess && <p className="text-sm text-brand-700">Kaydedildi.</p>}
-        <button
-          type="submit"
-          disabled={dietitianForm.formState.isSubmitting}
-          className="self-start rounded-md bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-700 disabled:opacity-60"
-        >
+        {updateDietitianMutation.isSuccess && <p className="text-sm text-primary">Kaydedildi.</p>}
+        <Button type="submit" disabled={dietitianForm.formState.isSubmitting} className="self-start">
           Kaydet
-        </button>
+        </Button>
       </form>
 
-      <div className="rounded-md border border-gray-200 p-4">
+      <Card className="p-4">
         <CertificationUploader
           certificationUrls={profileQuery.data?.certificationUrls ?? []}
           onUpdated={() => utils.dietitians.getProfile.invalidate()}
         />
-      </div>
+      </Card>
     </div>
   );
 }

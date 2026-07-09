@@ -4,6 +4,8 @@ import { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { trpc } from "@/lib/trpc";
 import { QueryErrorNotice } from "@/components/QueryErrorNotice";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 
 export default function OdemeSimulasyonPage() {
   const params = useParams<{ paymentId: string }>();
@@ -31,13 +33,13 @@ export default function OdemeSimulasyonPage() {
   }
 
   if (checkoutQuery.isLoading) {
-    return <p className="text-gray-500">Yükleniyor...</p>;
+    return <p className="text-muted-foreground">Yükleniyor...</p>;
   }
   if (checkoutQuery.isError) {
     return <QueryErrorNotice message={checkoutQuery.error.message} onRetry={() => checkoutQuery.refetch()} />;
   }
   if (!checkoutQuery.data) {
-    return <p className="text-gray-500">Ödeme bulunamadı.</p>;
+    return <p className="text-muted-foreground">Ödeme bulunamadı.</p>;
   }
 
   const details = checkoutQuery.data;
@@ -45,44 +47,39 @@ export default function OdemeSimulasyonPage() {
 
   return (
     <div className="mx-auto max-w-lg">
-      <h1 className="mb-2 text-2xl font-semibold text-gray-900">Ödeme Simülasyonu</h1>
-      <p className="mb-6 text-sm text-gray-500">
+      <h1 className="mb-2 text-2xl font-semibold text-foreground">Ödeme Simülasyonu</h1>
+      <p className="mb-6 text-sm text-muted-foreground">
         Bu, gerçek bir ödeme sağlayıcısının hosted checkout sayfasının yerini tutan bir test sayfasıdır.
       </p>
 
-      <div className="rounded-md border border-gray-200 p-4">
-        <p className="font-medium text-gray-900">{details.packageTitle}</p>
-        <p className="text-sm text-gray-500">
+      <Card className="p-4">
+        <p className="font-medium text-foreground">{details.packageTitle}</p>
+        <p className="text-sm text-muted-foreground">
           {details.dietitianFirstName} {details.dietitianLastName}
         </p>
-        <p className="mt-4 text-xl font-semibold text-gray-900">
+        <p className="mt-4 text-xl font-semibold text-foreground">
           {details.amount} {details.currency}
         </p>
-      </div>
+      </Card>
 
       {details.status === "INITIATED" && !successMessage && (
         <div className="mt-6 flex gap-3">
-          <button
-            type="button"
-            onClick={() => handleOutcome("SUCCESS")}
-            disabled={isSubmitting}
-            className="flex-1 rounded-md bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-700 disabled:opacity-60"
-          >
+          <Button className="flex-1" disabled={isSubmitting} onClick={() => handleOutcome("SUCCESS")}>
             Ödemeyi Onayla
-          </button>
-          <button
-            type="button"
-            onClick={() => handleOutcome("FAILED")}
+          </Button>
+          <Button
+            variant="outline"
+            className="flex-1"
             disabled={isSubmitting}
-            className="flex-1 rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 disabled:opacity-60"
+            onClick={() => handleOutcome("FAILED")}
           >
             Ödemeyi Reddet
-          </button>
+          </Button>
         </div>
       )}
 
-      {successMessage && <p className="mt-6 text-sm font-medium text-green-700">{successMessage}</p>}
-      {error && <p className="mt-6 text-sm text-red-600">{error}</p>}
+      {successMessage && <p className="mt-6 text-sm font-medium text-primary">{successMessage}</p>}
+      {error && <p className="mt-6 text-sm text-destructive">{error}</p>}
     </div>
   );
 }

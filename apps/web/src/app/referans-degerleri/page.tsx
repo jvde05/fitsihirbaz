@@ -7,6 +7,11 @@ import {
 } from "@fit-sihirbaz/shared";
 import { trpc } from "@/lib/trpc";
 import { QueryErrorNotice } from "@/components/QueryErrorNotice";
+import { EmptyState } from "@/components/EmptyState";
+import { Badge } from "@/components/ui/badge";
+import { Card } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 function formatAgeRange(ageMinYears: number, ageMaxYears: number | null) {
   if (ageMaxYears === null) {
@@ -20,61 +25,56 @@ export default function ReferansDegerleriPage() {
 
   return (
     <div>
-      <h1 className="mb-2 text-2xl font-semibold text-gray-900">Referans Besin Alım Değerleri</h1>
-      <p className="mb-6 max-w-2xl text-sm text-gray-500">
-        Yaş, cinsiyet ve yaşam evresine göre günlük referans besin öğesi alım değerleri (BeBiS'teki TÜBER/DRI
+      <h1 className="mb-2 text-2xl font-semibold text-foreground">Referans Besin Alım Değerleri</h1>
+      <p className="mb-6 max-w-2xl text-sm text-muted-foreground">
+        Yaş, cinsiyet ve yaşam evresine göre günlük referans besin öğesi alım değerleri (BeBiS&apos;teki TÜBER/DRI
         tablolarına benzer şekilde). Sarı etiketli satırlar henüz resmi TÜBER kaynağıyla doğrulanmamış, genel
         uluslararası ortalama yer tutucu değerlerdir — klinik karar için tek başına kullanılmamalıdır.
       </p>
 
-      {referenceQuery.isLoading && <p className="text-gray-500">Yükleniyor...</p>}
+      {referenceQuery.isLoading && <Skeleton className="h-64 rounded-lg" />}
       {referenceQuery.isError && (
         <QueryErrorNotice message={referenceQuery.error.message} onRetry={() => referenceQuery.refetch()} />
       )}
       {referenceQuery.data && referenceQuery.data.length === 0 && (
-        <p className="text-gray-500">Henüz referans değer eklenmemiş.</p>
+        <EmptyState title="Henüz referans değer eklenmemiş" />
       )}
 
       {referenceQuery.data && referenceQuery.data.length > 0 && (
-        <div className="overflow-x-auto rounded-md border border-gray-200">
-          <table className="min-w-full divide-y divide-gray-200 text-sm">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-4 py-2 text-left font-medium text-gray-700">Besin Öğesi</th>
-                <th className="px-4 py-2 text-left font-medium text-gray-700">Yaş</th>
-                <th className="px-4 py-2 text-left font-medium text-gray-700">Cinsiyet</th>
-                <th className="px-4 py-2 text-left font-medium text-gray-700">Yaşam Evresi</th>
-                <th className="px-4 py-2 text-left font-medium text-gray-700">Değer</th>
-                <th className="px-4 py-2 text-left font-medium text-gray-700">Kaynak</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-100">
+        <Card>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Besin Öğesi</TableHead>
+                <TableHead>Yaş</TableHead>
+                <TableHead>Cinsiyet</TableHead>
+                <TableHead>Yaşam Evresi</TableHead>
+                <TableHead>Değer</TableHead>
+                <TableHead>Kaynak</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
               {referenceQuery.data.map((item) => (
-                <tr key={item.id}>
-                  <td className="px-4 py-2 font-medium text-gray-900">
+                <TableRow key={item.id}>
+                  <TableCell className="font-medium text-foreground">
                     {REFERENCE_NUTRIENT_LABELS[item.nutrient] ?? item.nutrient}
-                  </td>
-                  <td className="px-4 py-2 text-gray-700">{formatAgeRange(item.ageMinYears, item.ageMaxYears)}</td>
-                  <td className="px-4 py-2 text-gray-700">{REFERENCE_SEX_LABELS[item.sex]}</td>
-                  <td className="px-4 py-2 text-gray-700">{REFERENCE_LIFE_STAGE_LABELS[item.lifeStage]}</td>
-                  <td className="px-4 py-2 text-gray-900">
+                  </TableCell>
+                  <TableCell>{formatAgeRange(item.ageMinYears, item.ageMaxYears)}</TableCell>
+                  <TableCell>{REFERENCE_SEX_LABELS[item.sex]}</TableCell>
+                  <TableCell>{REFERENCE_LIFE_STAGE_LABELS[item.lifeStage]}</TableCell>
+                  <TableCell className="text-foreground">
                     {item.value} {item.unit}
-                  </td>
-                  <td className="px-4 py-2">
-                    <span
-                      className={`inline-block rounded-full px-2 py-0.5 text-xs ${
-                        item.isVerifiedSource ? "bg-brand-100 text-brand-700" : "bg-yellow-100 text-yellow-800"
-                      }`}
-                      title={item.sourceLabel}
-                    >
+                  </TableCell>
+                  <TableCell>
+                    <Badge variant={item.isVerifiedSource ? "success" : "warning"} title={item.sourceLabel}>
                       {item.isVerifiedSource ? "Doğrulanmış" : "Doğrulanmamış"}
-                    </span>
-                  </td>
-                </tr>
+                    </Badge>
+                  </TableCell>
+                </TableRow>
               ))}
-            </tbody>
-          </table>
-        </div>
+            </TableBody>
+          </Table>
+        </Card>
       )}
     </div>
   );

@@ -5,6 +5,7 @@ import { trpc } from "@/lib/trpc";
 import { useAuthStore } from "@/lib/auth-store";
 import { resolveMediaUrl } from "@/lib/media";
 import { uploadImage } from "@/lib/uploads";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 export { resolveMediaUrl as resolveAvatarUrl } from "@/lib/media";
 
@@ -45,19 +46,16 @@ export function AvatarUploader({ avatarUrl, onUpdated }: { avatarUrl: string | n
 
   return (
     <div className="flex items-center gap-4">
-      <div className="h-16 w-16 shrink-0 overflow-hidden rounded-full bg-gray-100">
-        {resolvedUrl ? (
-          <img src={resolvedUrl} alt="" className="h-full w-full object-cover" />
-        ) : (
-          <div className="flex h-full w-full items-center justify-center text-xs text-gray-400">Foto Yok</div>
-        )}
-      </div>
+      <Avatar className="h-16 w-16">
+        {resolvedUrl && <AvatarImage src={resolvedUrl} alt="" />}
+        <AvatarFallback className="text-xs">Foto Yok</AvatarFallback>
+      </Avatar>
       <div>
-        <label className="cursor-pointer text-sm text-brand-700 hover:underline">
+        <label className="cursor-pointer text-sm text-primary hover:underline">
           {uploading ? "Yükleniyor..." : "Fotoğrafı Değiştir"}
           <input type="file" accept="image/*" className="hidden" onChange={handleFileChange} disabled={uploading} />
         </label>
-        {error && <p className="mt-1 text-sm text-red-600">{error}</p>}
+        {error && <p className="mt-1 text-sm text-destructive">{error}</p>}
       </div>
     </div>
   );

@@ -12,6 +12,11 @@ import {
 } from "@fit-sihirbaz/shared";
 import { trpc } from "@/lib/trpc";
 import { QueryErrorNotice } from "@/components/QueryErrorNotice";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 
 function EditPackageForm({ pkg, onDone }: { pkg: Package; onDone: () => void }) {
   const utils = trpc.useUtils();
@@ -48,84 +53,39 @@ function EditPackageForm({ pkg, onDone }: { pkg: Package; onDone: () => void }) 
   }
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="w-full rounded-md border border-brand-200 bg-brand-50 p-3">
+    <form onSubmit={handleSubmit(onSubmit)} className="w-full rounded-md border border-primary/20 bg-accent p-3">
       <div className="grid grid-cols-2 gap-3">
-        <div>
-          <label className="block text-sm font-medium text-gray-700" htmlFor={`edit-title-${pkg.id}`}>
-            Başlık
-          </label>
-          <input
-            id={`edit-title-${pkg.id}`}
-            className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2"
-            {...register("title")}
-          />
-          {errors.title && <p className="mt-1 text-sm text-red-600">{errors.title.message}</p>}
+        <div className="space-y-1.5">
+          <Label htmlFor={`edit-title-${pkg.id}`}>Başlık</Label>
+          <Input id={`edit-title-${pkg.id}`} {...register("title")} />
+          {errors.title && <p className="text-sm text-destructive">{errors.title.message}</p>}
         </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700" htmlFor={`edit-price-${pkg.id}`}>
-            Fiyat (TRY)
-          </label>
-          <input
-            id={`edit-price-${pkg.id}`}
-            type="number"
-            min="1"
-            className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2"
-            {...register("price")}
-          />
-          {errors.price && <p className="mt-1 text-sm text-red-600">{errors.price.message}</p>}
+        <div className="space-y-1.5">
+          <Label htmlFor={`edit-price-${pkg.id}`}>Fiyat (TRY)</Label>
+          <Input id={`edit-price-${pkg.id}`} type="number" min="1" {...register("price")} />
+          {errors.price && <p className="text-sm text-destructive">{errors.price.message}</p>}
         </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700" htmlFor={`edit-duration-${pkg.id}`}>
-            Süre (gün)
-          </label>
-          <input
-            id={`edit-duration-${pkg.id}`}
-            type="number"
-            min="1"
-            className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2"
-            {...register("durationDays")}
-          />
+        <div className="space-y-1.5">
+          <Label htmlFor={`edit-duration-${pkg.id}`}>Süre (gün)</Label>
+          <Input id={`edit-duration-${pkg.id}`} type="number" min="1" {...register("durationDays")} />
         </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700" htmlFor={`edit-session-${pkg.id}`}>
-            Görüşme Sayısı (opsiyonel)
-          </label>
-          <input
-            id={`edit-session-${pkg.id}`}
-            type="number"
-            min="1"
-            className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2"
-            {...register("sessionCount")}
-          />
+        <div className="space-y-1.5">
+          <Label htmlFor={`edit-session-${pkg.id}`}>Görüşme Sayısı (opsiyonel)</Label>
+          <Input id={`edit-session-${pkg.id}`} type="number" min="1" {...register("sessionCount")} />
         </div>
       </div>
-      <div className="mt-3">
-        <label className="block text-sm font-medium text-gray-700" htmlFor={`edit-description-${pkg.id}`}>
-          Açıklama (opsiyonel)
-        </label>
-        <textarea
-          id={`edit-description-${pkg.id}`}
-          rows={2}
-          className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2"
-          {...register("description")}
-        />
+      <div className="mt-3 space-y-1.5">
+        <Label htmlFor={`edit-description-${pkg.id}`}>Açıklama (opsiyonel)</Label>
+        <Textarea id={`edit-description-${pkg.id}`} rows={2} {...register("description")} />
       </div>
-      {formError && <p className="mt-2 text-sm text-red-600">{formError}</p>}
+      {formError && <p className="mt-2 text-sm text-destructive">{formError}</p>}
       <div className="mt-3 flex gap-2">
-        <button
-          type="submit"
-          disabled={isSubmitting}
-          className="rounded-md bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-700 disabled:opacity-60"
-        >
+        <Button type="submit" disabled={isSubmitting}>
           {isSubmitting ? "Kaydediliyor..." : "Kaydet"}
-        </button>
-        <button
-          type="button"
-          onClick={onDone}
-          className="rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100"
-        >
+        </Button>
+        <Button type="button" variant="outline" onClick={onDone}>
           İptal
-        </button>
+        </Button>
       </div>
     </form>
   );
@@ -167,87 +127,46 @@ export default function PaketlerPage() {
 
   return (
     <div>
-      <h1 className="mb-6 text-2xl font-semibold text-gray-900">Paketlerim</h1>
+      <h1 className="mb-6 text-2xl font-semibold text-foreground">Paketlerim</h1>
 
-      <form onSubmit={handleSubmit(onSubmit)} className="mb-8 flex flex-col gap-3 rounded-md border border-gray-200 p-4">
-        <h2 className="text-sm font-semibold text-gray-700">Yeni Paket</h2>
+      <form onSubmit={handleSubmit(onSubmit)} className="mb-8 flex flex-col gap-3 rounded-md border p-4">
+        <h2 className="text-sm font-semibold text-foreground">Yeni Paket</h2>
         <div className="grid grid-cols-2 gap-3">
-          <div>
-            <label className="block text-sm font-medium text-gray-700" htmlFor="title">
-              Başlık
-            </label>
-            <input
-              id="title"
-              className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2"
-              {...register("title")}
-            />
-            {errors.title && <p className="mt-1 text-sm text-red-600">{errors.title.message}</p>}
+          <div className="space-y-1.5">
+            <Label htmlFor="title">Başlık</Label>
+            <Input id="title" {...register("title")} />
+            {errors.title && <p className="text-sm text-destructive">{errors.title.message}</p>}
           </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700" htmlFor="price">
-              Fiyat (TRY)
-            </label>
-            <input
-              id="price"
-              type="number"
-              min="1"
-              className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2"
-              {...register("price")}
-            />
-            {errors.price && <p className="mt-1 text-sm text-red-600">{errors.price.message}</p>}
+          <div className="space-y-1.5">
+            <Label htmlFor="price">Fiyat (TRY)</Label>
+            <Input id="price" type="number" min="1" {...register("price")} />
+            {errors.price && <p className="text-sm text-destructive">{errors.price.message}</p>}
           </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700" htmlFor="durationDays">
-              Süre (gün)
-            </label>
-            <input
-              id="durationDays"
-              type="number"
-              min="1"
-              className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2"
-              {...register("durationDays")}
-            />
-            {errors.durationDays && <p className="mt-1 text-sm text-red-600">{errors.durationDays.message}</p>}
+          <div className="space-y-1.5">
+            <Label htmlFor="durationDays">Süre (gün)</Label>
+            <Input id="durationDays" type="number" min="1" {...register("durationDays")} />
+            {errors.durationDays && <p className="text-sm text-destructive">{errors.durationDays.message}</p>}
           </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700" htmlFor="sessionCount">
-              Görüşme Sayısı (opsiyonel)
-            </label>
-            <input
-              id="sessionCount"
-              type="number"
-              min="1"
-              className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2"
-              {...register("sessionCount")}
-            />
+          <div className="space-y-1.5">
+            <Label htmlFor="sessionCount">Görüşme Sayısı (opsiyonel)</Label>
+            <Input id="sessionCount" type="number" min="1" {...register("sessionCount")} />
           </div>
         </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700" htmlFor="description">
-            Açıklama (opsiyonel)
-          </label>
-          <textarea
-            id="description"
-            rows={3}
-            className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2"
-            {...register("description")}
-          />
+        <div className="space-y-1.5">
+          <Label htmlFor="description">Açıklama (opsiyonel)</Label>
+          <Textarea id="description" rows={3} {...register("description")} />
         </div>
-        {formError && <p className="text-sm text-red-600">{formError}</p>}
-        <button
-          type="submit"
-          disabled={isSubmitting}
-          className="self-start rounded-md bg-brand-600 px-4 py-2 font-medium text-white hover:bg-brand-700 disabled:opacity-60"
-        >
+        {formError && <p className="text-sm text-destructive">{formError}</p>}
+        <Button type="submit" disabled={isSubmitting} className="self-start">
           {isSubmitting ? "Oluşturuluyor..." : "Paket Oluştur"}
-        </button>
+        </Button>
       </form>
 
       {packagesQuery.isError && (
         <QueryErrorNotice message={packagesQuery.error.message} onRetry={() => packagesQuery.refetch()} />
       )}
 
-      <ul className="divide-y divide-gray-200 rounded-md border border-gray-200">
+      <ul className="divide-y rounded-md border">
         {packagesQuery.data?.map((pkg) =>
           editingId === pkg.id ? (
             <li key={pkg.id} className="px-4 py-3">
@@ -256,31 +175,27 @@ export default function PaketlerPage() {
           ) : (
             <li key={pkg.id} className="flex items-center justify-between px-4 py-3">
               <div>
-                <p className="font-medium text-gray-900">
-                  {pkg.title}{" "}
-                  <span className={`ml-2 rounded-full px-2 py-0.5 text-xs ${pkg.isActive ? "bg-brand-100 text-brand-700" : "bg-gray-100 text-gray-500"}`}>
+                <div className="flex items-center gap-2">
+                  <p className="font-medium text-foreground">{pkg.title}</p>
+                  <Badge variant={pkg.isActive ? "success" : "secondary"}>
                     {pkg.isActive ? "Aktif" : "Pasif"}
-                  </span>
-                </p>
-                <p className="text-sm text-gray-500">
+                  </Badge>
+                </div>
+                <p className="text-sm text-muted-foreground">
                   {pkg.durationDays} gün · {pkg.price} {pkg.currency}
                 </p>
               </div>
               <div className="flex gap-2">
-                <button
-                  type="button"
-                  onClick={() => setEditingId(pkg.id)}
-                  className="rounded-md border border-gray-300 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-100"
-                >
+                <Button variant="outline" size="sm" onClick={() => setEditingId(pkg.id)}>
                   Düzenle
-                </button>
-                <button
-                  type="button"
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
                   onClick={() => toggleActiveMutation.mutate({ id: pkg.id, isActive: !pkg.isActive })}
-                  className="rounded-md border border-gray-300 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-100"
                 >
                   {pkg.isActive ? "Pasife Al" : "Aktifleştir"}
-                </button>
+                </Button>
               </div>
             </li>
           ),
