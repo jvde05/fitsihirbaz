@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { X } from "lucide-react";
 import { trpc } from "@/lib/trpc";
 import { resolveMediaUrl } from "@/lib/media";
 import { uploadImage } from "@/lib/uploads";
@@ -48,35 +49,35 @@ export function CertificationUploader({
 
   return (
     <div>
-      <h2 className="text-sm font-semibold text-gray-700">Sertifika / Lisans Belgeleri</h2>
-      <p className="mt-1 text-xs text-gray-500">
+      <h2 className="text-sm font-semibold text-foreground">Sertifika / Lisans Belgeleri</h2>
+      <p className="mt-1 text-xs text-muted-foreground">
         Diploma, uzmanlık belgesi veya lisans fotoğrafı yükleyin — admin doğrulaması sırasında incelenir.
       </p>
 
       {certificationUrls.length > 0 && (
         <div className="mt-3 flex flex-wrap gap-3">
           {certificationUrls.map((url) => (
-            <div key={url} className="relative h-20 w-20 overflow-hidden rounded-md border border-gray-200">
+            <div key={url} className="relative h-20 w-20 overflow-hidden rounded-md border">
               <img src={resolveMediaUrl(url) ?? undefined} alt="" className="h-full w-full object-cover" />
               <button
                 type="button"
                 onClick={() => removeMutation.mutate({ url })}
                 disabled={removeMutation.isLoading}
-                className="absolute right-0 top-0 rounded-bl-md bg-black/60 px-1.5 py-0.5 text-xs text-white hover:bg-black/80"
+                className="absolute right-0 top-0 rounded-bl-md bg-black/60 p-1 text-white hover:bg-black/80"
                 aria-label="Belgeyi kaldır"
               >
-                ✕
+                <X className="h-3 w-3" />
               </button>
             </div>
           ))}
         </div>
       )}
 
-      <label className="mt-3 inline-block cursor-pointer text-sm text-brand-700 hover:underline">
+      <label className="mt-3 inline-block cursor-pointer text-sm text-primary hover:underline">
         {uploading ? "Yükleniyor..." : "+ Belge Ekle"}
         <input type="file" accept="image/*" className="hidden" onChange={handleFileChange} disabled={uploading} />
       </label>
-      {error && <p className="mt-1 text-sm text-red-600">{error}</p>}
+      {error && <p className="mt-1 text-sm text-destructive">{error}</p>}
     </div>
   );
 }

@@ -1,12 +1,20 @@
 "use client";
 
 import { useState } from "react";
+import { Heart, ImagePlus, MessageCircle, Trash2 } from "lucide-react";
 import type { Post } from "@fit-sihirbaz/shared";
 import { trpc } from "@/lib/trpc";
 import { RequireAuth } from "@/components/auth/RequireAuth";
 import { resolveMediaUrl } from "@/lib/media";
 import { uploadImage } from "@/lib/uploads";
 import { QueryErrorNotice } from "@/components/QueryErrorNotice";
+import { EmptyState } from "@/components/EmptyState";
+import { Card } from "@/components/ui/card";
+import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 
 const PAGE_SIZE = 10;
 
@@ -59,41 +67,42 @@ function PostComposer({ onCreated }: { onCreated: () => void }) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="mb-6 rounded-md border border-gray-200 p-4">
-      <textarea
-        value={content}
-        onChange={(event) => setContent(event.target.value)}
-        placeholder="Aklından ne geçiyor?"
-        rows={3}
-        className="w-full resize-none rounded-md border border-gray-300 px-3 py-2 text-sm"
-      />
-      {imageUrl && (
-        <div className="relative mt-2 inline-block">
-          <img src={resolveMediaUrl(imageUrl) ?? undefined} alt="" className="max-h-64 rounded-md object-cover" />
-          <button
-            type="button"
-            onClick={() => setImageUrl(null)}
-            className="absolute right-2 top-2 rounded-full bg-black/60 px-2 py-1 text-xs text-white hover:bg-black/80"
-          >
-            Kaldır
-          </button>
+    <Card className="mb-6 p-4">
+      <form onSubmit={handleSubmit}>
+        <Textarea
+          value={content}
+          onChange={(event) => setContent(event.target.value)}
+          placeholder="Aklından ne geçiyor?"
+          rows={3}
+          className="resize-none"
+        />
+        {imageUrl && (
+          <div className="relative mt-2 inline-block">
+            <img src={resolveMediaUrl(imageUrl) ?? undefined} alt="" className="max-h-64 rounded-md object-cover" />
+            <Button
+              type="button"
+              size="sm"
+              variant="secondary"
+              className="absolute right-2 top-2"
+              onClick={() => setImageUrl(null)}
+            >
+              Kaldır
+            </Button>
+          </div>
+        )}
+        {error && <p className="mt-2 text-sm text-destructive">{error}</p>}
+        <div className="mt-3 flex items-center justify-between">
+          <label className="flex cursor-pointer items-center gap-1.5 text-sm text-primary hover:underline">
+            <ImagePlus className="h-4 w-4" />
+            {uploading ? "Yükleniyor..." : "Fotoğraf Ekle"}
+            <input type="file" accept="image/*" className="hidden" onChange={handleFileChange} disabled={uploading} />
+          </label>
+          <Button type="submit" disabled={createMutation.isPending || uploading || !content.trim()}>
+            Paylaş
+          </Button>
         </div>
-      )}
-      {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
-      <div className="mt-3 flex items-center justify-between">
-        <label className="cursor-pointer text-sm text-brand-700 hover:underline">
-          {uploading ? "Yükleniyor..." : "Fotoğraf Ekle"}
-          <input type="file" accept="image/*" className="hidden" onChange={handleFileChange} disabled={uploading} />
-        </label>
-        <button
-          type="submit"
-          disabled={createMutation.isPending || uploading || !content.trim()}
-          className="rounded-md bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-700 disabled:opacity-60"
-        >
-          Paylaş
-        </button>
-      </div>
-    </form>
+      </form>
+    </Card>
   );
 }
 
@@ -111,13 +120,13 @@ function PostComments({ postId }: { postId: string }) {
   });
 
   return (
-    <div className="mt-3 space-y-2 border-t border-gray-100 pt-3">
+    <div className="mt-3 space-y-2 border-t pt-3">
       {commentsQuery.data?.map((comment) => (
-        <div key={comment.id} className="rounded-md bg-gray-50 px-3 py-2 text-sm">
-          <span className="font-medium text-gray-900">
+        <div key={comment.id} className="rounded-md bg-muted px-3 py-2 text-sm">
+          <span className="font-medium text-foreground">
             {comment.authorFirstName} {comment.authorLastName}:{" "}
           </span>
-          <span className="text-gray-700">{comment.content}</span>
+          <span className="text-foreground/90">{comment.content}</span>
         </div>
       ))}
       <form
@@ -130,19 +139,15 @@ function PostComments({ postId }: { postId: string }) {
         }}
         className="flex gap-2"
       >
-        <input
+        <Input
           value={commentText}
           onChange={(event) => setCommentText(event.target.value)}
           placeholder="Yorum yaz..."
-          className="flex-1 rounded-md border border-gray-300 px-3 py-1.5 text-sm"
+          className="flex-1"
         />
-        <button
-          type="submit"
-          disabled={commentMutation.isPending || !commentText.trim()}
-          className="rounded-md border border-gray-300 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-100"
-        >
+        <Button type="submit" variant="outline" size="sm" disabled={commentMutation.isPending || !commentText.trim()}>
           Gönder
-        </button>
+        </Button>
       </form>
     </div>
   );
@@ -160,28 +165,29 @@ function PostCard({ post, onDeleted }: { post: Post; onDeleted: () => void }) {
   });
 
   return (
-    <div className="mb-4 rounded-md border border-gray-200 p-4">
+    <Card className="mb-4 p-4">
       <div className="flex items-start justify-between">
         <div>
-          <p className="font-medium text-gray-900">
-            {post.authorFirstName} {post.authorLastName}
-            <span className="ml-2 rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-600">
-              {ROLE_LABELS[post.authorRole] ?? post.authorRole}
-            </span>
-          </p>
-          <p className="text-xs text-gray-400">{new Date(post.createdAt).toLocaleString("tr-TR")}</p>
+          <div className="flex items-center gap-2">
+            <p className="font-medium text-foreground">
+              {post.authorFirstName} {post.authorLastName}
+            </p>
+            <Badge variant="secondary">{ROLE_LABELS[post.authorRole] ?? post.authorRole}</Badge>
+          </div>
+          <p className="text-xs text-muted-foreground">{new Date(post.createdAt).toLocaleString("tr-TR")}</p>
         </div>
         {post.isMine && (
           <button
             type="button"
             onClick={() => deleteMutation.mutate({ id: post.id })}
-            className="text-xs text-red-600 hover:underline"
+            className="text-muted-foreground hover:text-destructive"
+            aria-label="Sil"
           >
-            Sil
+            <Trash2 className="h-4 w-4" />
           </button>
         )}
       </div>
-      <p className="mt-3 whitespace-pre-wrap text-sm text-gray-800">{post.content}</p>
+      <p className="mt-3 whitespace-pre-wrap text-sm text-foreground/90">{post.content}</p>
       {post.imageUrl && (
         <img
           src={resolveMediaUrl(post.imageUrl) ?? undefined}
@@ -189,20 +195,29 @@ function PostCard({ post, onDeleted }: { post: Post; onDeleted: () => void }) {
           className="mt-3 max-h-96 w-full rounded-md object-cover"
         />
       )}
-      <div className="mt-3 flex items-center gap-4 border-t border-gray-100 pt-3 text-sm">
+      <div className="mt-3 flex items-center gap-4 border-t pt-3 text-sm">
         <button
           type="button"
           onClick={() => likeMutation.mutate({ postId: post.id })}
-          className={post.isLikedByMe ? "font-medium text-brand-700" : "text-gray-600 hover:text-gray-900"}
+          className={cn(
+            "flex items-center gap-1.5",
+            post.isLikedByMe ? "font-medium text-primary" : "text-muted-foreground hover:text-foreground",
+          )}
         >
+          <Heart className={cn("h-4 w-4", post.isLikedByMe && "fill-primary")} />
           Beğen{post.likeCount > 0 && ` (${post.likeCount})`}
         </button>
-        <button type="button" onClick={() => setShowComments((value) => !value)} className="text-gray-600 hover:text-gray-900">
+        <button
+          type="button"
+          onClick={() => setShowComments((value) => !value)}
+          className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground"
+        >
+          <MessageCircle className="h-4 w-4" />
           Yorum Yap{post.commentCount > 0 && ` (${post.commentCount})`}
         </button>
       </div>
       {showComments && <PostComments postId={post.id} />}
-    </div>
+    </Card>
   );
 }
 
@@ -212,16 +227,16 @@ function AkisContent() {
 
   return (
     <div className="mx-auto max-w-xl">
-      <h1 className="mb-6 text-2xl font-semibold text-gray-900">Akış</h1>
+      <h1 className="mb-6 text-2xl font-semibold text-foreground">Akış</h1>
 
       <PostComposer onCreated={() => feedQuery.refetch()} />
 
-      {feedQuery.isLoading && <p className="text-gray-500">Yükleniyor...</p>}
+      {feedQuery.isLoading && <p className="text-muted-foreground">Yükleniyor...</p>}
       {feedQuery.isError && (
         <QueryErrorNotice message={feedQuery.error.message} onRetry={() => feedQuery.refetch()} />
       )}
       {feedQuery.data && feedQuery.data.items.length === 0 && (
-        <p className="text-gray-500">Henüz paylaşım yok. İlk paylaşımı sen yap!</p>
+        <EmptyState title="Henüz paylaşım yok" description="İlk paylaşımı sen yap!" />
       )}
 
       {feedQuery.data?.items.map((post) => (
@@ -229,13 +244,9 @@ function AkisContent() {
       ))}
 
       {feedQuery.data && feedQuery.data.items.length < feedQuery.data.total && (
-        <button
-          type="button"
-          onClick={() => setLimit((current) => current + PAGE_SIZE)}
-          className="mt-2 w-full rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100"
-        >
+        <Button variant="outline" className="mt-2 w-full" onClick={() => setLimit((current) => current + PAGE_SIZE)}>
           Daha Fazla Yükle
-        </button>
+        </Button>
       )}
     </div>
   );

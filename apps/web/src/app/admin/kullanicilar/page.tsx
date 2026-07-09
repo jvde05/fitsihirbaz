@@ -4,12 +4,19 @@ import { useState } from "react";
 import { trpc } from "@/lib/trpc";
 import type { Role } from "@fit-sihirbaz/shared";
 import { QueryErrorNotice } from "@/components/QueryErrorNotice";
+import { EmptyState } from "@/components/EmptyState";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const ROLE_LABELS: Record<Role, string> = {
   CLIENT: "Danışan",
   DIETITIAN: "Diyetisyen",
   ADMIN: "Yönetici",
 };
+
+const ALL_ROLES = "ALL";
 
 export default function AdminKullanicilarPage() {
   const utils = trpc.useUtils();
@@ -29,58 +36,60 @@ export default function AdminKullanicilarPage() {
 
   return (
     <div>
-      <h1 className="mb-6 text-2xl font-semibold text-gray-900">Kullanıcılar</h1>
+      <h1 className="mb-6 text-2xl font-semibold text-foreground">Kullanıcılar</h1>
 
       <div className="mb-6 flex gap-3">
-        <input
+        <Input
           type="text"
           placeholder="İsim veya e-posta ara..."
           value={query}
           onChange={(event) => setQuery(event.target.value)}
-          className="flex-1 rounded-md border border-gray-300 px-3 py-2"
+          className="flex-1"
         />
-        <select
-          value={role}
-          onChange={(event) => setRole(event.target.value as Role | "")}
-          className="rounded-md border border-gray-300 px-3 py-2"
+        <Select
+          value={role || ALL_ROLES}
+          onValueChange={(value) => setRole(value === ALL_ROLES ? "" : (value as Role))}
         >
-          <option value="">Tüm Roller</option>
-          <option value="CLIENT">Danışan</option>
-          <option value="DIETITIAN">Diyetisyen</option>
-          <option value="ADMIN">Yönetici</option>
-        </select>
+          <SelectTrigger className="w-44">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value={ALL_ROLES}>Tüm Roller</SelectItem>
+            <SelectItem value="CLIENT">Danışan</SelectItem>
+            <SelectItem value="DIETITIAN">Diyetisyen</SelectItem>
+            <SelectItem value="ADMIN">Yönetici</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
       {usersQuery.isError && (
         <QueryErrorNotice message={usersQuery.error.message} onRetry={() => usersQuery.refetch()} />
       )}
 
-      <ul className="divide-y divide-gray-200 rounded-md border border-gray-200">
+      <ul className="divide-y rounded-md border">
         {usersQuery.data?.items.map((user) => (
           <li key={user.id} className="flex items-center justify-between px-4 py-3">
             <div>
-              <p className="font-medium text-gray-900">
-                {user.firstName} {user.lastName}{" "}
-                <span className="ml-2 rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-600">
-                  {ROLE_LABELS[user.role]}
-                </span>
-                {!user.isActive && (
-                  <span className="ml-2 rounded-full bg-red-100 px-2 py-0.5 text-xs text-red-700">Pasif</span>
-                )}
-              </p>
-              <p className="text-sm text-gray-500">{user.email}</p>
+              <div className="flex items-center gap-2">
+                <p className="font-medium text-foreground">
+                  {user.firstName} {user.lastName}
+                </p>
+                <Badge variant="secondary">{ROLE_LABELS[user.role]}</Badge>
+                {!user.isActive && <Badge variant="destructive">Pasif</Badge>}
+              </div>
+              <p className="text-sm text-muted-foreground">{user.email}</p>
             </div>
-            <button
-              type="button"
+            <Button
+              variant="outline"
+              size="sm"
               onClick={() => setActiveMutation.mutate({ id: user.id, isActive: !user.isActive })}
-              className="rounded-md border border-gray-300 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-100"
             >
               {user.isActive ? "Pasife Al" : "Aktifleştir"}
-            </button>
+            </Button>
           </li>
         ))}
       </ul>
-      {usersQuery.data?.items.length === 0 && <p className="text-gray-500">Sonuç bulunamadı.</p>}
+      {usersQuery.data?.items.length === 0 && <EmptyState title="Sonuç bulunamadı" />}
     </div>
   );
 }

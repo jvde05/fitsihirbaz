@@ -2,11 +2,15 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { RegisterInputSchema, type RegisterInput } from "@fit-sihirbaz/shared";
 import { trpc } from "@/lib/trpc";
 import { useAuthStore } from "@/lib/auth-store";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
 export function RegisterForm() {
   const router = useRouter();
@@ -16,6 +20,7 @@ export function RegisterForm() {
 
   const {
     register,
+    control,
     handleSubmit,
     formState: { errors, isSubmitting },
   } = useForm<RegisterInput>({
@@ -37,97 +42,61 @@ export function RegisterForm() {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
-      <div>
-        <span className="block text-sm font-medium text-gray-700">Hesap türü</span>
-        <div className="mt-1 flex gap-4">
-          <label className="flex items-center gap-2 text-sm">
-            <input type="radio" value="CLIENT" {...register("role")} />
-            Danışan
-          </label>
-          <label className="flex items-center gap-2 text-sm">
-            <input type="radio" value="DIETITIAN" {...register("role")} />
-            Diyetisyen
-          </label>
-        </div>
-        {errors.role && <p className="mt-1 text-sm text-red-600">{errors.role.message}</p>}
+      <div className="space-y-1.5">
+        <Label>Hesap türü</Label>
+        <Controller
+          control={control}
+          name="role"
+          render={({ field }) => (
+            <RadioGroup value={field.value} onValueChange={field.onChange} className="flex gap-4">
+              <label className="flex items-center gap-2 text-sm">
+                <RadioGroupItem value="CLIENT" /> Danışan
+              </label>
+              <label className="flex items-center gap-2 text-sm">
+                <RadioGroupItem value="DIETITIAN" /> Diyetisyen
+              </label>
+            </RadioGroup>
+          )}
+        />
+        {errors.role && <p className="text-sm text-destructive">{errors.role.message}</p>}
       </div>
 
       <div className="grid grid-cols-2 gap-4">
-        <div>
-          <label className="block text-sm font-medium text-gray-700" htmlFor="firstName">
-            Ad
-          </label>
-          <input
-            id="firstName"
-            className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2"
-            {...register("firstName")}
-          />
-          {errors.firstName && <p className="mt-1 text-sm text-red-600">{errors.firstName.message}</p>}
+        <div className="space-y-1.5">
+          <Label htmlFor="firstName">Ad</Label>
+          <Input id="firstName" {...register("firstName")} />
+          {errors.firstName && <p className="text-sm text-destructive">{errors.firstName.message}</p>}
         </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700" htmlFor="lastName">
-            Soyad
-          </label>
-          <input
-            id="lastName"
-            className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2"
-            {...register("lastName")}
-          />
-          {errors.lastName && <p className="mt-1 text-sm text-red-600">{errors.lastName.message}</p>}
+        <div className="space-y-1.5">
+          <Label htmlFor="lastName">Soyad</Label>
+          <Input id="lastName" {...register("lastName")} />
+          {errors.lastName && <p className="text-sm text-destructive">{errors.lastName.message}</p>}
         </div>
       </div>
 
-      <div>
-        <label className="block text-sm font-medium text-gray-700" htmlFor="email">
-          E-posta
-        </label>
-        <input
-          id="email"
-          type="email"
-          autoComplete="email"
-          className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2"
-          {...register("email")}
-        />
-        {errors.email && <p className="mt-1 text-sm text-red-600">{errors.email.message}</p>}
+      <div className="space-y-1.5">
+        <Label htmlFor="email">E-posta</Label>
+        <Input id="email" type="email" autoComplete="email" {...register("email")} />
+        {errors.email && <p className="text-sm text-destructive">{errors.email.message}</p>}
       </div>
 
-      <div>
-        <label className="block text-sm font-medium text-gray-700" htmlFor="phone">
-          Telefon (opsiyonel)
-        </label>
-        <input
-          id="phone"
-          type="tel"
-          autoComplete="tel"
-          className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2"
-          {...register("phone")}
-        />
-        {errors.phone && <p className="mt-1 text-sm text-red-600">{errors.phone.message}</p>}
+      <div className="space-y-1.5">
+        <Label htmlFor="phone">Telefon (opsiyonel)</Label>
+        <Input id="phone" type="tel" autoComplete="tel" {...register("phone")} />
+        {errors.phone && <p className="text-sm text-destructive">{errors.phone.message}</p>}
       </div>
 
-      <div>
-        <label className="block text-sm font-medium text-gray-700" htmlFor="password">
-          Şifre
-        </label>
-        <input
-          id="password"
-          type="password"
-          autoComplete="new-password"
-          className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2"
-          {...register("password")}
-        />
-        {errors.password && <p className="mt-1 text-sm text-red-600">{errors.password.message}</p>}
+      <div className="space-y-1.5">
+        <Label htmlFor="password">Şifre</Label>
+        <Input id="password" type="password" autoComplete="new-password" {...register("password")} />
+        {errors.password && <p className="text-sm text-destructive">{errors.password.message}</p>}
       </div>
 
-      {serverError && <p className="text-sm text-red-600">{serverError}</p>}
+      {serverError && <p className="text-sm text-destructive">{serverError}</p>}
 
-      <button
-        type="submit"
-        disabled={isSubmitting}
-        className="rounded-md bg-brand-600 px-4 py-2 font-medium text-white hover:bg-brand-700 disabled:opacity-60"
-      >
+      <Button type="submit" disabled={isSubmitting} className="w-full">
         {isSubmitting ? "Kayıt oluşturuluyor..." : "Kayıt Ol"}
-      </button>
+      </Button>
     </form>
   );
 }

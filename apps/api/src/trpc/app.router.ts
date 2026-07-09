@@ -4,6 +4,8 @@ import { createAdminUsersRouter, createUsersRouter } from "../users/users.router
 import type { UsersService } from "../users/users.service";
 import { createAdminFoodsRouter, createFoodsRouter } from "../foods/foods.router";
 import type { FoodsService } from "../foods/foods.service";
+import { createAdminFoodSourcesRouter } from "../food-sources/food-sources.router";
+import type { FoodSourcesService } from "../food-sources/food-sources.service";
 import { createRecipesRouter } from "../recipes/recipes.router";
 import type { RecipesService } from "../recipes/recipes.service";
 import { createAdminDietitiansRouter, createDietitiansRouter } from "../dietitians/dietitians.router";
@@ -40,6 +42,7 @@ interface AppRouterDeps {
   authService: AuthService;
   usersService: UsersService;
   foodsService: FoodsService;
+  foodSourcesService: FoodSourcesService;
   recipesService: RecipesService;
   dietitiansService: DietitiansService;
   clientsService: ClientsService;
@@ -82,6 +85,7 @@ export function createAppRouter(deps: AppRouterDeps) {
       dietitians: createAdminDietitiansRouter(deps.dietitiansService),
       users: createAdminUsersRouter(deps.usersService),
       referenceIntakes: createAdminReferenceIntakesRouter(deps.referenceIntakesService),
+      foodSources: createAdminFoodSourcesRouter(deps.foodSourcesService),
     }),
   });
 }

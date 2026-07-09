@@ -18,7 +18,7 @@ export function RequireRole({ role, children }: { role: Role; children: React.Re
   }, [status, user, role, router]);
 
   if (status === "idle" || status === "loading") {
-    return <div className="py-16 text-center text-gray-500">Yükleniyor...</div>;
+    return <div className="py-16 text-center text-muted-foreground">Yükleniyor...</div>;
   }
   if (status !== "authenticated" || !user || user.role !== role) {
     return null;

@@ -1,32 +1,23 @@
 "use client";
 
-import Link from "next/link";
 import { RequireRole } from "@/components/auth/RequireRole";
+import { DashboardNav } from "@/components/layout/DashboardNav";
+
+const NAV_ITEMS = [
+  { href: "/admin/diyetisyenler", label: "Diyetisyenler" },
+  { href: "/admin/besinler", label: "Besinler" },
+  { href: "/admin/kaynaklar", label: "Besin Kaynakçası" },
+  { href: "/admin/kullanicilar", label: "Kullanıcılar" },
+  { href: "/admin/icerik", label: "İçerik / Literatür" },
+  { href: "/admin/referans-degerleri", label: "Referans Değerleri" },
+  { href: "/admin/profil", label: "Profilim" },
+] as const;
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   return (
     <RequireRole role="ADMIN">
       <div>
-        <nav className="mb-6 flex gap-4 border-b border-gray-200 pb-3 text-sm">
-          <Link href="/admin/diyetisyenler" className="font-medium text-brand-700 hover:underline">
-            Diyetisyenler
-          </Link>
-          <Link href="/admin/besinler" className="font-medium text-brand-700 hover:underline">
-            Besinler
-          </Link>
-          <Link href="/admin/kullanicilar" className="font-medium text-brand-700 hover:underline">
-            Kullanıcılar
-          </Link>
-          <Link href="/admin/icerik" className="font-medium text-brand-700 hover:underline">
-            İçerik
-          </Link>
-          <Link href="/admin/referans-degerleri" className="font-medium text-brand-700 hover:underline">
-            Referans Değerleri
-          </Link>
-          <Link href="/admin/profil" className="font-medium text-brand-700 hover:underline">
-            Profilim
-          </Link>
-        </nav>
+        <DashboardNav items={NAV_ITEMS} />
         {children}
       </div>
     </RequireRole>

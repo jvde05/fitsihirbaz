@@ -8,6 +8,9 @@ import { CreateDietPlanInputSchema, type CreateDietPlanInput } from "@fit-sihirb
 import { trpc } from "@/lib/trpc";
 import { DietPlanBuilder } from "@/components/diet-plans/DietPlanBuilder";
 import { QueryErrorNotice } from "@/components/QueryErrorNotice";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
 
 export default function PlanOlusturPage() {
   const params = useParams<{ clientId: string }>();
@@ -38,7 +41,7 @@ export default function PlanOlusturPage() {
 
   return (
     <div className="mx-auto max-w-xl">
-      <h1 className="mb-6 text-2xl font-semibold text-gray-900">Diyet Planı Oluştur</h1>
+      <h1 className="mb-6 text-2xl font-semibold text-foreground">Diyet Planı Oluştur</h1>
 
       {existingPlansQuery.isError && (
         <QueryErrorNotice
@@ -49,8 +52,8 @@ export default function PlanOlusturPage() {
 
       {existingPlansQuery.data && existingPlansQuery.data.length > 0 && (
         <div className="mb-8">
-          <h2 className="mb-2 text-sm font-medium text-gray-700">Bu danışan için mevcut planlar</h2>
-          <ul className="divide-y divide-gray-200 rounded-md border border-gray-200">
+          <h2 className="mb-2 text-sm font-medium text-foreground">Bu danışan için mevcut planlar</h2>
+          <ul className="divide-y rounded-md border">
             {existingPlansQuery.data.map((plan) => (
               <li key={plan.id} className="flex items-center justify-between px-4 py-2">
                 <span className="text-sm">
@@ -59,7 +62,7 @@ export default function PlanOlusturPage() {
                 <button
                   type="button"
                   onClick={() => setSelectedPlanId(plan.id)}
-                  className="text-sm font-medium text-brand-700 hover:underline"
+                  className="text-sm font-medium text-primary hover:underline"
                 >
                   Devam Et
                 </button>
@@ -70,51 +73,24 @@ export default function PlanOlusturPage() {
       )}
 
       <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
-        <div>
-          <label className="block text-sm font-medium text-gray-700" htmlFor="title">
-            Plan Başlığı
-          </label>
-          <input
-            id="title"
-            className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2"
-            {...register("title")}
-          />
-          {errors.title && <p className="mt-1 text-sm text-red-600">{errors.title.message}</p>}
+        <div className="space-y-1.5">
+          <Label htmlFor="title">Plan Başlığı</Label>
+          <Input id="title" {...register("title")} />
+          {errors.title && <p className="text-sm text-destructive">{errors.title.message}</p>}
         </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700" htmlFor="startDate">
-            Başlangıç Tarihi
-          </label>
-          <input
-            id="startDate"
-            type="date"
-            className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2"
-            {...register("startDate")}
-          />
-          {errors.startDate && <p className="mt-1 text-sm text-red-600">{errors.startDate.message}</p>}
+        <div className="space-y-1.5">
+          <Label htmlFor="startDate">Başlangıç Tarihi</Label>
+          <Input id="startDate" type="date" {...register("startDate")} />
+          {errors.startDate && <p className="text-sm text-destructive">{errors.startDate.message}</p>}
         </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700" htmlFor="targetCalories">
-            Hedef Kalori (opsiyonel)
-          </label>
-          <input
-            id="targetCalories"
-            type="number"
-            min="1"
-            className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2"
-            {...register("targetCalories")}
-          />
+        <div className="space-y-1.5">
+          <Label htmlFor="targetCalories">Hedef Kalori (opsiyonel)</Label>
+          <Input id="targetCalories" type="number" min="1" {...register("targetCalories")} />
         </div>
-        {createMutation.error && (
-          <p className="text-sm text-red-600">{createMutation.error.message}</p>
-        )}
-        <button
-          type="submit"
-          disabled={isSubmitting}
-          className="rounded-md bg-brand-600 px-4 py-2 font-medium text-white hover:bg-brand-700 disabled:opacity-60"
-        >
+        {createMutation.error && <p className="text-sm text-destructive">{createMutation.error.message}</p>}
+        <Button type="submit" disabled={isSubmitting}>
           {isSubmitting ? "Oluşturuluyor..." : "Planı Oluştur ve Devam Et"}
-        </button>
+        </Button>
       </form>
     </div>
   );

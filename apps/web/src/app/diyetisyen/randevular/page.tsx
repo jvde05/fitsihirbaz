@@ -3,6 +3,8 @@
 import { trpc } from "@/lib/trpc";
 import type { AppointmentStatus } from "@fit-sihirbaz/shared";
 import { QueryErrorNotice } from "@/components/QueryErrorNotice";
+import { EmptyState } from "@/components/EmptyState";
+import { Button } from "@/components/ui/button";
 
 const STATUS_LABELS: Record<string, string> = {
   SCHEDULED: "Planlandı",
@@ -25,52 +27,40 @@ export default function DiyetisyenRandevularPage() {
 
   return (
     <div>
-      <h1 className="mb-6 text-2xl font-semibold text-gray-900">Randevu Takvimi</h1>
+      <h1 className="mb-6 text-2xl font-semibold text-foreground">Randevu Takvimi</h1>
 
       {appointmentsQuery.isError && (
         <QueryErrorNotice message={appointmentsQuery.error.message} onRetry={() => appointmentsQuery.refetch()} />
       )}
 
-      <ul className="divide-y divide-gray-200 rounded-md border border-gray-200">
+      <ul className="divide-y rounded-md border">
         {appointmentsQuery.data?.map((appointment) => (
           <li key={appointment.id} className="flex items-center justify-between px-4 py-3">
             <div>
-              <p className="font-medium text-gray-900">
+              <p className="font-medium text-foreground">
                 {appointment.counterpartFirstName} {appointment.counterpartLastName}
               </p>
-              <p className="text-sm text-gray-500">
+              <p className="text-sm text-muted-foreground">
                 {new Date(appointment.scheduledAt).toLocaleString("tr-TR")} · {STATUS_LABELS[appointment.status]}
               </p>
             </div>
             {appointment.status === "SCHEDULED" && (
               <div className="flex gap-2">
-                <button
-                  type="button"
-                  onClick={() => setStatus(appointment.id, "COMPLETED")}
-                  className="rounded-md border border-gray-300 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-100"
-                >
+                <Button variant="outline" size="sm" onClick={() => setStatus(appointment.id, "COMPLETED")}>
                   Tamamlandı
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setStatus(appointment.id, "NO_SHOW")}
-                  className="rounded-md border border-gray-300 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-100"
-                >
+                </Button>
+                <Button variant="outline" size="sm" onClick={() => setStatus(appointment.id, "NO_SHOW")}>
                   Gelinmedi
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setStatus(appointment.id, "CANCELLED")}
-                  className="rounded-md border border-gray-300 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-100"
-                >
+                </Button>
+                <Button variant="outline" size="sm" onClick={() => setStatus(appointment.id, "CANCELLED")}>
                   İptal Et
-                </button>
+                </Button>
               </div>
             )}
           </li>
         ))}
       </ul>
-      {appointmentsQuery.data?.length === 0 && <p className="text-gray-500">Henüz randevunuz yok.</p>}
+      {appointmentsQuery.data?.length === 0 && <EmptyState title="Henüz randevunuz yok" />}
     </div>
   );
 }

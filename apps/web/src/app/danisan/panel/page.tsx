@@ -2,6 +2,8 @@
 
 import Link from "next/link";
 import { trpc } from "@/lib/trpc";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 
 function formatDateTime(iso: string): string {
   return new Date(iso).toLocaleString("tr-TR");
@@ -23,87 +25,82 @@ export default function DanisanPanelPage() {
 
   return (
     <div>
-      <h1 className="mb-6 text-2xl font-semibold text-gray-900">Panelim</h1>
+      <h1 className="mb-6 text-2xl font-semibold text-foreground">Panelim</h1>
 
       {hasNoDietitian && (
-        <div className="mb-6 rounded-md border border-brand-200 bg-brand-50 p-4">
-          <p className="text-sm font-medium text-gray-900">Henüz bir diyetisyene bağlı değilsiniz</p>
-          <p className="mt-1 text-sm text-gray-600">
+        <Card className="mb-6 border-primary/20 bg-accent p-4">
+          <p className="text-sm font-medium text-foreground">Henüz bir diyetisyene bağlı değilsiniz</p>
+          <p className="mt-1 text-sm text-muted-foreground">
             Diyet planı, randevu ve mesajlaşma gibi özellikler bir diyetisyenle bağlantı kurduğunuzda
             (bir paket satın aldığınızda) aktif olur. Aşağıdaki kartlar bu yüzden şu an boş görünüyor.
           </p>
-          <Link
-            href="/diyetisyenler"
-            className="mt-3 inline-block rounded-md bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-700"
-          >
-            Diyetisyen Keşfet →
-          </Link>
-        </div>
+          <Button asChild className="mt-3">
+            <Link href="/diyetisyenler">Diyetisyen Keşfet →</Link>
+          </Button>
+        </Card>
       )}
 
       <div className="grid gap-4 sm:grid-cols-3">
-        <div className="rounded-md border border-gray-200 p-4">
-          <p className="text-xs font-semibold uppercase text-gray-500">Aktif Diyet Planı</p>
-          {plansQuery.isLoading && <p className="mt-2 text-sm text-gray-400">Yükleniyor...</p>}
-          {plansQuery.isError && <p className="mt-2 text-sm text-red-600">Yüklenemedi: {plansQuery.error.message}</p>}
+        <Card className="p-4">
+          <p className="text-xs font-semibold uppercase text-muted-foreground">Aktif Diyet Planı</p>
+          {plansQuery.isLoading && <p className="mt-2 text-sm text-muted-foreground">Yükleniyor...</p>}
+          {plansQuery.isError && <p className="mt-2 text-sm text-destructive">Yüklenemedi: {plansQuery.error.message}</p>}
           {!plansQuery.isLoading && !plansQuery.isError && !activePlan && (
-            <p className="mt-2 text-sm text-gray-400">Henüz bir diyet planınız bulunmuyor.</p>
+            <p className="mt-2 text-sm text-muted-foreground">Henüz bir diyet planınız bulunmuyor.</p>
           )}
           {activePlan && (
             <>
-              <p className="mt-2 font-medium text-gray-900">{activePlan.title}</p>
-              <p className="text-sm text-gray-500">
+              <p className="mt-2 font-medium text-foreground">{activePlan.title}</p>
+              <p className="text-sm text-muted-foreground">
                 Hedef: {activePlan.targetCalories ?? "-"} kcal · {activePlan.status}
               </p>
-              <Link href="/danisan/plan" className="mt-2 inline-block text-sm font-medium text-brand-700 hover:underline">
+              <Link href="/danisan/plan" className="mt-2 inline-block text-sm font-medium text-primary hover:underline">
                 Planı Görüntüle →
               </Link>
             </>
           )}
-        </div>
+        </Card>
 
-        <div className="rounded-md border border-gray-200 p-4">
-          <p className="text-xs font-semibold uppercase text-gray-500">Yaklaşan Randevu</p>
-          {appointmentsQuery.isLoading && <p className="mt-2 text-sm text-gray-400">Yükleniyor...</p>}
+        <Card className="p-4">
+          <p className="text-xs font-semibold uppercase text-muted-foreground">Yaklaşan Randevu</p>
+          {appointmentsQuery.isLoading && <p className="mt-2 text-sm text-muted-foreground">Yükleniyor...</p>}
           {appointmentsQuery.isError && (
-            <p className="mt-2 text-sm text-red-600">Yüklenemedi: {appointmentsQuery.error.message}</p>
+            <p className="mt-2 text-sm text-destructive">Yüklenemedi: {appointmentsQuery.error.message}</p>
           )}
           {!appointmentsQuery.isLoading && !appointmentsQuery.isError && !upcomingAppointment && (
-            <p className="mt-2 text-sm text-gray-400">Yaklaşan randevunuz bulunmuyor.</p>
+            <p className="mt-2 text-sm text-muted-foreground">Yaklaşan randevunuz bulunmuyor.</p>
           )}
           {upcomingAppointment && (
             <>
-              <p className="mt-2 font-medium text-gray-900">
+              <p className="mt-2 font-medium text-foreground">
                 {upcomingAppointment.counterpartFirstName} {upcomingAppointment.counterpartLastName}
               </p>
-              <p className="text-sm text-gray-500">{formatDateTime(upcomingAppointment.scheduledAt)}</p>
+              <p className="text-sm text-muted-foreground">{formatDateTime(upcomingAppointment.scheduledAt)}</p>
             </>
           )}
-          <Link href="/danisan/randevular" className="mt-2 inline-block text-sm font-medium text-brand-700 hover:underline">
+          <Link href="/danisan/randevular" className="mt-2 inline-block text-sm font-medium text-primary hover:underline">
             Randevularım →
           </Link>
-        </div>
+        </Card>
 
-        <div className="rounded-md border border-gray-200 p-4">
-          <p className="text-xs font-semibold uppercase text-gray-500">Son İlerleme</p>
-          {progressQuery.isLoading && <p className="mt-2 text-sm text-gray-400">Yükleniyor...</p>}
+        <Card className="p-4">
+          <p className="text-xs font-semibold uppercase text-muted-foreground">Son İlerleme</p>
+          {progressQuery.isLoading && <p className="mt-2 text-sm text-muted-foreground">Yükleniyor...</p>}
           {progressQuery.isError && (
-            <p className="mt-2 text-sm text-red-600">Yüklenemedi: {progressQuery.error.message}</p>
+            <p className="mt-2 text-sm text-destructive">Yüklenemedi: {progressQuery.error.message}</p>
           )}
           {!progressQuery.isLoading && !progressQuery.isError && !latestProgress && (
-            <p className="mt-2 text-sm text-gray-400">Henüz ölçüm kaydınız yok.</p>
+            <p className="mt-2 text-sm text-muted-foreground">Henüz ölçüm kaydınız yok.</p>
           )}
           {latestProgress && (
-            <>
-              <p className="mt-2 font-medium text-gray-900">
-                {latestProgress.weightKg ?? "-"} kg ({latestProgress.logDate})
-              </p>
-            </>
+            <p className="mt-2 font-medium text-foreground">
+              {latestProgress.weightKg ?? "-"} kg ({latestProgress.logDate})
+            </p>
           )}
-          <Link href="/danisan/ilerleme" className="mt-2 inline-block text-sm font-medium text-brand-700 hover:underline">
+          <Link href="/danisan/ilerleme" className="mt-2 inline-block text-sm font-medium text-primary hover:underline">
             İlerlemem →
           </Link>
-        </div>
+        </Card>
       </div>
     </div>
   );

@@ -17,7 +17,7 @@ export function RequireAuth({ children }: { children: React.ReactNode }) {
   }, [status, router]);
 
   if (status === "idle" || status === "loading") {
-    return <div className="py-16 text-center text-gray-500">Yükleniyor...</div>;
+    return <div className="py-16 text-center text-muted-foreground">Yükleniyor...</div>;
   }
   if (status !== "authenticated") {
     return null;

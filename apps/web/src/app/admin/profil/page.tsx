@@ -8,6 +8,10 @@ import { trpc } from "@/lib/trpc";
 import { useAuthStore } from "@/lib/auth-store";
 import { AvatarUploader } from "@/components/profile/AvatarUploader";
 import { QueryErrorNotice } from "@/components/QueryErrorNotice";
+import { Card } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
 
 export default function AdminProfilPage() {
   const utils = trpc.useUtils();
@@ -33,7 +37,7 @@ export default function AdminProfilPage() {
   }, [meQuery.data]);
 
   if (meQuery.isLoading) {
-    return <p className="text-gray-500">Yükleniyor...</p>;
+    return <p className="text-muted-foreground">Yükleniyor...</p>;
   }
 
   if (meQuery.isError) {
@@ -42,48 +46,35 @@ export default function AdminProfilPage() {
 
   return (
     <div className="mx-auto max-w-xl space-y-8">
-      <h1 className="text-2xl font-semibold text-gray-900">Profilim</h1>
+      <h1 className="text-2xl font-semibold text-foreground">Profilim</h1>
 
-      <div className="rounded-md border border-gray-200 p-4">
+      <Card className="p-4">
         <AvatarUploader avatarUrl={meQuery.data?.avatarUrl ?? null} onUpdated={() => utils.auth.me.invalidate()} />
-      </div>
+      </Card>
 
       <form
         onSubmit={userForm.handleSubmit((values) => updateUserMutation.mutate(values))}
-        className="flex flex-col gap-3 rounded-md border border-gray-200 p-4"
+        className="flex flex-col gap-3 rounded-md border p-4"
       >
-        <h2 className="text-sm font-semibold text-gray-700">Kişisel Bilgiler</h2>
+        <h2 className="text-sm font-semibold text-foreground">Kişisel Bilgiler</h2>
         <div className="grid grid-cols-2 gap-3">
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Ad</label>
-            <input
-              className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2"
-              {...userForm.register("firstName")}
-            />
+          <div className="space-y-1.5">
+            <Label>Ad</Label>
+            <Input {...userForm.register("firstName")} />
           </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Soyad</label>
-            <input
-              className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2"
-              {...userForm.register("lastName")}
-            />
+          <div className="space-y-1.5">
+            <Label>Soyad</Label>
+            <Input {...userForm.register("lastName")} />
           </div>
         </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700">Telefon</label>
-          <input
-            className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2"
-            {...userForm.register("phone")}
-          />
+        <div className="space-y-1.5">
+          <Label>Telefon</Label>
+          <Input {...userForm.register("phone")} />
         </div>
-        {updateUserMutation.isSuccess && <p className="text-sm text-brand-700">Kaydedildi.</p>}
-        <button
-          type="submit"
-          disabled={userForm.formState.isSubmitting}
-          className="self-start rounded-md bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-700 disabled:opacity-60"
-        >
+        {updateUserMutation.isSuccess && <p className="text-sm text-primary">Kaydedildi.</p>}
+        <Button type="submit" disabled={userForm.formState.isSubmitting} className="self-start">
           Kaydet
-        </button>
+        </Button>
       </form>
     </div>
   );

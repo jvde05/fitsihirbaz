@@ -3,6 +3,9 @@
 import { useState } from "react";
 import { trpc } from "@/lib/trpc";
 import type { MeasurementUnit, RecipeIngredientInput } from "@fit-sihirbaz/shared";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const UNIT_LABELS: Record<MeasurementUnit, string> = {
   GRAM: "gram",
@@ -34,19 +37,18 @@ export function IngredientPicker({
   }
 
   return (
-    <div className="rounded-md border border-dashed border-gray-300 p-3">
+    <div className="rounded-md border border-dashed p-3">
       {!selectedFoodId ? (
         <div>
-          <input
+          <Input
             type="text"
             placeholder="Malzeme ara (örn. yulaf)"
             value={query}
             onChange={(event) => setQuery(event.target.value)}
-            className="w-full rounded-md border border-gray-300 px-2 py-1.5 text-sm"
           />
-          {searchQuery.isFetching && <p className="mt-1 text-xs text-gray-400">Aranıyor...</p>}
+          {searchQuery.isFetching && <p className="mt-1 text-xs text-muted-foreground">Aranıyor...</p>}
           {searchQuery.data && searchQuery.data.items.length > 0 && (
-            <ul className="mt-2 max-h-40 divide-y divide-gray-100 overflow-y-auto rounded-md border border-gray-200 text-sm">
+            <ul className="mt-2 max-h-40 divide-y overflow-y-auto rounded-md border text-sm">
               {searchQuery.data.items.map((food) => (
                 <li key={food.id}>
                   <button
@@ -56,51 +58,47 @@ export function IngredientPicker({
                       setSelectedFoodName(food.name);
                     }}
                     data-testid="ingredient-search-result"
-                    className="flex w-full justify-between px-2 py-1.5 text-left hover:bg-gray-50"
+                    className="flex w-full justify-between px-2 py-1.5 text-left hover:bg-muted"
                   >
                     <span>{food.name}</span>
-                    <span className="text-gray-400">{food.calories} kcal/100g</span>
+                    <span className="text-muted-foreground">{food.calories} kcal/100g</span>
                   </button>
                 </li>
               ))}
             </ul>
           )}
           {query.trim().length > 1 && searchQuery.data?.items.length === 0 && (
-            <p className="mt-1 text-xs text-gray-400">Sonuç bulunamadı.</p>
+            <p className="mt-1 text-xs text-muted-foreground">Sonuç bulunamadı.</p>
           )}
         </div>
       ) : (
         <div className="flex flex-wrap items-center gap-2 text-sm">
-          <span className="font-medium">{selectedFoodName}</span>
-          <input
+          <span className="font-medium text-foreground">{selectedFoodName}</span>
+          <Input
             type="number"
             min="0"
             step="0.1"
             value={quantity}
             onChange={(event) => setQuantity(event.target.value)}
             data-testid="ingredient-quantity"
-            className="w-20 rounded-md border border-gray-300 px-2 py-1"
+            className="w-20"
           />
-          <select
-            value={unit}
-            onChange={(event) => setUnit(event.target.value as MeasurementUnit)}
-            className="rounded-md border border-gray-300 px-2 py-1"
-          >
-            {Object.entries(UNIT_LABELS).map(([value, label]) => (
-              <option key={value} value={value}>
-                {label}
-              </option>
-            ))}
-          </select>
-          <button
-            type="button"
-            onClick={handleAdd}
-            data-testid="ingredient-add-button"
-            className="rounded-md bg-brand-600 px-3 py-1 text-white hover:bg-brand-700"
-          >
+          <Select value={unit} onValueChange={(value) => setUnit(value as MeasurementUnit)}>
+            <SelectTrigger className="w-28">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {Object.entries(UNIT_LABELS).map(([value, label]) => (
+                <SelectItem key={value} value={value}>
+                  {label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Button type="button" size="sm" onClick={handleAdd} data-testid="ingredient-add-button">
             Ekle
-          </button>
-          <button type="button" onClick={() => setSelectedFoodId(null)} className="text-gray-500 hover:underline">
+          </Button>
+          <button type="button" onClick={() => setSelectedFoodId(null)} className="text-sm text-muted-foreground hover:underline">
             Vazgeç
           </button>
         </div>

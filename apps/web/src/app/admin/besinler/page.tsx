@@ -7,6 +7,10 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { FoodCreateInputSchema, type FoodCreateInput } from "@fit-sihirbaz/shared";
 import { trpc } from "@/lib/trpc";
 import { QueryErrorNotice } from "@/components/QueryErrorNotice";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
 
 export default function AdminBesinlerPage() {
   const utils = trpc.useUtils();
@@ -41,137 +45,84 @@ export default function AdminBesinlerPage() {
 
   return (
     <div>
-      <h1 className="mb-6 text-2xl font-semibold text-gray-900">Besin Onayı</h1>
+      <h1 className="mb-6 text-2xl font-semibold text-foreground">Besin Onayı</h1>
 
-      <form
-        onSubmit={handleSubmit(onCreateSubmit)}
-        className="mb-8 flex flex-col gap-3 rounded-md border border-gray-200 p-4"
-      >
-        <h2 className="text-sm font-semibold text-gray-700">Yeni Besin Ekle</h2>
+      <form onSubmit={handleSubmit(onCreateSubmit)} className="mb-8 flex flex-col gap-3 rounded-md border p-4">
+        <h2 className="text-sm font-semibold text-foreground">Yeni Besin Ekle</h2>
         <div className="grid grid-cols-2 gap-3">
-          <div>
-            <label className="block text-sm font-medium text-gray-700" htmlFor="food-name">
-              Ad
-            </label>
-            <input
-              id="food-name"
-              className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2"
-              {...register("name")}
-            />
-            {errors.name && <p className="mt-1 text-sm text-red-600">{errors.name.message}</p>}
+          <div className="space-y-1.5">
+            <Label htmlFor="food-name">Ad</Label>
+            <Input id="food-name" {...register("name")} />
+            {errors.name && <p className="text-sm text-destructive">{errors.name.message}</p>}
           </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700" htmlFor="food-category">
-              Kategori
-            </label>
-            <input
-              id="food-category"
-              className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2"
-              {...register("category")}
-            />
-            {errors.category && <p className="mt-1 text-sm text-red-600">{errors.category.message}</p>}
+          <div className="space-y-1.5">
+            <Label htmlFor="food-category">Kategori</Label>
+            <Input id="food-category" {...register("category")} />
+            {errors.category && <p className="text-sm text-destructive">{errors.category.message}</p>}
           </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700" htmlFor="food-calories">
-              Kalori (100g)
-            </label>
-            <input
-              id="food-calories"
-              type="number"
-              step="0.1"
-              className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2"
-              {...register("calories")}
-            />
-            {errors.calories && <p className="mt-1 text-sm text-red-600">{errors.calories.message}</p>}
+          <div className="space-y-1.5">
+            <Label htmlFor="food-calories">Kalori (100g)</Label>
+            <Input id="food-calories" type="number" step="0.1" {...register("calories")} />
+            {errors.calories && <p className="text-sm text-destructive">{errors.calories.message}</p>}
           </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700" htmlFor="food-protein">
-              Protein (g)
-            </label>
-            <input
-              id="food-protein"
-              type="number"
-              step="0.1"
-              className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2"
-              {...register("protein")}
-            />
-            {errors.protein && <p className="mt-1 text-sm text-red-600">{errors.protein.message}</p>}
+          <div className="space-y-1.5">
+            <Label htmlFor="food-protein">Protein (g)</Label>
+            <Input id="food-protein" type="number" step="0.1" {...register("protein")} />
+            {errors.protein && <p className="text-sm text-destructive">{errors.protein.message}</p>}
           </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700" htmlFor="food-carbs">
-              Karbonhidrat (g)
-            </label>
-            <input
-              id="food-carbs"
-              type="number"
-              step="0.1"
-              className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2"
-              {...register("carbs")}
-            />
-            {errors.carbs && <p className="mt-1 text-sm text-red-600">{errors.carbs.message}</p>}
+          <div className="space-y-1.5">
+            <Label htmlFor="food-carbs">Karbonhidrat (g)</Label>
+            <Input id="food-carbs" type="number" step="0.1" {...register("carbs")} />
+            {errors.carbs && <p className="text-sm text-destructive">{errors.carbs.message}</p>}
           </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700" htmlFor="food-fat">
-              Yağ (g)
-            </label>
-            <input
-              id="food-fat"
-              type="number"
-              step="0.1"
-              className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2"
-              {...register("fat")}
-            />
-            {errors.fat && <p className="mt-1 text-sm text-red-600">{errors.fat.message}</p>}
+          <div className="space-y-1.5">
+            <Label htmlFor="food-fat">Yağ (g)</Label>
+            <Input id="food-fat" type="number" step="0.1" {...register("fat")} />
+            {errors.fat && <p className="text-sm text-destructive">{errors.fat.message}</p>}
           </div>
         </div>
-        {createError && <p className="text-sm text-red-600">{createError}</p>}
-        <button
-          type="submit"
-          disabled={isSubmitting}
-          className="self-start rounded-md bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-700 disabled:opacity-60"
-        >
+        {createError && <p className="text-sm text-destructive">{createError}</p>}
+        <Button type="submit" disabled={isSubmitting} className="self-start">
           {isSubmitting ? "Ekleniyor..." : "Besini Ekle (Onay Bekleyecek)"}
-        </button>
+        </Button>
       </form>
 
-      <p className="mb-4 text-sm text-gray-500">
+      <p className="mb-4 text-sm text-muted-foreground">
         Bir besin adı arayın; onaylı olmayan besinleri onaylayabilir veya onayı geri alabilirsiniz.
       </p>
 
-      <input
+      <Input
         type="text"
         placeholder="Besin ara..."
         value={query}
         onChange={(event) => setQuery(event.target.value)}
-        className="mb-6 w-full max-w-md rounded-md border border-gray-300 px-3 py-2"
+        className="mb-6 max-w-md"
       />
 
       {searchQuery.isError && (
         <QueryErrorNotice message={searchQuery.error.message} onRetry={() => searchQuery.refetch()} />
       )}
 
-      <ul className="divide-y divide-gray-200 rounded-md border border-gray-200">
+      <ul className="divide-y rounded-md border">
         {searchQuery.data?.items.map((food) => (
           <li key={food.id} className="flex items-center justify-between px-4 py-3">
             <div>
-              <Link href={`/besinler/${food.id}`} className="font-medium text-gray-900 hover:underline">
+              <Link href={`/besinler/${food.id}`} className="font-medium text-foreground hover:underline">
                 {food.name}
               </Link>
-              <p className="text-sm text-gray-500">
+              <p className="text-sm text-muted-foreground">
                 {food.category} · {food.calories} kcal/100g
               </p>
+              {food.isVerified && <Badge variant="success">Onaylı</Badge>}
             </div>
-            <button
+            <Button
               type="button"
+              variant={food.isVerified ? "outline" : "default"}
+              size="sm"
               onClick={() => verifyMutation.mutate({ id: food.id, approve: !food.isVerified })}
-              className={`rounded-md px-3 py-1.5 text-sm font-medium ${
-                food.isVerified
-                  ? "border border-gray-300 text-gray-700 hover:bg-gray-100"
-                  : "bg-brand-600 text-white hover:bg-brand-700"
-              }`}
             >
               {food.isVerified ? "Onayı Geri Al" : "Onayla"}
-            </button>
+            </Button>
           </li>
         ))}
       </ul>

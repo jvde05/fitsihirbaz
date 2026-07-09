@@ -4,6 +4,9 @@ import { useState } from "react";
 import Link from "next/link";
 import { trpc } from "@/lib/trpc";
 import { QueryErrorNotice } from "@/components/QueryErrorNotice";
+import { EmptyState } from "@/components/EmptyState";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 
 export default function DanisanlarPage() {
   const utils = trpc.useUtils();
@@ -28,50 +31,43 @@ export default function DanisanlarPage() {
 
   return (
     <div>
-      <h1 className="mb-6 text-2xl font-semibold text-gray-900">Danışanlarım</h1>
+      <h1 className="mb-6 text-2xl font-semibold text-foreground">Danışanlarım</h1>
 
       <form onSubmit={handleSubmit} className="mb-8 flex max-w-md gap-2">
-        <input
+        <Input
           type="email"
           required
           placeholder="Danışan e-postası"
           value={email}
           onChange={(event) => setEmail(event.target.value)}
-          className="flex-1 rounded-md border border-gray-300 px-3 py-2"
+          className="flex-1"
         />
-        <button
-          type="submit"
-          disabled={linkMutation.isLoading}
-          className="rounded-md bg-brand-600 px-4 py-2 font-medium text-white hover:bg-brand-700 disabled:opacity-60"
-        >
+        <Button type="submit" disabled={linkMutation.isLoading}>
           {linkMutation.isLoading ? "Ekleniyor..." : "Ekle"}
-        </button>
+        </Button>
       </form>
-      {error && <p className="mb-4 text-sm text-red-600">{error}</p>}
+      {error && <p className="mb-4 text-sm text-destructive">{error}</p>}
 
-      {clientsQuery.isLoading && <p className="text-gray-500">Yükleniyor...</p>}
+      {clientsQuery.isLoading && <p className="text-muted-foreground">Yükleniyor...</p>}
       {clientsQuery.isError && (
         <QueryErrorNotice message={clientsQuery.error.message} onRetry={() => clientsQuery.refetch()} />
       )}
       {clientsQuery.data && clientsQuery.data.length === 0 && (
-        <p className="text-gray-500">Henüz danışanınız yok. Yukarıdan e-posta ile ekleyebilirsiniz.</p>
+        <EmptyState title="Henüz danışanınız yok" description="Yukarıdan e-posta ile ekleyebilirsiniz." />
       )}
 
-      <ul className="divide-y divide-gray-200 rounded-md border border-gray-200">
+      <ul className="divide-y rounded-md border">
         {clientsQuery.data?.map((client) => (
           <li key={client.id} className="flex items-center justify-between px-4 py-3">
             <Link href={`/diyetisyen/danisanlar/${client.id}`} className="hover:underline">
-              <p className="font-medium text-gray-900">
+              <p className="font-medium text-foreground">
                 {client.firstName} {client.lastName}
               </p>
-              <p className="text-sm text-gray-500">{client.email}</p>
+              <p className="text-sm text-muted-foreground">{client.email}</p>
             </Link>
-            <Link
-              href={`/diyetisyen/danisanlar/${client.id}/plan-olustur`}
-              className="rounded-md border border-gray-300 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-100"
-            >
-              Plan Oluştur
-            </Link>
+            <Button variant="outline" size="sm" asChild>
+              <Link href={`/diyetisyen/danisanlar/${client.id}/plan-olustur`}>Plan Oluştur</Link>
+            </Button>
           </li>
         ))}
       </ul>
