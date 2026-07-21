@@ -1,6 +1,7 @@
 "use client";
 
 import { RequireRole } from "@/components/auth/RequireRole";
+import { EmailVerificationBanner } from "@/components/auth/EmailVerificationBanner";
 import { DashboardNav } from "@/components/layout/DashboardNav";
 
 const NAV_ITEMS = [
@@ -17,6 +18,7 @@ export default function DanisanLayout({ children }: { children: React.ReactNode 
     <RequireRole role="CLIENT">
       <div>
         <DashboardNav items={NAV_ITEMS} />
+        <EmailVerificationBanner />
         {children}
       </div>
     </RequireRole>

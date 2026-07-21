@@ -1,10 +1,13 @@
 import { AuthService } from "./auth.service";
 import { PrismaService } from "../prisma/prisma.service";
 import { TokenService } from "./token.service";
+import type { MailProvider } from "../mail/mail.provider";
 import {
   AccountInactiveError,
   EmailAlreadyExistsError,
+  EmailAlreadyVerifiedError,
   InvalidCredentialsError,
+  InvalidEmailTokenError,
   InvalidRefreshTokenError,
 } from "./auth.errors";
 
@@ -26,9 +29,32 @@ function buildUserRow(overrides: Partial<Record<string, unknown>> = {}) {
   };
 }
 
+function buildEmailTokenRow(overrides: Partial<Record<string, unknown>> = {}) {
+  return {
+    id: "token-1",
+    userId: "user-1",
+    tokenHash: "irrelevant-in-mock",
+    type: "PASSWORD_RESET",
+    expiresAt: new Date(Date.now() + 60 * 60 * 1000),
+    usedAt: null,
+    createdAt: new Date(),
+    ...overrides,
+  };
+}
+
+const flushPromises = () => new Promise((resolve) => setImmediate(resolve));
+
+const ENV_VALUES: Record<string, string> = { WEB_APP_URL: "http://localhost:3000" };
+
 describe("AuthService", () => {
-  let prisma: { user: { findUnique: jest.Mock; create: jest.Mock } };
+  let prisma: {
+    user: { findUnique: jest.Mock; create: jest.Mock; update: jest.Mock };
+    emailToken: { findUnique: jest.Mock; create: jest.Mock; update: jest.Mock; deleteMany: jest.Mock };
+    $transaction: jest.Mock;
+  };
   let tokens: { issuePair: jest.Mock; verifyRefreshToken: jest.Mock };
+  let config: { get: jest.Mock; getOrThrow: jest.Mock };
+  let mail: { send: jest.Mock };
   let service: AuthService;
 
   beforeEach(() => {
@@ -36,13 +62,31 @@ describe("AuthService", () => {
       user: {
         findUnique: jest.fn(),
         create: jest.fn(),
+        update: jest.fn(),
       },
+      emailToken: {
+        findUnique: jest.fn(),
+        create: jest.fn(),
+        update: jest.fn(),
+        deleteMany: jest.fn(),
+      },
+      $transaction: jest.fn(async (ops: unknown[]) => ops),
     };
     tokens = {
       issuePair: jest.fn().mockReturnValue({ accessToken: "access", refreshToken: "refresh" }),
       verifyRefreshToken: jest.fn(),
     };
-    service = new AuthService(prisma as unknown as PrismaService, tokens as unknown as TokenService);
+    config = {
+      get: jest.fn((key: string) => ENV_VALUES[key]),
+      getOrThrow: jest.fn((key: string) => ENV_VALUES[key]),
+    };
+    mail = { send: jest.fn().mockResolvedValue(undefined) };
+    service = new AuthService(
+      prisma as unknown as PrismaService,
+      tokens as unknown as TokenService,
+      config as never,
+      mail as unknown as MailProvider,
+    );
   });
 
   describe("register", () => {
@@ -98,6 +142,26 @@ describe("AuthService", () => {
       const createArgs = prisma.user.create.mock.calls[0][0];
       expect(createArgs.data.dietitianProfile).toEqual({ create: {} });
       expect(createArgs.data.clientProfile).toBeUndefined();
+    });
+
+    it("kayıt sonrası doğrulama e-postası tetiklenir (fire-and-forget)", async () => {
+      const createdUser = buildUserRow({ isEmailVerified: false });
+      prisma.user.findUnique.mockResolvedValueOnce(null).mockResolvedValueOnce(createdUser);
+      prisma.user.create.mockResolvedValue(createdUser);
+
+      await service.register({
+        email: "test@example.com",
+        password: "Sifre123",
+        role: "CLIENT",
+        firstName: "Ada",
+        lastName: "Lovelace",
+      });
+      await flushPromises();
+
+      expect(prisma.emailToken.create).toHaveBeenCalledTimes(1);
+      expect(mail.send).toHaveBeenCalledTimes(1);
+      expect(mail.send.mock.calls[0][0].to).toBe(createdUser.email);
+      expect(mail.send.mock.calls[0][0].text).toContain("/eposta-dogrula?token=");
     });
   });
 
@@ -171,6 +235,130 @@ describe("AuthService", () => {
       const result = await service.refresh("gecerli-token");
       expect(result).toEqual({ accessToken: "access", refreshToken: "refresh" });
       expect(tokens.issuePair).toHaveBeenCalledWith("user-1", "CLIENT");
+    });
+  });
+
+  describe("requestPasswordReset", () => {
+    it("bilinmeyen e-postada sessizce döner, mail gönderilmez", async () => {
+      prisma.user.findUnique.mockResolvedValue(null);
+
+      await service.requestPasswordReset("yok@example.com");
+
+      expect(prisma.emailToken.create).not.toHaveBeenCalled();
+      expect(mail.send).not.toHaveBeenCalled();
+    });
+
+    it("pasif hesapta sessizce döner, mail gönderilmez", async () => {
+      prisma.user.findUnique.mockResolvedValue(buildUserRow({ isActive: false }));
+
+      await service.requestPasswordReset("test@example.com");
+
+      expect(mail.send).not.toHaveBeenCalled();
+    });
+
+    it("bilinen e-postada token yaratır ve mail gönderir", async () => {
+      prisma.user.findUnique.mockResolvedValue(buildUserRow());
+
+      await service.requestPasswordReset("test@example.com");
+
+      expect(prisma.emailToken.deleteMany).toHaveBeenCalledWith(
+        expect.objectContaining({ where: expect.objectContaining({ type: "PASSWORD_RESET" }) }),
+      );
+      expect(prisma.emailToken.create).toHaveBeenCalledTimes(1);
+      expect(mail.send).toHaveBeenCalledTimes(1);
+      expect(mail.send.mock.calls[0][0].text).toContain("/sifre-sifirla?token=");
+    });
+
+    it("mail gönderimi patlarsa yine de başarıyla döner", async () => {
+      prisma.user.findUnique.mockResolvedValue(buildUserRow());
+      mail.send.mockRejectedValue(new Error("resend down"));
+
+      await expect(service.requestPasswordReset("test@example.com")).resolves.toBeUndefined();
+    });
+  });
+
+  describe("resetPassword", () => {
+    it("geçersiz token için InvalidEmailTokenError fırlatır", async () => {
+      prisma.emailToken.findUnique.mockResolvedValue(null);
+
+      await expect(service.resetPassword("bozuk-token", "YeniSifre1")).rejects.toBeInstanceOf(
+        InvalidEmailTokenError,
+      );
+    });
+
+    it("süresi dolmuş token için InvalidEmailTokenError fırlatır", async () => {
+      prisma.emailToken.findUnique.mockResolvedValue(
+        buildEmailTokenRow({ expiresAt: new Date(Date.now() - 1000) }),
+      );
+
+      await expect(service.resetPassword("eski-token", "YeniSifre1")).rejects.toBeInstanceOf(
+        InvalidEmailTokenError,
+      );
+    });
+
+    it("kullanılmış token için InvalidEmailTokenError fırlatır", async () => {
+      prisma.emailToken.findUnique.mockResolvedValue(buildEmailTokenRow({ usedAt: new Date() }));
+
+      await expect(service.resetPassword("kullanilmis-token", "YeniSifre1")).rejects.toBeInstanceOf(
+        InvalidEmailTokenError,
+      );
+    });
+
+    it("geçerli tokenla şifreyi günceller, tokenı tüketir ve e-postayı doğrulanmış işaretler", async () => {
+      prisma.emailToken.findUnique.mockResolvedValue(buildEmailTokenRow());
+
+      await service.resetPassword("gecerli-token", "YeniSifre1");
+
+      expect(prisma.emailToken.update).toHaveBeenCalledWith({
+        where: { id: "token-1" },
+        data: { usedAt: expect.any(Date) },
+      });
+      expect(prisma.user.update).toHaveBeenCalledWith({
+        where: { id: "user-1" },
+        data: { passwordHash: expect.any(String), isEmailVerified: true },
+      });
+    });
+  });
+
+  describe("sendVerificationEmail", () => {
+    it("zaten doğrulanmışsa EmailAlreadyVerifiedError fırlatır", async () => {
+      prisma.user.findUnique.mockResolvedValue(buildUserRow({ isEmailVerified: true }));
+
+      await expect(service.sendVerificationEmail("user-1")).rejects.toBeInstanceOf(
+        EmailAlreadyVerifiedError,
+      );
+      expect(mail.send).not.toHaveBeenCalled();
+    });
+
+    it("doğrulanmamışsa token yaratır ve mail gönderir", async () => {
+      prisma.user.findUnique.mockResolvedValue(buildUserRow({ isEmailVerified: false }));
+
+      await service.sendVerificationEmail("user-1");
+
+      expect(prisma.emailToken.create).toHaveBeenCalledTimes(1);
+      expect(mail.send).toHaveBeenCalledTimes(1);
+      expect(mail.send.mock.calls[0][0].text).toContain("/eposta-dogrula?token=");
+    });
+  });
+
+  describe("verifyEmail", () => {
+    it("geçersiz token için InvalidEmailTokenError fırlatır", async () => {
+      prisma.emailToken.findUnique.mockResolvedValue(null);
+
+      await expect(service.verifyEmail("bozuk-token")).rejects.toBeInstanceOf(InvalidEmailTokenError);
+    });
+
+    it("geçerli tokenla e-postayı doğrulanmış işaretler", async () => {
+      prisma.emailToken.findUnique.mockResolvedValue(
+        buildEmailTokenRow({ type: "EMAIL_VERIFICATION" }),
+      );
+
+      await service.verifyEmail("gecerli-token");
+
+      expect(prisma.user.update).toHaveBeenCalledWith({
+        where: { id: "user-1" },
+        data: { isEmailVerified: true },
+      });
     });
   });
 });

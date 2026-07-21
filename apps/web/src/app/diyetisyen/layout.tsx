@@ -1,6 +1,7 @@
 "use client";
 
 import { RequireRole } from "@/components/auth/RequireRole";
+import { EmailVerificationBanner } from "@/components/auth/EmailVerificationBanner";
 import { DashboardNav } from "@/components/layout/DashboardNav";
 
 const NAV_ITEMS = [
@@ -20,6 +21,7 @@ export default function DiyetisyenLayout({ children }: { children: React.ReactNo
     <RequireRole role="DIETITIAN">
       <div>
         <DashboardNav items={NAV_ITEMS} />
+        <EmailVerificationBanner />
         {children}
       </div>
     </RequireRole>
