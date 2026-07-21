@@ -4,12 +4,14 @@ services:
     runtime: node
     plan: free
     region: frankfurt
-    buildCommand: corepack enable && pnpm install --frozen-lockfile && pnpm --filter @fit-sihirbaz/db generate && pnpm --filter @fit-sihirbaz/db migrate:deploy
+    buildCommand: pnpm install --frozen-lockfile && pnpm --filter @fit-sihirbaz/db generate && pnpm --filter @fit-sihirbaz/db migrate:deploy
     startCommand: pnpm --filter @fit-sihirbaz/api start:prod
     healthCheckPath: /health
     envVars:
       - key: NODE_ENV
         value: production
+      - key: NODE_VERSION
+        value: "20"
       - key: DATABASE_URL
         fromDatabase:
           name: fitsihirbaz-db
@@ -42,11 +44,13 @@ services:
     runtime: node
     plan: free
     region: frankfurt
-    buildCommand: corepack enable && pnpm install --frozen-lockfile && pnpm --filter @fit-sihirbaz/web build
+    buildCommand: pnpm install --frozen-lockfile && pnpm --filter @fit-sihirbaz/web build
     startCommand: pnpm --filter @fit-sihirbaz/web start
     envVars:
       - key: NODE_ENV
         value: production
+      - key: NODE_VERSION
+        value: "20"
       - key: NEXT_PUBLIC_API_URL
         value: https://fitsihirbaz-api.onrender.com
 
