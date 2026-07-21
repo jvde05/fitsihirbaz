@@ -80,7 +80,7 @@ export default function AdminKaynaklarPage() {
       <div className="mb-6 max-w-2xl rounded-md border border-primary/20 bg-accent p-3 text-sm text-accent-foreground">
         <strong className="font-semibold">Karıştırılmasın:</strong> bu sayfa besinlerin bilimsel atıflarını
         yönetir. Danışan/diyetisyenlere görünen makale kütüphanesi ayrı bir yerdedir —{" "}
-        <span className="font-medium">İçerik / Literatür</span> sekmesinden yönetilir.
+        <span className="font-medium">Makale Yönetimi</span> sekmesinden yönetilir.
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="mb-8 flex flex-col gap-3 rounded-md border p-4">

@@ -4,7 +4,7 @@ import { useParams } from "next/navigation";
 import { trpc } from "@/lib/trpc";
 import { QueryErrorNotice } from "@/components/QueryErrorNotice";
 
-export function LiteraturDetayView() {
+export function MakaleDetayView() {
   const params = useParams<{ slug: string }>();
   const articleQuery = trpc.articles.getBySlug.useQuery({ slug: params.slug });
 

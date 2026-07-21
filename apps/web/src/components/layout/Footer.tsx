@@ -3,7 +3,7 @@ import { Separator } from "@/components/ui/separator";
 
 const PRODUCT_LINKS = [
   { href: "/diyetisyenler", label: "Diyetisyenler" },
-  { href: "/literatur", label: "Literatür" },
+  { href: "/makaleler", label: "Makaleler" },
   { href: "/referans-degerleri", label: "Referans Değerleri" },
 ];
 

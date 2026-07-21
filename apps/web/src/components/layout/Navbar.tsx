@@ -50,7 +50,7 @@ export function Navbar() {
             <Link href="/diyetisyenler">Diyetisyenler</Link>
           </Button>
           <Button asChild variant="ghost" size="sm">
-            <Link href="/literatur">Literatür</Link>
+            <Link href="/makaleler">Makaleler</Link>
           </Button>
           <Button asChild variant="ghost" size="sm">
             <Link href="/referans-degerleri">Referans Değerleri</Link>
