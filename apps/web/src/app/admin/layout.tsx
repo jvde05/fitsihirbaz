@@ -8,7 +8,7 @@ const NAV_ITEMS = [
   { href: "/admin/besinler", label: "Besinler" },
   { href: "/admin/kaynaklar", label: "Besin Kaynakçası" },
   { href: "/admin/kullanicilar", label: "Kullanıcılar" },
-  { href: "/admin/icerik", label: "İçerik / Literatür" },
+  { href: "/admin/icerik", label: "Makale Yönetimi" },
   { href: "/admin/referans-degerleri", label: "Referans Değerleri" },
   { href: "/admin/profil", label: "Profilim" },
 ] as const;

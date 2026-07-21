@@ -11,7 +11,7 @@ const NAV_ITEMS = [
   { href: "/diyetisyen/tarifler", label: "Tariflerim" },
   { href: "/diyetisyen/randevular", label: "Randevularım" },
   { href: "/diyetisyen/mesajlar", label: "Mesajlar" },
-  { href: "/diyetisyen/icerik", label: "İçerik" },
+  { href: "/diyetisyen/icerik", label: "Makalelerim" },
   { href: "/diyetisyen/profil", label: "Profilim" },
 ] as const;
 

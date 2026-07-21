@@ -44,7 +44,7 @@ export default function IcerikPage() {
 
   return (
     <div>
-      <h1 className="mb-6 text-2xl font-semibold text-foreground">İçerik / Literatür</h1>
+      <h1 className="mb-6 text-2xl font-semibold text-foreground">Makalelerim</h1>
 
       <form onSubmit={handleSubmit(onSubmit)} className="mb-8 flex flex-col gap-3 rounded-md border p-4">
         <h2 className="text-sm font-semibold text-foreground">Yeni Makale</h2>

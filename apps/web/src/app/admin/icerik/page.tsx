@@ -16,7 +16,7 @@ export default function AdminIcerikPage() {
 
   return (
     <div>
-      <h1 className="mb-6 text-2xl font-semibold text-foreground">İçerik / Literatür Yönetimi</h1>
+      <h1 className="mb-6 text-2xl font-semibold text-foreground">Makale Yönetimi</h1>
 
       {articlesQuery.isError && (
         <QueryErrorNotice message={articlesQuery.error.message} onRetry={() => articlesQuery.refetch()} />
