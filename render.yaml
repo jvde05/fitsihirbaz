@@ -4,7 +4,7 @@ services:
     runtime: node
     plan: free
     region: frankfurt
-    buildCommand: pnpm install --frozen-lockfile && pnpm --filter @fit-sihirbaz/db generate && pnpm --filter @fit-sihirbaz/db migrate:deploy
+    buildCommand: pnpm install --frozen-lockfile && pnpm --filter @fit-sihirbaz/db generate && pnpm --filter @fit-sihirbaz/db migrate:deploy && pnpm --filter @fit-sihirbaz/db seed
     startCommand: pnpm --filter @fit-sihirbaz/api start:prod
     healthCheckPath: /health
     envVars:
