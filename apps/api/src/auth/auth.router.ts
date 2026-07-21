@@ -13,6 +13,12 @@ import {
 } from "@fit-sihirbaz/shared";
 import type { Context } from "../trpc/context";
 import { protectedProcedure, publicProcedure, router } from "../trpc/trpc";
+import {
+  createIpRateLimitMiddleware,
+  LOGIN_RATE_LIMIT,
+  REGISTER_RATE_LIMIT,
+} from "../trpc/rate-limit.middleware";
+import type { RateLimiterService } from "../rate-limit/rate-limiter.service";
 import type { AuthService } from "./auth.service";
 import {
   AccountInactiveError,
@@ -41,9 +47,10 @@ function clearRefreshCookie(res: Context["res"]): void {
   res.clearCookie(REFRESH_COOKIE_NAME, { path: REFRESH_COOKIE_PATH });
 }
 
-export function createAuthRouter(authService: AuthService) {
+export function createAuthRouter(authService: AuthService, rateLimiter: RateLimiterService) {
   return router({
     register: publicProcedure
+      .use(createIpRateLimitMiddleware(rateLimiter, { name: "auth.register", ...REGISTER_RATE_LIMIT }))
       .input(RegisterInputSchema)
       .output(AuthResponseSchema)
       .mutation(async ({ input, ctx }) => {
@@ -60,6 +67,7 @@ export function createAuthRouter(authService: AuthService) {
       }),
 
     login: publicProcedure
+      .use(createIpRateLimitMiddleware(rateLimiter, { name: "auth.login", ...LOGIN_RATE_LIMIT }))
       .input(LoginInputSchema)
       .output(AuthResponseSchema)
       .mutation(async ({ input, ctx }) => {

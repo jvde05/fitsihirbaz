@@ -1,5 +1,6 @@
 import { createAuthRouter } from "../auth/auth.router";
 import type { AuthService } from "../auth/auth.service";
+import type { RateLimiterService } from "../rate-limit/rate-limiter.service";
 import { createAdminUsersRouter, createUsersRouter } from "../users/users.router";
 import type { UsersService } from "../users/users.service";
 import { createAdminFoodsRouter, createFoodsRouter } from "../foods/foods.router";
@@ -40,6 +41,7 @@ import { router } from "./trpc";
 
 interface AppRouterDeps {
   authService: AuthService;
+  rateLimiter: RateLimiterService;
   usersService: UsersService;
   foodsService: FoodsService;
   foodSourcesService: FoodSourcesService;
@@ -62,7 +64,7 @@ interface AppRouterDeps {
 
 export function createAppRouter(deps: AppRouterDeps) {
   return router({
-    auth: createAuthRouter(deps.authService),
+    auth: createAuthRouter(deps.authService, deps.rateLimiter),
     users: createUsersRouter(deps.usersService),
     foods: createFoodsRouter(deps.foodsService),
     recipes: createRecipesRouter(deps.recipesService),

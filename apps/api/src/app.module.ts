@@ -2,6 +2,7 @@ import { resolve } from "node:path";
 import { Module } from "@nestjs/common";
 import { ConfigModule } from "@nestjs/config";
 import { PrismaModule } from "./prisma/prisma.module";
+import { RateLimiterModule } from "./rate-limit/rate-limiter.module";
 import { MailModule } from "./mail/mail.module";
 import { AuthModule } from "./auth/auth.module";
 import { UsersModule } from "./users/users.module";
@@ -34,6 +35,7 @@ import { validateEnv } from "./config/env.validation";
       envFilePath: [resolve(__dirname, "../../../.env"), resolve(process.cwd(), ".env")],
     }),
     PrismaModule,
+    RateLimiterModule,
     MailModule,
     NotificationsModule,
     JobsModule,
