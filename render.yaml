@@ -1,0 +1,62 @@
+services:
+  - type: web
+    name: fitsihirbaz-api
+    runtime: node
+    plan: free
+    region: frankfurt
+    buildCommand: corepack enable && pnpm install --frozen-lockfile && pnpm --filter @fit-sihirbaz/db generate && pnpm --filter @fit-sihirbaz/db migrate:deploy
+    startCommand: pnpm --filter @fit-sihirbaz/api start:prod
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        fromDatabase:
+          name: fitsihirbaz-db
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: fitsihirbaz-redis
+          property: connectionString
+      - key: JWT_ACCESS_SECRET
+        generateValue: true
+      - key: JWT_REFRESH_SECRET
+        generateValue: true
+      - key: PAYMENT_WEBHOOK_SECRET
+        generateValue: true
+      - key: WEB_ORIGIN
+        value: https://fitsihirbaz-web.onrender.com
+      - key: WEB_APP_URL
+        value: https://fitsihirbaz-web.onrender.com
+      # resend.com'dan key alındıktan sonra Render dashboard'undan elle girilir.
+      # Boşken mail/mail.module.ts otomatik ConsoleMailProvider'a düşer (loglar Render log
+      # viewer'da görünür, gerçek e-posta gönderilmez).
+      - key: RESEND_API_KEY
+        sync: false
+      - key: MAIL_FROM
+        sync: false
+
+  - type: web
+    name: fitsihirbaz-web
+    runtime: node
+    plan: free
+    region: frankfurt
+    buildCommand: corepack enable && pnpm install --frozen-lockfile && pnpm --filter @fit-sihirbaz/web build
+    startCommand: pnpm --filter @fit-sihirbaz/web start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NEXT_PUBLIC_API_URL
+        value: https://fitsihirbaz-api.onrender.com
+
+  - type: redis
+    name: fitsihirbaz-redis
+    plan: free
+    region: frankfurt
+    ipAllowList: []
+
+databases:
+  - name: fitsihirbaz-db
+    plan: free
+    region: frankfurt
