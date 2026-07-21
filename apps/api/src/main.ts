@@ -9,6 +9,7 @@ import { createExpressMiddleware } from "@trpc/server/adapters/express";
 import { AppModule } from "./app.module";
 import { AuthService } from "./auth/auth.service";
 import { TokenService } from "./auth/token.service";
+import { RateLimiterService } from "./rate-limit/rate-limiter.service";
 import { UsersService } from "./users/users.service";
 import { FoodsService } from "./foods/foods.service";
 import { FoodSourcesService } from "./food-sources/food-sources.service";
@@ -52,6 +53,7 @@ async function bootstrap() {
 
   const appRouter = createAppRouter({
     authService: app.get(AuthService),
+    rateLimiter: app.get(RateLimiterService),
     usersService: app.get(UsersService),
     foodsService: app.get(FoodsService),
     foodSourcesService: app.get(FoodSourcesService),
