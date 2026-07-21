@@ -13,13 +13,13 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 const PAGE_SIZE = 20;
 
-export default function LiteraturPage() {
+export default function MakalelerPage() {
   const [limit, setLimit] = useState(PAGE_SIZE);
   const articlesQuery = trpc.articles.list.useQuery({ limit });
 
   return (
     <div>
-      <h1 className="mb-6 text-2xl font-semibold text-foreground">Literatür</h1>
+      <h1 className="mb-6 text-2xl font-semibold text-foreground">Makaleler</h1>
 
       {articlesQuery.isLoading && (
         <div className="space-y-4">
@@ -37,7 +37,7 @@ export default function LiteraturPage() {
 
       <div className="space-y-4">
         {articlesQuery.data?.items.map((article) => (
-          <Link key={article.id} href={`/literatur/${article.slug}`}>
+          <Link key={article.id} href={`/makaleler/${article.slug}`}>
             <Card className="p-4 transition-shadow hover:shadow-md">
               <p className="font-medium text-foreground">{article.title}</p>
               <p className="text-sm text-muted-foreground">

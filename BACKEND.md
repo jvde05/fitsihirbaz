@@ -105,7 +105,7 @@ Her modül NestJS standardında: `*.module.ts`, `*.service.ts`, `*.router.ts` (t
 - `progress.addLog`, `progress.listForClient` (grafik için tarih sıralı veri)
 - `reviews.create` (sadece tamamlanmış bir Order'ı olan danışan yorum yapabilir), `reviews.listForDietitian`
 
-## 12. Articles (Literatür/İçerik) Modülü
+## 12. Articles (Makaleler) Modülü
 
 - `articles.list`, `articles.getBySlug`, `articles.create` (admin/diyetisyen), `articles.publish`
 - SEO için web tarafında bu içerikler server-side render edilmeli (Next.js)

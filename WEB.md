@@ -18,8 +18,8 @@
 | `/` | Landing sayfası |
 | `/diyetisyenler` | Diyetisyen keşfet/listele (pazaryeri vitrini) |
 | `/diyetisyenler/[slug]` | Diyetisyen profil sayfası (bio, paketler, yorumlar, "paket satın al" CTA) |
-| `/literatur` | Makale/içerik kütüphanesi listesi |
-| `/literatur/[slug]` | Makale detay |
+| `/makaleler` | Makale kütüphanesi listesi (herkese açık, yayınlanmış makaleler) |
+| `/makaleler/[slug]` | Makale detay |
 | `/giris` | Giriş |
 | `/kayit` | Kayıt (danışan veya diyetisyen seçimi) |
 

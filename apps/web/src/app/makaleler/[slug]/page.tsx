@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import type { ArticleDetail } from "@fit-sihirbaz/shared";
 import { fetchTrpcQuery } from "@/lib/trpc-server";
-import { LiteraturDetayView } from "./LiteraturDetayView";
+import { MakaleDetayView } from "./MakaleDetayView";
 
 interface PageProps {
   params: { slug: string };
@@ -22,6 +22,6 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   };
 }
 
-export default function LiteraturDetayPage() {
-  return <LiteraturDetayView />;
+export default function MakaleDetayPage() {
+  return <MakaleDetayView />;
 }
