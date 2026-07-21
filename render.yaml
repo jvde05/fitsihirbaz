@@ -44,7 +44,7 @@ services:
     runtime: node
     plan: free
     region: frankfurt
-    buildCommand: pnpm install --frozen-lockfile && pnpm --filter @fit-sihirbaz/web build
+    buildCommand: pnpm install --frozen-lockfile && pnpm --filter @fit-sihirbaz/db generate && pnpm --filter @fit-sihirbaz/web build
     startCommand: pnpm --filter @fit-sihirbaz/web start
     envVars:
       - key: NODE_ENV
@@ -53,6 +53,15 @@ services:
         value: "20"
       - key: NEXT_PUBLIC_API_URL
         value: https://fitsihirbaz-api.onrender.com
+      # Web runtime'da veritabanını hiç kullanmıyor — bu sadece build sırasında
+      # `pnpm --filter @fit-sihirbaz/db generate`nin prisma şema validasyonunu
+      # geçmesi için gerekli (packages/db/src/index.ts, @prisma/client tiplerini
+      # re-export ediyor; apps/web, apps/api'nin tRPC AppRouter tipini type-only
+      # import ettiği için build'de bu tipler transitive olarak gerekiyor).
+      - key: DATABASE_URL
+        fromDatabase:
+          name: fitsihirbaz-db
+          property: connectionString
 
   - type: redis
     name: fitsihirbaz-redis
