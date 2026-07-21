@@ -46,3 +46,24 @@ export type AuthResponse = z.infer<typeof AuthResponseSchema>;
 
 export const MeResponseSchema = PublicUserSchema;
 export type MeResponse = z.infer<typeof MeResponseSchema>;
+
+export const RequestPasswordResetInputSchema = z.object({
+  email: z.string().email("Geçerli bir e-posta girin"),
+});
+export type RequestPasswordResetInput = z.infer<typeof RequestPasswordResetInputSchema>;
+
+export const ResetPasswordInputSchema = z.object({
+  token: z.string().min(1, "Token zorunlu"),
+  password: passwordSchema,
+});
+export type ResetPasswordInput = z.infer<typeof ResetPasswordInputSchema>;
+
+export const VerifyEmailInputSchema = z.object({
+  token: z.string().min(1, "Token zorunlu"),
+});
+export type VerifyEmailInput = z.infer<typeof VerifyEmailInputSchema>;
+
+export const AckResponseSchema = z.object({
+  success: z.literal(true),
+});
+export type AckResponse = z.infer<typeof AckResponseSchema>;

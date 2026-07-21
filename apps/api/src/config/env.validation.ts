@@ -20,6 +20,9 @@ const EnvSchema = z.object({
   // sağlayıcıya (iyzico/PayTR) geçildiğinde bu, o sağlayıcının kendi imza şemasıyla
   // değiştirilecek.
   PAYMENT_WEBHOOK_SECRET: z.string().default("dev-payment-webhook-secret-please-change-me"),
+  // Resend API anahtarı henüz yoksa (dev ortamı) e-postalar konsola loglanır (bkz. mail/mail.module.ts).
+  RESEND_API_KEY: z.string().optional(),
+  MAIL_FROM: z.string().default("Fit Sihirbaz <onboarding@resend.dev>"),
 });
 
 export type Env = z.infer<typeof EnvSchema>;

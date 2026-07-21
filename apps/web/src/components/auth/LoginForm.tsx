@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -43,7 +44,12 @@ export function LoginForm() {
         {errors.email && <p className="text-sm text-destructive">{errors.email.message}</p>}
       </div>
       <div className="space-y-1.5">
-        <Label htmlFor="password">Şifre</Label>
+        <div className="flex items-center justify-between">
+          <Label htmlFor="password">Şifre</Label>
+          <Link href="/sifremi-unuttum" className="text-sm text-primary hover:underline">
+            Şifremi unuttum
+          </Link>
+        </div>
         <Input id="password" type="password" autoComplete="current-password" {...register("password")} />
         {errors.password && <p className="text-sm text-destructive">{errors.password.message}</p>}
       </div>

@@ -132,6 +132,29 @@ model User {
   posts            Post[]
   postLikes        PostLike[]
   postComments     PostComment[]
+  emailTokens      EmailToken[]
+}
+
+// ─────────────────────────────────────────────────────────────
+// 1b. EmailToken (şifre sıfırlama / e-posta doğrulama)
+// ─────────────────────────────────────────────────────────────
+
+enum EmailTokenType {
+  PASSWORD_RESET
+  EMAIL_VERIFICATION
+}
+
+model EmailToken {
+  id        String         @id @default(uuid())
+  userId    String
+  user      User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash String         @unique // ham token asla saklanmaz, SHA-256 hex
+  type      EmailTokenType
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime       @default(now())
+
+  @@index([userId, type])
 }
 
 // ─────────────────────────────────────────────────────────────

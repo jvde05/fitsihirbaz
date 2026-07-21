@@ -48,6 +48,12 @@ Her modül NestJS standardında: `*.module.ts`, `*.service.ts`, `*.router.ts` (t
 - `auth.refresh`
 - `auth.logout`
 - `auth.me` (giriş yapmış kullanıcı bilgisi)
+- `auth.requestPasswordReset` (e-posta girilir, hesap varlığı sızdırılmadan her zaman başarılı döner)
+- `auth.resetPassword` (token + yeni şifre)
+- `auth.verifyEmail` (token)
+- `auth.resendVerificationEmail` (protected — zaten doğrulanmışsa hata)
+
+Şifre sıfırlama/e-posta doğrulama: ham token kullanıcıya e-postayla gider, veritabanında sadece SHA-256 hash'i (`EmailToken` modeli) saklanır. Kayıt sonrası doğrulama e-postası fire-and-forget gönderilir (mail hatası kaydı engellemez). Mail gönderimi `mail/` modülü üzerinden yapılır — `RESEND_API_KEY` yoksa e-posta `apps/api` konsoluna loglanır (bkz. §14).
 
 ## 4. Users / Dietitians / Clients Modülleri
 
@@ -131,7 +137,10 @@ MEILISEARCH_HOST=
 MEILISEARCH_API_KEY=
 EXPO_PUSH_TOKEN=
 RESEND_API_KEY=
+MAIL_FROM=
 ```
+
+`RESEND_API_KEY` boşsa (dev ortamı) `mail/mail.module.ts` içindeki factory otomatik olarak `ConsoleMailProvider`'a bağlanır — e-postalar gerçekten gönderilmez, `[MAIL:DEV]` etiketiyle apps/api konsoluna loglanır (şifre sıfırlama/e-posta doğrulama linkleri buradan kopyalanabilir). Key eklendiğinde kod değişikliği gerekmez, otomatik `ResendMailProvider`'a geçer.
 
 ## 15. Test Yaklaşımı
 

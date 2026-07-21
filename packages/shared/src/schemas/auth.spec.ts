@@ -1,4 +1,10 @@
-import { LoginInputSchema, RegisterInputSchema } from "./auth";
+import {
+  LoginInputSchema,
+  RegisterInputSchema,
+  RequestPasswordResetInputSchema,
+  ResetPasswordInputSchema,
+  VerifyEmailInputSchema,
+} from "./auth";
 
 describe("RegisterInputSchema", () => {
   const validInput = {
@@ -69,5 +75,42 @@ describe("LoginInputSchema", () => {
       password: "",
     });
     expect(result.success).toBe(false);
+  });
+});
+
+describe("RequestPasswordResetInputSchema", () => {
+  it("geçerli bir e-postayı kabul eder", () => {
+    expect(RequestPasswordResetInputSchema.safeParse({ email: "test@example.com" }).success).toBe(true);
+  });
+
+  it("geçersiz e-postayı reddeder", () => {
+    expect(RequestPasswordResetInputSchema.safeParse({ email: "not-an-email" }).success).toBe(false);
+  });
+});
+
+describe("ResetPasswordInputSchema", () => {
+  it("geçerli token ve şifreyi kabul eder", () => {
+    const result = ResetPasswordInputSchema.safeParse({ token: "abc123", password: "Sifre123" });
+    expect(result.success).toBe(true);
+  });
+
+  it("boş token'ı reddeder", () => {
+    const result = ResetPasswordInputSchema.safeParse({ token: "", password: "Sifre123" });
+    expect(result.success).toBe(false);
+  });
+
+  it("zayıf şifreyi reddeder", () => {
+    const result = ResetPasswordInputSchema.safeParse({ token: "abc123", password: "12345678" });
+    expect(result.success).toBe(false);
+  });
+});
+
+describe("VerifyEmailInputSchema", () => {
+  it("geçerli token'ı kabul eder", () => {
+    expect(VerifyEmailInputSchema.safeParse({ token: "abc123" }).success).toBe(true);
+  });
+
+  it("boş token'ı reddeder", () => {
+    expect(VerifyEmailInputSchema.safeParse({ token: "" }).success).toBe(false);
   });
 });

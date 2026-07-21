@@ -1,11 +1,15 @@
 import { TRPCError } from "@trpc/server";
 import {
+  AckResponseSchema,
   AuthResponseSchema,
   AuthTokensSchema,
   LoginInputSchema,
   MeResponseSchema,
   RefreshInputSchema,
   RegisterInputSchema,
+  RequestPasswordResetInputSchema,
+  ResetPasswordInputSchema,
+  VerifyEmailInputSchema,
 } from "@fit-sihirbaz/shared";
 import type { Context } from "../trpc/context";
 import { protectedProcedure, publicProcedure, router } from "../trpc/trpc";
@@ -19,7 +23,9 @@ import type { AuthService } from "./auth.service";
 import {
   AccountInactiveError,
   EmailAlreadyExistsError,
+  EmailAlreadyVerifiedError,
   InvalidCredentialsError,
+  InvalidEmailTokenError,
   InvalidRefreshTokenError,
 } from "./auth.errors";
 
@@ -104,6 +110,56 @@ export function createAuthRouter(authService: AuthService, rateLimiter: RateLimi
 
     me: protectedProcedure.output(MeResponseSchema).query(({ ctx }) => {
       return authService.me(ctx.user.id);
+    }),
+
+    requestPasswordReset: publicProcedure
+      .input(RequestPasswordResetInputSchema)
+      .output(AckResponseSchema)
+      .mutation(async ({ input }) => {
+        await authService.requestPasswordReset(input.email);
+        return { success: true };
+      }),
+
+    resetPassword: publicProcedure
+      .input(ResetPasswordInputSchema)
+      .output(AckResponseSchema)
+      .mutation(async ({ input }) => {
+        try {
+          await authService.resetPassword(input.token, input.password);
+          return { success: true };
+        } catch (error) {
+          if (error instanceof InvalidEmailTokenError) {
+            throw new TRPCError({ code: "BAD_REQUEST", message: "Bağlantı geçersiz veya süresi dolmuş" });
+          }
+          throw error;
+        }
+      }),
+
+    verifyEmail: publicProcedure
+      .input(VerifyEmailInputSchema)
+      .output(AckResponseSchema)
+      .mutation(async ({ input }) => {
+        try {
+          await authService.verifyEmail(input.token);
+          return { success: true };
+        } catch (error) {
+          if (error instanceof InvalidEmailTokenError) {
+            throw new TRPCError({ code: "BAD_REQUEST", message: "Bağlantı geçersiz veya süresi dolmuş" });
+          }
+          throw error;
+        }
+      }),
+
+    resendVerificationEmail: protectedProcedure.output(AckResponseSchema).mutation(async ({ ctx }) => {
+      try {
+        await authService.sendVerificationEmail(ctx.user.id);
+        return { success: true };
+      } catch (error) {
+        if (error instanceof EmailAlreadyVerifiedError) {
+          throw new TRPCError({ code: "BAD_REQUEST", message: "E-posta zaten doğrulanmış" });
+        }
+        throw error;
+      }
     }),
   });
 }
