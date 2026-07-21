@@ -32,12 +32,18 @@ import {
 const REFRESH_COOKIE_NAME = "refresh_token";
 const REFRESH_COOKIE_PATH = "/trpc";
 const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
+const IS_PRODUCTION = process.env.NODE_ENV === "production";
 
 function setRefreshCookie(res: Context["res"], refreshToken: string): void {
   res.cookie(REFRESH_COOKIE_NAME, refreshToken, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
+    secure: IS_PRODUCTION,
+    // Prod'da web ve API ayrı domain'lerde (fitsihirbaz-web/-api.onrender.com) çalışıyor —
+    // tarayıcı bunu cross-site sayar, "lax" cross-site fetch/XHR isteklerinde cookie
+    // göndermeyi engeller (sadece top-level navigation'da gönderir). "none" (secure
+    // gerektirir, prod'da zaten açık) cross-site fetch'lerde de cookie gönderilmesini sağlar.
+    // Yerelde web+api aynı host (localhost farklı portlar) olduğundan "lax" yeterli.
+    sameSite: IS_PRODUCTION ? "none" : "lax",
     maxAge: THIRTY_DAYS_MS,
     path: REFRESH_COOKIE_PATH,
   });
