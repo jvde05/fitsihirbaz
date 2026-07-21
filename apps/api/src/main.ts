@@ -5,6 +5,7 @@ import { NestFactory } from "@nestjs/core";
 import { NestExpressApplication } from "@nestjs/platform-express";
 import { ConfigService } from "@nestjs/config";
 import cookieParser from "cookie-parser";
+import type { Request, Response } from "express";
 import { createExpressMiddleware } from "@trpc/server/adapters/express";
 import { AppModule } from "./app.module";
 import { AuthService } from "./auth/auth.service";
@@ -81,7 +82,11 @@ async function bootstrap() {
     }),
   );
 
-  const port = config.get("API_PORT", { infer: true });
+  // Render/Railway gibi PaaS'ler dinamik bir PORT env değişkeni set eder; yerelde
+  // .env'deki API_PORT kullanılmaya devam eder.
+  app.use("/health", (_req: Request, res: Response) => res.status(200).json({ status: "ok" }));
+
+  const port = Number(process.env.PORT) || config.get("API_PORT", { infer: true });
   await app.listen(port);
   // eslint-disable-next-line no-console
   console.log(`Fit Sihirbaz API http://localhost:${port}/trpc`);
