@@ -22,6 +22,9 @@
 | `/literatur/[slug]` | Makale detay |
 | `/giris` | Giriş |
 | `/kayit` | Kayıt (danışan veya diyetisyen seçimi) |
+| `/sifremi-unuttum` | E-posta girilir, hesap varlığı sızdırılmadan her zaman başarı mesajı gösterilir |
+| `/sifre-sifirla?token=...` | Sıfırlama e-postasındaki linkten gelinir, yeni şifre belirlenir |
+| `/eposta-dogrula?token=...` | Doğrulama e-postasındaki linkten gelinir, açılışta otomatik doğrulama tetiklenir |
 
 ### Danışan Alanı (`/danisan/...`, auth: CLIENT)
 | Route | Açıklama |
@@ -54,6 +57,8 @@
 | `/admin/diyetisyenler` | Diyetisyen doğrulama/onaylama |
 | `/admin/icerik` | Makale/literatür yönetimi |
 | `/admin/kullanicilar` | Kullanıcı yönetimi |
+
+Not: `/danisan/...` ve `/diyetisyen/...` layout'larında `EmailVerificationBanner` bileşeni bulunur — kullanıcının e-postası doğrulanmamışsa üstte uyarı + "tekrar gönder" butonu gösterir, doğrulanınca kaybolur.
 
 ## 3. Kritik Akışlar
 
