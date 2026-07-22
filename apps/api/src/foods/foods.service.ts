@@ -124,6 +124,23 @@ export class FoodsService {
     return toFoodDetail({ ...foodItem, nutrientData: foodItem.nutrientData });
   }
 
+  async updateImage(id: string, imageUrl: string): Promise<FoodDetail> {
+    const existing = await this.prisma.foodItem.findUnique({ where: { id } });
+    if (!existing) {
+      throw new FoodNotFoundError();
+    }
+
+    const foodItem = await this.prisma.foodItem.update({
+      where: { id },
+      data: { imageUrl },
+      include: { nutrientData: true, source: true },
+    });
+    if (!foodItem.nutrientData) {
+      throw new FoodNotFoundError();
+    }
+    return toFoodDetail({ ...foodItem, nutrientData: foodItem.nutrientData });
+  }
+
   private async getOrCreateUserSubmittedSource() {
     const existing = await this.prisma.foodSource.findFirst({
       where: { name: USER_SUBMITTED_SOURCE_NAME },

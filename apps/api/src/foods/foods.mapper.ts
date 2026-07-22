@@ -16,6 +16,7 @@ export function toFoodSummary(foodItem: FoodItemWithNutrients): FoodSummary {
     category: foodItem.category,
     servingDescription: foodItem.servingDescription,
     servingGramWeight: toNullableNumber(foodItem.servingGramWeight),
+    imageUrl: foodItem.imageUrl,
     isVerified: foodItem.isVerified,
     calories: Number(foodItem.nutrientData.calories),
     protein: Number(foodItem.nutrientData.protein),

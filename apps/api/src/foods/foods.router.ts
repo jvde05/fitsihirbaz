@@ -6,6 +6,7 @@ import {
   FoodDetailSchema,
   FoodSearchInputSchema,
   FoodSearchResultSchema,
+  FoodUpdateImageInputSchema,
 } from "@fit-sihirbaz/shared";
 import { adminProcedure, dietitianOrAdminProcedure, protectedProcedure, router } from "../trpc/trpc";
 import type { FoodsService } from "./foods.service";
@@ -40,6 +41,17 @@ export function createFoodsRouter(foodsService: FoodsService) {
       .input(FoodCreateInputSchema)
       .output(FoodDetailSchema)
       .mutation(({ input, ctx }) => foodsService.create(input, ctx.user.id)),
+
+    updateImage: dietitianOrAdminProcedure
+      .input(FoodUpdateImageInputSchema)
+      .output(FoodDetailSchema)
+      .mutation(async ({ input }) => {
+        try {
+          return await foodsService.updateImage(input.id, input.imageUrl);
+        } catch (error) {
+          mapFoodNotFound(error);
+        }
+      }),
   });
 }
 

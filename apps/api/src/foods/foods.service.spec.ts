@@ -10,6 +10,7 @@ function buildFoodItemRow(overrides: Partial<Record<string, unknown>> = {}) {
     category: "Meyveler",
     servingDescription: "1 orta boy",
     servingGramWeight: "182",
+    imageUrl: null,
     sourceId: "source-1",
     isVerified: true,
     createdByUserId: null,
@@ -169,6 +170,29 @@ describe("FoodsService", () => {
       expect(result.isVerified).toBe(true);
       expect(prisma.foodItem.update).toHaveBeenCalledWith(
         expect.objectContaining({ where: { id: "food-1" }, data: { isVerified: true } }),
+      );
+    });
+  });
+
+  describe("updateImage", () => {
+    it("besin bulunamazsa FoodNotFoundError fırlatır", async () => {
+      prisma.foodItem.findUnique.mockResolvedValue(null);
+      await expect(service.updateImage("yok", "/uploads/foods/x.png")).rejects.toBeInstanceOf(
+        FoodNotFoundError,
+      );
+      expect(prisma.foodItem.update).not.toHaveBeenCalled();
+    });
+
+    it("imageUrl alanını günceller", async () => {
+      prisma.foodItem.findUnique.mockResolvedValue(buildFoodItemRow());
+      prisma.foodItem.update.mockResolvedValue(
+        buildFoodItemRow({ imageUrl: "/uploads/foods/x.png" }),
+      );
+
+      const result = await service.updateImage("food-1", "/uploads/foods/x.png");
+      expect(result.imageUrl).toBe("/uploads/foods/x.png");
+      expect(prisma.foodItem.update).toHaveBeenCalledWith(
+        expect.objectContaining({ where: { id: "food-1" }, data: { imageUrl: "/uploads/foods/x.png" } }),
       );
     });
   });
