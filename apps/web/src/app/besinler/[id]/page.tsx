@@ -2,6 +2,7 @@
 
 import { useParams } from "next/navigation";
 import { trpc } from "@/lib/trpc";
+import { resolveMediaUrl } from "@/lib/media";
 import { RequireAuth } from "@/components/auth/RequireAuth";
 import { QueryErrorNotice } from "@/components/QueryErrorNotice";
 import { Badge } from "@/components/ui/badge";
@@ -41,9 +42,18 @@ function BesinDetayContent() {
   }
 
   const food = foodQuery.data;
+  const resolvedImageUrl = resolveMediaUrl(food.imageUrl);
 
   return (
     <div className="mx-auto max-w-2xl space-y-6">
+      {resolvedImageUrl && (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={resolvedImageUrl}
+          alt={food.name}
+          className="h-56 w-full rounded-lg object-cover"
+        />
+      )}
       <div>
         <div className="flex items-center gap-2">
           <h1 className="text-2xl font-semibold text-foreground">{food.name}</h1>

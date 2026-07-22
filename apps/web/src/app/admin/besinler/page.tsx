@@ -4,13 +4,62 @@ import { useState } from "react";
 import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { FoodCreateInputSchema, type FoodCreateInput } from "@fit-sihirbaz/shared";
+import { FoodCreateInputSchema, type FoodCreateInput, type FoodSummary } from "@fit-sihirbaz/shared";
 import { trpc } from "@/lib/trpc";
+import { uploadImage } from "@/lib/uploads";
+import { resolveMediaUrl } from "@/lib/media";
 import { QueryErrorNotice } from "@/components/QueryErrorNotice";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+
+function FoodImageUploader({ food, onUploaded }: { food: FoodSummary; onUploaded: () => void }) {
+  const [uploading, setUploading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const updateImageMutation = trpc.foods.updateImage.useMutation({
+    onSuccess: () => {
+      setError(null);
+      onUploaded();
+    },
+    onError: (err) => setError(err.message),
+  });
+
+  async function handleFileChange(event: React.ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file) {
+      return;
+    }
+    setUploading(true);
+    setError(null);
+    try {
+      const url = await uploadImage(file, "food");
+      await updateImageMutation.mutateAsync({ id: food.id, imageUrl: url });
+    } catch {
+      setError("Fotoğraf yüklenemedi. Desteklenen türler: jpeg/png/webp/gif, maks 5MB.");
+    } finally {
+      setUploading(false);
+    }
+  }
+
+  const resolvedUrl = resolveMediaUrl(food.imageUrl);
+
+  return (
+    <div className="flex items-center gap-2">
+      <Avatar className="h-10 w-10 rounded-md">
+        {resolvedUrl && <AvatarImage src={resolvedUrl} alt="" className="object-cover" />}
+        <AvatarFallback className="rounded-md text-xs">Yok</AvatarFallback>
+      </Avatar>
+      <label className="cursor-pointer text-xs text-primary hover:underline">
+        {uploading ? "Yükleniyor..." : food.imageUrl ? "Değiştir" : "Fotoğraf Ekle"}
+        <input type="file" accept="image/*" className="hidden" onChange={handleFileChange} disabled={uploading} />
+      </label>
+      {error && <p className="text-xs text-destructive">{error}</p>}
+    </div>
+  );
+}
 
 export default function AdminBesinlerPage() {
   const utils = trpc.useUtils();
@@ -105,8 +154,9 @@ export default function AdminBesinlerPage() {
 
       <ul className="divide-y rounded-md border">
         {searchQuery.data?.items.map((food) => (
-          <li key={food.id} className="flex items-center justify-between px-4 py-3">
-            <div>
+          <li key={food.id} className="flex items-center justify-between gap-4 px-4 py-3">
+            <FoodImageUploader food={food} onUploaded={() => utils.foods.search.invalidate()} />
+            <div className="min-w-0 flex-1">
               <Link href={`/besinler/${food.id}`} className="font-medium text-foreground hover:underline">
                 {food.name}
               </Link>

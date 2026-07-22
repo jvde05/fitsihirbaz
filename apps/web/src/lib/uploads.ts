@@ -7,7 +7,7 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
 // relatif bir yolla (/uploads/...) dönüyor (bkz. apps/api/src/uploads).
 export async function uploadImage(
   file: File,
-  kind: "post" | "avatar" | "progress" | "certification" = "post",
+  kind: "post" | "avatar" | "progress" | "certification" | "food" = "post",
 ): Promise<string> {
   const formData = new FormData();
   formData.append("file", file);

@@ -16,6 +16,7 @@ export const FoodSummarySchema = z.object({
   category: z.string(),
   servingDescription: z.string().nullable(),
   servingGramWeight: z.number().nullable(),
+  imageUrl: z.string().nullable(),
   isVerified: z.boolean(),
   calories: z.number(),
   protein: z.number(),
@@ -67,3 +68,10 @@ export const AdminVerifyFoodInputSchema = z.object({
   approve: z.boolean(),
 });
 export type AdminVerifyFoodInput = z.infer<typeof AdminVerifyFoodInputSchema>;
+
+// Besin fotoğrafı yüklendikten sonra (uploads/image?kind=food) dönen relatif yolu besine bağlar.
+export const FoodUpdateImageInputSchema = z.object({
+  id: z.string().uuid(),
+  imageUrl: z.string().min(1, "Fotoğraf URL'i zorunlu"),
+});
+export type FoodUpdateImageInput = z.infer<typeof FoodUpdateImageInputSchema>;

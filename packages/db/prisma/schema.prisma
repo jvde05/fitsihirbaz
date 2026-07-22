@@ -261,6 +261,7 @@ model FoodItem {
   category            String
   servingDescription  String?
   servingGramWeight   Decimal?
+  imageUrl            String?
   sourceId            String
   isVerified          Boolean  @default(false)
   createdByUserId     String?

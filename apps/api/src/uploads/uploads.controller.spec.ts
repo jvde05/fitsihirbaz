@@ -77,6 +77,13 @@ describe("UploadsController", () => {
     expect(result).toEqual({ url: "/uploads/certifications/x.png" });
   });
 
+  it("kind=food için uploads/foods altında URL döner", () => {
+    const accessToken = tokenService.signAccessToken("user-1", "DIETITIAN");
+    const req = buildRequest({ headers: { authorization: `Bearer ${accessToken}` }, query: { kind: "food" } });
+    const result = controller.uploadImage(req, buildFile({ filename: "x.png" }));
+    expect(result).toEqual({ url: "/uploads/foods/x.png" });
+  });
+
   it("tanınmayan bir kind için varsayılan olarak uploads/posts kullanır", () => {
     const accessToken = tokenService.signAccessToken("user-1", "CLIENT");
     const req = buildRequest({ headers: { authorization: `Bearer ${accessToken}` }, query: { kind: "something-else" } });

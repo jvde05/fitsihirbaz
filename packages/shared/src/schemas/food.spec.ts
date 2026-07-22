@@ -1,4 +1,9 @@
-import { AdminVerifyFoodInputSchema, FoodCreateInputSchema, FoodSearchInputSchema } from "./food";
+import {
+  AdminVerifyFoodInputSchema,
+  FoodCreateInputSchema,
+  FoodSearchInputSchema,
+  FoodUpdateImageInputSchema,
+} from "./food";
 
 describe("FoodSearchInputSchema", () => {
   it("boş sorguyu reddeder", () => {
@@ -55,6 +60,24 @@ describe("AdminVerifyFoodInputSchema", () => {
 
   it("geçersiz uuid'yi reddeder", () => {
     const result = AdminVerifyFoodInputSchema.safeParse({ id: "not-a-uuid", approve: true });
+    expect(result.success).toBe(false);
+  });
+});
+
+describe("FoodUpdateImageInputSchema", () => {
+  it("geçerli uuid ve imageUrl'i kabul eder", () => {
+    const result = FoodUpdateImageInputSchema.safeParse({
+      id: "123e4567-e89b-12d3-a456-426614174000",
+      imageUrl: "/uploads/foods/x.png",
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("boş imageUrl'i reddeder", () => {
+    const result = FoodUpdateImageInputSchema.safeParse({
+      id: "123e4567-e89b-12d3-a456-426614174000",
+      imageUrl: "",
+    });
     expect(result.success).toBe(false);
   });
 });
