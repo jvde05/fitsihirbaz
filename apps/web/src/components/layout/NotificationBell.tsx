@@ -1,11 +1,13 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Bell } from "lucide-react";
 import { trpc } from "@/lib/trpc";
+import { useAuthStore } from "@/lib/auth-store";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import type { Notification } from "@fit-sihirbaz/shared";
+import type { Notification, Role } from "@fit-sihirbaz/shared";
 
 const POLL_INTERVAL_MS = 10000;
 
@@ -34,7 +36,33 @@ function describeNotification(notification: Notification): string {
   }
 }
 
+// Bildirime tıklayınca gidilecek sayfa — rol bazlı (diyetisyen/danışan aynı bildirim
+// tipi için farklı rotalara sahip). Henüz tek tek randevu/sipariş/konuşma detayına
+// derin bağlantı (deep link) yok, ilgili listeleme sayfasına götürülüyor.
+function getNotificationLink(notification: Notification, role: Role | undefined): string | null {
+  switch (notification.type) {
+    case "NEW_MESSAGE":
+      return role === "DIETITIAN" ? "/diyetisyen/mesajlar" : "/danisan/mesajlar";
+    case "APPOINTMENT_REQUESTED":
+    case "APPOINTMENT_STATUS_CHANGED":
+    case "APPOINTMENT_REMINDER":
+      return role === "DIETITIAN" ? "/diyetisyen/randevular" : "/danisan/randevular";
+    case "ORDER_PAID":
+      return "/danisan/panel";
+    case "NEW_ORDER":
+      return "/diyetisyen/siparisler";
+    case "DIETITIAN_VERIFIED":
+    case "DIETITIAN_REJECTED":
+    case "NEW_REVIEW":
+      return "/diyetisyen/profil";
+    default:
+      return null;
+  }
+}
+
 export function NotificationBell() {
+  const router = useRouter();
+  const role = useAuthStore((s) => s.user?.role);
   const utils = trpc.useUtils();
   const [open, setOpen] = useState(false);
   const notificationsQuery = trpc.notifications.list.useQuery(undefined, {
@@ -47,6 +75,17 @@ export function NotificationBell() {
   const markAllAsReadMutation = trpc.notifications.markAllAsRead.useMutation({
     onSuccess: () => utils.notifications.list.invalidate(),
   });
+
+  function handleNotificationClick(notification: Notification) {
+    if (!notification.isRead) {
+      markAsReadMutation.mutate({ id: notification.id });
+    }
+    setOpen(false);
+    const link = getNotificationLink(notification, role);
+    if (link) {
+      router.push(link);
+    }
+  }
 
   const notifications = notificationsQuery.data ?? [];
   const unreadCount = notifications.filter((n) => !n.isRead).length;
@@ -88,7 +127,7 @@ export function NotificationBell() {
               <li key={notification.id}>
                 <button
                   type="button"
-                  onClick={() => !notification.isRead && markAsReadMutation.mutate({ id: notification.id })}
+                  onClick={() => handleNotificationClick(notification)}
                   className={cn(
                     "block w-full px-3 py-2 text-left text-sm hover:bg-muted",
                     notification.isRead ? "text-muted-foreground" : "font-medium",
